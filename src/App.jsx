@@ -22,16 +22,18 @@ import {
   Sparkles,
   Wand2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   backendContract,
   buildLaunchCalendar,
   buildLaunchKit,
   buildNotionExport,
   connectorRoadmap,
+  defaultPresetId,
+  getPreset,
+  nichePresets,
   pipelineStages,
   platformOptions,
-  starterBrief,
 } from "./packsmithData";
 import { createNotionPayload, simulateNotionPublish } from "./integrations/notionConnector";
 
@@ -57,6 +59,13 @@ function downloadFile(name, content, type) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function slugify(value) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function packToMarkdown(pack, editedItems) {
@@ -90,8 +99,8 @@ ${list(pack.launchPlan)}
 `;
 }
 
-function launchCalendarToMarkdown(calendar) {
-  return `# Packsmith Launch Calendar
+function launchCalendarToMarkdown(calendar, pack) {
+  return `# ${pack.name} Launch Calendar
 
 ${calendar.map((item) => `## ${item.day}: ${item.focus}\nOwner: ${item.owner}\n\n${item.action}`).join("\n\n")}
 `;
@@ -107,7 +116,9 @@ function marketplaceToJson(pack) {
 }
 
 function App() {
-  const [brief, setBrief] = useState(starterBrief);
+  const [activePresetId, setActivePresetId] = useState(defaultPresetId);
+  const activePreset = getPreset(activePresetId);
+  const [brief, setBrief] = useState(activePreset.brief);
   const [activeSection, setActiveSection] = useState("notion");
   const [activeChannel, setActiveChannel] = useState("gumroad");
   const [connection, setConnection] = useState({ parentPageId: "", tokenHint: "" });
@@ -121,7 +132,13 @@ function App() {
     }
   });
 
-  const pack = useMemo(() => buildLaunchKit(brief), [brief]);
+  useEffect(() => {
+    setBrief(getPreset(activePresetId).brief);
+    setActiveSection("notion");
+    setActiveChannel("gumroad");
+  }, [activePresetId]);
+
+  const pack = useMemo(() => buildLaunchKit(brief, activePresetId), [activePresetId, brief]);
   const notionExport = useMemo(() => buildNotionExport(pack), [pack]);
   const notionPayload = useMemo(
     () => createNotionPayload(notionExport, { parentPageId: connection.parentPageId }),
@@ -133,7 +150,7 @@ function App() {
   );
   const launchCalendar = useMemo(() => buildLaunchCalendar(pack), [pack]);
   const selectedSection = pack.sections.find((section) => section.id === activeSection) || pack.sections[0];
-  const selectedItems = editedItems[selectedSection.id] || selectedSection.items;
+  const selectedItems = editedItems[activePresetId]?.[selectedSection.id] || selectedSection.items;
   const selectedChannel =
     pack.launchChannels.find((channel) => channel.id === activeChannel) || pack.launchChannels[0];
   const SelectedIcon = sectionIcons[selectedSection.id] || Boxes;
@@ -156,10 +173,18 @@ function App() {
 
   function updateGeneratedItem(sectionId, index, value) {
     setEditedItems((current) => {
-      const baseItems = current[sectionId] || pack.sections.find((section) => section.id === sectionId)?.items || [];
+      const presetEdits = current[activePresetId] || {};
+      const baseItems =
+        presetEdits[sectionId] || pack.sections.find((section) => section.id === sectionId)?.items || [];
       const nextItems = [...baseItems];
       nextItems[index] = value;
-      return { ...current, [sectionId]: nextItems };
+      return {
+        ...current,
+        [activePresetId]: {
+          ...presetEdits,
+          [sectionId]: nextItems,
+        },
+      };
     });
   }
 
@@ -181,7 +206,7 @@ function App() {
   function savePack() {
     const nextPack = {
       ...pack,
-      editedItems,
+      editedItems: editedItems[activePresetId] || {},
       savedAt: new Date().toISOString(),
     };
     const nextSaved = [nextPack, ...savedPacks].slice(0, 8);
@@ -191,13 +216,17 @@ function App() {
   }
 
   function exportMarkdown() {
-    downloadFile("packsmith-ai-agency-launch-kit.md", packToMarkdown(pack, editedItems), "text/markdown");
+    downloadFile(
+      `packsmith-${slugify(pack.name)}.md`,
+      packToMarkdown(pack, editedItems[activePresetId] || {}),
+      "text/markdown",
+    );
     flash("Markdown exported.");
   }
 
   function exportNotionJson() {
     downloadFile(
-      "packsmith-notion-workspace-payload.json",
+      `packsmith-${slugify(pack.name)}-notion-payload.json`,
       JSON.stringify(notionPayload, null, 2),
       "application/json",
     );
@@ -206,7 +235,7 @@ function App() {
 
   function exportMarketplaceJson() {
     downloadFile(
-      "packsmith-marketplace-listing.json",
+      `packsmith-${slugify(pack.name)}-marketplace.json`,
       JSON.stringify(marketplaceToJson(pack), null, 2),
       "application/json",
     );
@@ -214,7 +243,11 @@ function App() {
   }
 
   function exportLaunchCalendar() {
-    downloadFile("packsmith-launch-calendar.md", launchCalendarToMarkdown(launchCalendar), "text/markdown");
+    downloadFile(
+      `packsmith-${slugify(pack.name)}-launch-calendar.md`,
+      launchCalendarToMarkdown(launchCalendar, pack),
+      "text/markdown",
+    );
     flash("Launch calendar exported.");
   }
 
@@ -234,7 +267,7 @@ function App() {
           </div>
           <div className="navPills">
             <span>Investor-demo MVP</span>
-            <span>AI agency freelancers</span>
+            <span>{pack.audience}</span>
             <span>Premium forge</span>
           </div>
         </nav>
@@ -247,10 +280,10 @@ function App() {
             transition={{ duration: 0.55 }}
           >
             <p className="eyebrow gold">Founder sprint</p>
-            <h1>Forge rough service ideas into launch-ready template packs.</h1>
+            <h1>{pack.heroLine}</h1>
             <p>
               Packsmith now behaves like a command center for creating, packaging, and selling the
-              AI Agency Launch Kit across Notion, Canva, Figma, and marketplace channels.
+              {` ${pack.name} across Notion, Canva, Figma, and marketplace channels.`}
             </p>
             <div className="heroActions">
               <a href="#forge-workspace">Open forge workspace</a>
@@ -263,8 +296,22 @@ function App() {
                   )
                 }
               >
-                Copy Gumroad listing
+                Copy {pack.comparison.bestMarketplace} listing
               </button>
+            </div>
+            <div className="heroPresetGrid" aria-label="Niche presets">
+              {Object.values(nichePresets).map((preset) => (
+                <button
+                  key={preset.id}
+                  className={activePresetId === preset.id ? "presetHeroCard active" : "presetHeroCard"}
+                  type="button"
+                  onClick={() => setActivePresetId(preset.id)}
+                >
+                  <span>{preset.shortName}</span>
+                  <strong>{preset.name}</strong>
+                  <small>{preset.comparison.expectedPrice} / {preset.comparison.bestMarketplace}</small>
+                </button>
+              ))}
             </div>
           </motion.div>
 
@@ -300,6 +347,20 @@ function App() {
                 <p className="eyebrow">Create Pack</p>
                 <h2>Guided brief</h2>
               </div>
+            </div>
+
+            <div className="presetSwitch">
+              {Object.values(nichePresets).map((preset) => (
+                <button
+                  key={preset.id}
+                  className={activePresetId === preset.id ? "selected" : ""}
+                  type="button"
+                  onClick={() => setActivePresetId(preset.id)}
+                >
+                  <strong>{preset.shortName}</strong>
+                  <span>{preset.comparison.fastestChannel}</span>
+                </button>
+              ))}
             </div>
 
             <label>
@@ -392,10 +453,16 @@ function App() {
         <section className="centerStage">
           <header className="stageHeader">
             <div>
-              <p className="eyebrow">Pack blueprint</p>
-              <h2>{pack.name}</h2>
-              <p>{pack.promise}</p>
-            </div>
+            <p className="eyebrow">Pack blueprint</p>
+            <h2>{pack.name}</h2>
+            <p>{pack.promise}</p>
+            {pack.safetyNote && (
+              <div className="safetyNote">
+                <ShieldCheck size={16} />
+                <span>{pack.safetyNote}</span>
+              </div>
+            )}
+          </div>
             <div className="actions">
               <button type="button" onClick={savePack}>
                 <Save size={17} />
@@ -434,6 +501,44 @@ function App() {
               </article>
             ))}
           </div>
+
+          <section className="panel comparePanel">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">Compare Niches</p>
+                <h2>Launch priority view</h2>
+              </div>
+              <span>{Object.keys(nichePresets).length} presets</span>
+            </div>
+            <div className="comparisonGrid">
+              {Object.values(nichePresets).map((preset) => (
+                <button
+                  key={preset.id}
+                  className={activePresetId === preset.id ? "comparisonCard active" : "comparisonCard"}
+                  type="button"
+                  onClick={() => setActivePresetId(preset.id)}
+                >
+                  <strong>{preset.name}</strong>
+                  <div>
+                    <span>Expected price</span>
+                    <b>{preset.comparison.expectedPrice}</b>
+                  </div>
+                  <div>
+                    <span>Best market</span>
+                    <b>{preset.comparison.bestMarketplace}</b>
+                  </div>
+                  <div>
+                    <span>Fastest channel</span>
+                    <b>{preset.comparison.fastestChannel}</b>
+                  </div>
+                  <div>
+                    <span>Connector</span>
+                    <b>{preset.comparison.connectorReadiness}</b>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
 
           <nav className="sectionTabs" aria-label="Generated platform outputs">
             {pack.sections.map((section) => {

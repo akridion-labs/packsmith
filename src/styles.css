@@ -239,6 +239,57 @@ h4 {
   padding: 0 14px;
 }
 
+.heroPresetGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 4px;
+}
+
+.presetHeroCard,
+.presetSwitch button,
+.comparisonCard {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.presetHeroCard {
+  display: grid;
+  gap: 5px;
+  min-height: 118px;
+  padding: 13px;
+}
+
+.presetHeroCard span,
+.presetSwitch span,
+.comparisonCard span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.presetHeroCard strong {
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.presetHeroCard small,
+.presetSwitch button span {
+  color: var(--muted);
+}
+
+.presetHeroCard.active,
+.presetSwitch button.selected,
+.comparisonCard.active {
+  background: var(--gold-soft);
+  border-color: rgba(239, 189, 99, 0.56);
+  box-shadow: 0 0 30px rgba(239, 189, 99, 0.12);
+}
+
 .heroActions a,
 .primary {
   background: linear-gradient(135deg, var(--gold), #d68a35);
@@ -331,6 +382,24 @@ h4 {
 .notionPanel h2,
 .contractPanel h2 {
   font-size: 16px;
+}
+
+.presetSwitch {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.presetSwitch button {
+  display: grid;
+  gap: 4px;
+  min-height: 72px;
+  padding: 10px;
+}
+
+.presetSwitch strong {
+  font-size: 13px;
 }
 
 label {
@@ -447,6 +516,18 @@ textarea:focus {
   max-width: 760px;
 }
 
+.safetyNote {
+  align-items: center;
+  background: rgba(66, 209, 160, 0.08);
+  border: 1px solid rgba(66, 209, 160, 0.22);
+  border-radius: 8px;
+  color: #d7fff1;
+  display: inline-flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 9px 10px;
+}
+
 .actions {
   justify-content: flex-end;
 }
@@ -505,6 +586,47 @@ textarea:focus {
   background: linear-gradient(90deg, var(--gold), var(--green));
   display: block;
   height: 100%;
+}
+
+.comparePanel {
+  display: grid;
+  gap: 14px;
+}
+
+.boardHeader > span {
+  background: rgba(239, 189, 99, 0.12);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 900;
+  padding: 7px 10px;
+}
+
+.comparisonGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.comparisonCard {
+  display: grid;
+  gap: 10px;
+  padding: 13px;
+}
+
+.comparisonCard strong {
+  font-size: 17px;
+}
+
+.comparisonCard div {
+  display: grid;
+  gap: 2px;
+}
+
+.comparisonCard b {
+  font-size: 13px;
+  font-weight: 850;
 }
 
 .sectionTabs {
@@ -836,7 +958,9 @@ ol {
 
   .channelGrid,
   .assetGrid,
-  .detailColumns {
+  .detailColumns,
+  .heroPresetGrid,
+  .comparisonGrid {
     grid-template-columns: 1fr;
   }
 }
@@ -860,6 +984,7 @@ ol {
   .scoreGrid,
   .sectionTabs,
   .toggleGrid,
+  .presetSwitch,
   .payloadStats {
     grid-template-columns: 1fr;
   }
