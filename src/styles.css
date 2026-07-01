@@ -909,6 +909,204 @@ ol {
   z-index: 20;
 }
 
+.landingFrame {
+  min-height: 100vh;
+}
+
+.landingHero {
+  border-bottom: 1px solid var(--line);
+  min-height: 680px;
+  overflow: hidden;
+  padding: 22px clamp(18px, 3vw, 38px) 48px;
+  position: relative;
+}
+
+.landingGrid {
+  align-items: center;
+  display: grid;
+  gap: 38px;
+  grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.05fr);
+  margin: 0 auto;
+  max-width: 1500px;
+  min-height: 590px;
+  padding-top: 42px;
+  position: relative;
+  z-index: 2;
+}
+
+.ghostLink {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--ink) !important;
+}
+
+.consolePreview {
+  background:
+    linear-gradient(135deg, rgba(66, 209, 160, 0.08), rgba(239, 189, 99, 0.06)),
+    rgba(7, 11, 12, 0.82);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.consoleHeader {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 7px;
+  padding-bottom: 12px;
+}
+
+.consoleHeader span {
+  background: var(--gold);
+  border-radius: 999px;
+  height: 9px;
+  width: 9px;
+}
+
+.consoleHeader span:nth-child(2) {
+  background: var(--green);
+}
+
+.consoleHeader span:nth-child(3) {
+  background: var(--blue);
+}
+
+.consoleHeader strong {
+  color: var(--muted);
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.consolePreview article {
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 14px;
+}
+
+.consolePreview article > span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.consolePreview p,
+.landingPresetCard p,
+.beforeAfterGrid p,
+.waitlistPanel p,
+.generatorPanel > p {
+  color: var(--muted);
+}
+
+.landingSection {
+  display: grid;
+  gap: 18px;
+  margin: 0 auto;
+  max-width: 1500px;
+  padding: 44px clamp(18px, 3vw, 38px);
+}
+
+.sectionIntro {
+  display: grid;
+  gap: 8px;
+  max-width: 820px;
+}
+
+.sectionIntro h2,
+.waitlistPanel h2 {
+  font-size: clamp(30px, 4vw, 52px);
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.landingPresetGrid,
+.beforeAfterGrid,
+.marketingGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.landingPresetCard,
+.beforeAfterGrid article,
+.marketingGrid article {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.landingPresetCard span,
+.beforeAfterGrid span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.landingPresetCard strong,
+.beforeAfterGrid h3 {
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.landingPresetCard small {
+  color: var(--green);
+  font-weight: 850;
+}
+
+.waitlistPanel {
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.7fr);
+  margin-bottom: 42px;
+}
+
+.waitlistPanel form {
+  display: grid;
+  gap: 10px;
+}
+
+.waitlistPanel input {
+  margin-top: 0;
+}
+
+.generatorPanel,
+.marketingPanel {
+  display: grid;
+  gap: 14px;
+}
+
+.marketingGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.marketingGrid h3 {
+  color: var(--gold);
+  font-size: 15px;
+  text-transform: uppercase;
+}
+
+.marketingGrid p {
+  color: var(--muted);
+}
+
+.marketingGrid strong {
+  color: var(--green);
+}
+
 @media (max-width: 1260px) {
   .workspace {
     grid-template-columns: 320px minmax(0, 1fr);
@@ -931,12 +1129,15 @@ ol {
 
 @media (max-width: 960px) {
   .heroGrid,
+  .landingGrid,
   .workspace,
-  .rightRail {
+  .rightRail,
+  .waitlistPanel {
     grid-template-columns: 1fr;
   }
 
-  .heroGrid {
+  .heroGrid,
+  .landingGrid {
     min-height: auto;
   }
 
@@ -960,13 +1161,17 @@ ol {
   .assetGrid,
   .detailColumns,
   .heroPresetGrid,
-  .comparisonGrid {
+  .comparisonGrid,
+  .landingPresetGrid,
+  .beforeAfterGrid,
+  .marketingGrid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px) {
   .cinematicHero,
+  .landingHero,
   .workspace {
     padding-left: 14px;
     padding-right: 14px;

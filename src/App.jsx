@@ -3,7 +3,6 @@ import {
   ArrowRight,
   Boxes,
   CalendarDays,
-  CheckCircle2,
   Clipboard,
   Database,
   Download,
@@ -15,14 +14,19 @@ import {
   Gauge,
   Layers3,
   LockKeyhole,
+  Mail,
   PenTool,
+  Play,
   Rocket,
   Save,
   ShieldCheck,
   Sparkles,
   Wand2,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { createNotionPayload, simulateNotionPublish } from "./integrations/notionConnector";
+import { buildCustomNotionExport, buildCustomPack } from "./localPackGenerator";
+import { buildMarketingKit, marketingKitToMarkdown } from "./marketingData";
 import {
   backendContract,
   buildLaunchCalendar,
@@ -35,7 +39,6 @@ import {
   pipelineStages,
   platformOptions,
 } from "./packsmithData";
-import { createNotionPayload, simulateNotionPublish } from "./integrations/notionConnector";
 
 const sectionIcons = {
   notion: Database,
@@ -47,6 +50,20 @@ const platformIds = {
   Notion: "notion",
   Canva: "canva",
   Figma: "figma",
+};
+
+const initialCustomBrief = {
+  niche: "Premium creator operations",
+  buyer: "Solo creators turning services, systems, or expertise into digital template products",
+  painPoint:
+    "They have a useful idea but struggle to package it into platform-ready assets, launch copy, and a credible product page.",
+  promise:
+    "Generate a launch-ready template pack blueprint from one rough product idea without using an external AI API.",
+  assets: "Command dashboard, content pack, UI starter, launch board, marketplace listing",
+  platforms: platformOptions,
+  style: "Retro-futuristic forge",
+  marketplaceTarget: "Gumroad",
+  visualDirection: "Dark command center, blueprint grid, amber/green terminal accents, launch-console cards.",
 };
 
 function downloadFile(name, content, type) {
@@ -115,10 +132,166 @@ function marketplaceToJson(pack) {
   };
 }
 
-function App() {
+function LandingPage() {
+  const [email, setEmail] = useState("");
+  const [notice, setNotice] = useState("");
+
+  function saveWaitlist(event) {
+    event.preventDefault();
+    const value = email.trim();
+    if (!value) return;
+    const existing = JSON.parse(localStorage.getItem("packsmith.waitlist") || "[]");
+    localStorage.setItem(
+      "packsmith.waitlist",
+      JSON.stringify([{ email: value, createdAt: new Date().toISOString() }, ...existing].slice(0, 100)),
+    );
+    setEmail("");
+    setNotice("Saved locally. Connect a real waitlist backend when ready.");
+  }
+
+  return (
+    <main className="landingFrame">
+      <section className="landingHero">
+        <div className="heroBackdrop" />
+        <nav className="topNav">
+          <div className="brandLockup">
+            <div className="brandMark">
+              <Flame size={24} />
+            </div>
+            <div>
+              <strong>Packsmith</strong>
+              <span>Retro template-pack forge</span>
+            </div>
+          </div>
+          <div className="navPills">
+            <span>Notion</span>
+            <span>Canva</span>
+            <span>Figma</span>
+            <span>Launch board</span>
+          </div>
+        </nav>
+
+        <div className="landingGrid">
+          <motion.div
+            className="heroCopy"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <p className="eyebrow gold">Public MVP</p>
+            <h1>Turn one rough idea into a sellable template pack.</h1>
+            <p>
+              Packsmith generates niche-specific Notion systems, Canva packs, Figma starters,
+              marketplace copy, launch calendars, and marketing video prompts from one creator brief.
+            </p>
+            <div className="heroActions">
+              <a href="/app">Generate a pack</a>
+              <a className="ghostLink" href="#waitlist">Join waitlist</a>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="consolePreview"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.12, duration: 0.5 }}
+          >
+            <div className="consoleHeader">
+              <span />
+              <span />
+              <span />
+              <strong>packsmith://forge</strong>
+            </div>
+            {pipelineStages.map((stage, index) => (
+              <article key={stage.id}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <strong>{stage.label}</strong>
+                  <p>{stage.description}</p>
+                </div>
+              </article>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="landingSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Niche presets</p>
+          <h2>Start focused. Expand only after the wedge works.</h2>
+        </div>
+        <div className="landingPresetGrid">
+          {Object.values(nichePresets).map((preset) => (
+            <a className="landingPresetCard" href="/app" key={preset.id}>
+              <span>{preset.shortName}</span>
+              <strong>{preset.name}</strong>
+              <p>{preset.heroLine}</p>
+              <small>
+                {preset.comparison.expectedPrice} / {preset.comparison.bestMarketplace}
+              </small>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection beforeAfter">
+        <div className="sectionIntro">
+          <p className="eyebrow">Before / After</p>
+          <h2>From scattered idea to launch command center.</h2>
+        </div>
+        <div className="beforeAfterGrid">
+          <article>
+            <span>Before</span>
+            <h3>Messy creator idea</h3>
+            <p>Loose notes, vague buyer, generic AI copy, no product bundle, no launch channel plan.</p>
+          </article>
+          <article>
+            <span>Forge</span>
+            <h3>Packsmith pipeline</h3>
+            <p>Brief, quality score, platform outputs, Notion payload, launch board, marketing kit.</p>
+          </article>
+          <article>
+            <span>After</span>
+            <h3>Sellable template pack</h3>
+            <p>Markdown export, marketplace JSON, launch calendar, video script, social posts, pitch outline.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="landingSection waitlistPanel" id="waitlist">
+        <div>
+          <p className="eyebrow">Waitlist</p>
+          <h2>Capture interest while the backend catches up.</h2>
+          <p className="muted">
+            This placeholder stores leads locally for now. Replace it with ConvertKit, Loops, Supabase,
+            or a server route when deployment is ready.
+          </p>
+        </div>
+        <form onSubmit={saveWaitlist}>
+          <input
+            type="email"
+            placeholder="founder@example.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+          <button className="primary" type="submit">
+            <Mail size={17} />
+            Save locally
+          </button>
+          {notice && <p>{notice}</p>}
+        </form>
+      </section>
+    </main>
+  );
+}
+
+function ForgeApp() {
   const [activePresetId, setActivePresetId] = useState(defaultPresetId);
   const activePreset = getPreset(activePresetId);
   const [brief, setBrief] = useState(activePreset.brief);
+  const [customBrief, setCustomBrief] = useState(initialCustomBrief);
+  const [generatedPack, setGeneratedPack] = useState(null);
+  const [generatedNotionExport, setGeneratedNotionExport] = useState(null);
   const [activeSection, setActiveSection] = useState("notion");
   const [activeChannel, setActiveChannel] = useState("gumroad");
   const [connection, setConnection] = useState({ parentPageId: "", tokenHint: "" });
@@ -132,14 +305,15 @@ function App() {
     }
   });
 
-  useEffect(() => {
-    setBrief(getPreset(activePresetId).brief);
-    setActiveSection("notion");
-    setActiveChannel("gumroad");
-  }, [activePresetId]);
-
-  const pack = useMemo(() => buildLaunchKit(brief, activePresetId), [activePresetId, brief]);
-  const notionExport = useMemo(() => buildNotionExport(pack), [pack]);
+  const pack = useMemo(
+    () => generatedPack || buildLaunchKit(brief, activePresetId),
+    [activePresetId, brief, generatedPack],
+  );
+  const editScopeId = pack.presetId || pack.id;
+  const notionExport = useMemo(
+    () => generatedNotionExport || buildNotionExport(pack),
+    [generatedNotionExport, pack],
+  );
   const notionPayload = useMemo(
     () => createNotionPayload(notionExport, { parentPageId: connection.parentPageId }),
     [connection.parentPageId, notionExport],
@@ -149,39 +323,64 @@ function App() {
     [connection.parentPageId, notionExport],
   );
   const launchCalendar = useMemo(() => buildLaunchCalendar(pack), [pack]);
+  const marketingKit = useMemo(() => buildMarketingKit(pack), [pack]);
   const selectedSection = pack.sections.find((section) => section.id === activeSection) || pack.sections[0];
-  const selectedItems = editedItems[activePresetId]?.[selectedSection.id] || selectedSection.items;
+  const selectedItems = editedItems[editScopeId]?.[selectedSection.id] || selectedSection.items;
   const selectedChannel =
     pack.launchChannels.find((channel) => channel.id === activeChannel) || pack.launchChannels[0];
   const SelectedIcon = sectionIcons[selectedSection.id] || Boxes;
+
+  function selectPreset(presetId) {
+    const preset = getPreset(presetId);
+    setGeneratedPack(null);
+    setGeneratedNotionExport(null);
+    setActivePresetId(presetId);
+    setBrief(preset.brief);
+    setActiveSection("notion");
+    setActiveChannel("gumroad");
+  }
 
   function updateBrief(field, value) {
     setBrief((current) => ({ ...current, [field]: value }));
   }
 
-  function togglePlatform(platform) {
-    setBrief((current) => {
+  function updateCustomBrief(field, value) {
+    setCustomBrief((current) => ({ ...current, [field]: value }));
+  }
+
+  function togglePlatform(platform, target = "brief") {
+    const setter = target === "custom" ? setCustomBrief : setBrief;
+    setter((current) => {
       const hasPlatform = current.platforms.includes(platform);
       const nextPlatforms = hasPlatform
         ? current.platforms.filter((item) => item !== platform)
         : [...current.platforms, platform];
       return { ...current, platforms: nextPlatforms.length ? nextPlatforms : [platform] };
     });
-    const firstAvailable = platformIds[platform] || "notion";
-    setActiveSection(firstAvailable);
+    setActiveSection(platformIds[platform] || "notion");
+  }
+
+  function generateCustomPack() {
+    const nextPack = buildCustomPack(customBrief);
+    setGeneratedPack(nextPack);
+    setGeneratedNotionExport(buildCustomNotionExport(nextPack));
+    setActivePresetId("custom");
+    setActiveSection("notion");
+    setActiveChannel("gumroad");
+    flash("Custom local pack generated.");
   }
 
   function updateGeneratedItem(sectionId, index, value) {
     setEditedItems((current) => {
-      const presetEdits = current[activePresetId] || {};
+      const scopeEdits = current[editScopeId] || {};
       const baseItems =
-        presetEdits[sectionId] || pack.sections.find((section) => section.id === sectionId)?.items || [];
+        scopeEdits[sectionId] || pack.sections.find((section) => section.id === sectionId)?.items || [];
       const nextItems = [...baseItems];
       nextItems[index] = value;
       return {
         ...current,
-        [activePresetId]: {
-          ...presetEdits,
+        [editScopeId]: {
+          ...scopeEdits,
           [sectionId]: nextItems,
         },
       };
@@ -206,7 +405,7 @@ function App() {
   function savePack() {
     const nextPack = {
       ...pack,
-      editedItems: editedItems[activePresetId] || {},
+      editedItems: editedItems[editScopeId] || {},
       savedAt: new Date().toISOString(),
     };
     const nextSaved = [nextPack, ...savedPacks].slice(0, 8);
@@ -218,7 +417,7 @@ function App() {
   function exportMarkdown() {
     downloadFile(
       `packsmith-${slugify(pack.name)}.md`,
-      packToMarkdown(pack, editedItems[activePresetId] || {}),
+      packToMarkdown(pack, editedItems[editScopeId] || {}),
       "text/markdown",
     );
     flash("Markdown exported.");
@@ -251,12 +450,30 @@ function App() {
     flash("Launch calendar exported.");
   }
 
+  function exportMarketingMarkdown() {
+    downloadFile(
+      `packsmith-${slugify(pack.name)}-marketing-kit.md`,
+      marketingKitToMarkdown(pack, marketingKit),
+      "text/markdown",
+    );
+    flash("Marketing kit exported.");
+  }
+
+  function exportMarketingJson() {
+    downloadFile(
+      `packsmith-${slugify(pack.name)}-social-copy.json`,
+      JSON.stringify({ pack: pack.name, marketingKit }, null, 2),
+      "application/json",
+    );
+    flash("Social launch copy exported.");
+  }
+
   return (
     <main className="appFrame">
       <section className="cinematicHero">
         <div className="heroBackdrop" />
         <nav className="topNav">
-          <div className="brandLockup">
+          <a className="brandLockup" href="/">
             <div className="brandMark">
               <Flame size={24} />
             </div>
@@ -264,11 +481,11 @@ function App() {
               <strong>Packsmith</strong>
               <span>Template pack forge</span>
             </div>
-          </div>
+          </a>
           <div className="navPills">
-            <span>Investor-demo MVP</span>
+            <span>Retro forge</span>
             <span>{pack.audience}</span>
-            <span>Premium forge</span>
+            <span>{generatedPack ? "Local generated" : "Preset engine"}</span>
           </div>
         </nav>
 
@@ -279,22 +496,17 @@ function App() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
           >
-            <p className="eyebrow gold">Founder sprint</p>
+            <p className="eyebrow gold">6 PM product sprint</p>
             <h1>{pack.heroLine}</h1>
             <p>
-              Packsmith now behaves like a command center for creating, packaging, and selling the
-              {` ${pack.name} across Notion, Canva, Figma, and marketplace channels.`}
+              Packsmith now acts like a public product demo and internal forge: presets, custom local
+              generation, Notion simulation, launch board, and marketing prompts.
             </p>
             <div className="heroActions">
               <a href="#forge-workspace">Open forge workspace</a>
               <button
                 type="button"
-                onClick={() =>
-                  copyText(
-                    `${pack.listing.title}\n\n${pack.listing.description}`,
-                    "Gumroad listing copied.",
-                  )
-                }
+                onClick={() => copyText(`${pack.listing.title}\n\n${pack.listing.description}`, "Listing copied.")}
               >
                 Copy {pack.comparison.bestMarketplace} listing
               </button>
@@ -305,11 +517,13 @@ function App() {
                   key={preset.id}
                   className={activePresetId === preset.id ? "presetHeroCard active" : "presetHeroCard"}
                   type="button"
-                  onClick={() => setActivePresetId(preset.id)}
+                  onClick={() => selectPreset(preset.id)}
                 >
                   <span>{preset.shortName}</span>
                   <strong>{preset.name}</strong>
-                  <small>{preset.comparison.expectedPrice} / {preset.comparison.bestMarketplace}</small>
+                  <small>
+                    {preset.comparison.expectedPrice} / {preset.comparison.bestMarketplace}
+                  </small>
                 </button>
               ))}
             </div>
@@ -355,7 +569,7 @@ function App() {
                   key={preset.id}
                   className={activePresetId === preset.id ? "selected" : ""}
                   type="button"
-                  onClick={() => setActivePresetId(preset.id)}
+                  onClick={() => selectPreset(preset.id)}
                 >
                   <strong>{preset.shortName}</strong>
                   <span>{preset.comparison.fastestChannel}</span>
@@ -427,6 +641,57 @@ function App() {
             </label>
           </section>
 
+          <section className="panel generatorPanel">
+            <div className="panelHeader">
+              <Wand2 size={18} />
+              <div>
+                <p className="eyebrow">Local generator</p>
+                <h2>Generate Custom Pack</h2>
+              </div>
+            </div>
+            <p className="muted">
+              API-free mock generation. Provider-ready for NVIDIA/OpenAI later, but safe to demo now.
+            </p>
+            <label>
+              Custom niche
+              <input value={customBrief.niche} onChange={(event) => updateCustomBrief("niche", event.target.value)} />
+            </label>
+            <label>
+              Custom buyer
+              <textarea value={customBrief.buyer} onChange={(event) => updateCustomBrief("buyer", event.target.value)} />
+            </label>
+            <label>
+              Custom pain point
+              <textarea
+                value={customBrief.painPoint}
+                onChange={(event) => updateCustomBrief("painPoint", event.target.value)}
+              />
+            </label>
+            <label>
+              Custom included assets
+              <textarea value={customBrief.assets} onChange={(event) => updateCustomBrief("assets", event.target.value)} />
+            </label>
+            <div className="fieldGroup">
+              <span>Custom platforms</span>
+              <div className="toggleGrid">
+                {platformOptions.map((platform) => (
+                  <button
+                    key={platform}
+                    className={customBrief.platforms.includes(platform) ? "selected" : ""}
+                    type="button"
+                    onClick={() => togglePlatform(platform, "custom")}
+                  >
+                    {platform}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button className="primary wide" type="button" onClick={generateCustomPack}>
+              <Wand2 size={17} />
+              Generate local pack
+            </button>
+          </section>
+
           <section className="panel savePanel">
             <div className="panelHeader">
               <Save size={18} />
@@ -453,16 +718,16 @@ function App() {
         <section className="centerStage">
           <header className="stageHeader">
             <div>
-            <p className="eyebrow">Pack blueprint</p>
-            <h2>{pack.name}</h2>
-            <p>{pack.promise}</p>
-            {pack.safetyNote && (
-              <div className="safetyNote">
-                <ShieldCheck size={16} />
-                <span>{pack.safetyNote}</span>
-              </div>
-            )}
-          </div>
+              <p className="eyebrow">Pack blueprint</p>
+              <h2>{pack.name}</h2>
+              <p>{pack.promise}</p>
+              {pack.safetyNote && (
+                <div className="safetyNote">
+                  <ShieldCheck size={16} />
+                  <span>{pack.safetyNote}</span>
+                </div>
+              )}
+            </div>
             <div className="actions">
               <button type="button" onClick={savePack}>
                 <Save size={17} />
@@ -516,7 +781,7 @@ function App() {
                   key={preset.id}
                   className={activePresetId === preset.id ? "comparisonCard active" : "comparisonCard"}
                   type="button"
-                  onClick={() => setActivePresetId(preset.id)}
+                  onClick={() => selectPreset(preset.id)}
                 >
                   <strong>{preset.name}</strong>
                   <div>
@@ -560,7 +825,7 @@ function App() {
           <AnimatePresence mode="wait">
             <motion.section
               className="panel builderSurface"
-              key={selectedSection.id}
+              key={`${editScopeId}-${selectedSection.id}`}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -656,6 +921,55 @@ function App() {
               </div>
               <p className="riskNote">{selectedChannel.riskNotes}</p>
             </article>
+          </section>
+
+          <section className="panel marketingPanel">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">Marketing command center</p>
+                <h2>Video and launch prompts</h2>
+              </div>
+              <div className="actions">
+                <button type="button" onClick={exportMarketingMarkdown}>
+                  <Play size={17} />
+                  Video script
+                </button>
+                <button type="button" onClick={exportMarketingJson}>
+                  <FileJson size={17} />
+                  Social JSON
+                </button>
+              </div>
+            </div>
+            <div className="marketingGrid">
+              <article>
+                <h3>60-second script</h3>
+                {marketingKit.videoScript.map((block) => (
+                  <p key={block.time}>
+                    <strong>{block.time}</strong> {block.voiceover}
+                  </p>
+                ))}
+              </article>
+              <article>
+                <h3>Runway prompts</h3>
+                <ul>
+                  {marketingKit.runwayPrompts.map((prompt) => (
+                    <li key={prompt}>{prompt}</li>
+                  ))}
+                </ul>
+              </article>
+              <article>
+                <h3>HeyGen/Synthesia script</h3>
+                <p>{marketingKit.avatarScript}</p>
+              </article>
+              <article>
+                <h3>Canva deck outline</h3>
+                <ul>
+                  {marketingKit.canvaOutline.map((slide) => (
+                    <li key={slide}>{slide}</li>
+                  ))}
+                </ul>
+              </article>
+            </div>
           </section>
         </section>
 
@@ -772,6 +1086,10 @@ function App() {
       )}
     </main>
   );
+}
+
+function App() {
+  return window.location.pathname === "/app" ? <ForgeApp /> : <LandingPage />;
 }
 
 export default App;
