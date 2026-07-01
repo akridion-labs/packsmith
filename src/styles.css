@@ -593,6 +593,11 @@ textarea:focus {
   gap: 14px;
 }
 
+.priorityPanel {
+  display: grid;
+  gap: 14px;
+}
+
 .boardHeader > span {
   background: rgba(239, 189, 99, 0.12);
   border: 1px solid var(--line);
@@ -627,6 +632,114 @@ textarea:focus {
 .comparisonCard b {
   font-size: 13px;
   font-weight: 850;
+}
+
+.priorityHero {
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(239, 189, 99, 0.16), rgba(66, 209, 160, 0.08)),
+    rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 14px;
+}
+
+.priorityHero div {
+  min-width: 112px;
+}
+
+.priorityHero span,
+.priorityHero small,
+.priorityGrid span,
+.experimentGrid span,
+.providerCard small,
+.providerCard > span,
+.milestoneCard span {
+  color: var(--gold);
+  display: block;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.priorityHero strong {
+  color: var(--green);
+  display: block;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.priorityHero p,
+.priorityGrid p,
+.priorityGrid em,
+.experimentGrid p,
+.providerCard p,
+.providerCard > span,
+.milestoneCard p {
+  color: var(--muted);
+}
+
+.priorityHero small {
+  background: rgba(66, 209, 160, 0.1);
+  border: 1px solid rgba(66, 209, 160, 0.25);
+  border-radius: 999px;
+  color: #d7fff1;
+  padding: 7px 10px;
+}
+
+.priorityGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.priorityGrid article {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.priorityGrid h3 {
+  font-size: 18px;
+}
+
+.priorityGrid em {
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  font-style: normal;
+  padding-top: 8px;
+}
+
+.experimentGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.experimentGrid article {
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 12px;
+}
+
+.experimentGrid svg {
+  color: var(--green);
+}
+
+.experimentGrid strong {
+  display: block;
+  margin-bottom: 2px;
 }
 
 .sectionTabs {
@@ -850,6 +963,55 @@ ol {
 .connectorPanel {
   display: grid;
   gap: 10px;
+}
+
+.aiPanel,
+.milestonePanel {
+  box-shadow: none;
+  display: grid;
+  gap: 10px;
+}
+
+.providerCard,
+.milestoneCard {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.providerCard > div:first-child {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.providerCard > div:first-child svg {
+  color: var(--green);
+}
+
+.providerCard small {
+  margin-left: auto;
+}
+
+.providerBar {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  height: 7px;
+  overflow: hidden;
+}
+
+.providerBar i {
+  background: linear-gradient(90deg, var(--gold), var(--green), var(--blue));
+  display: block;
+  height: 100%;
+}
+
+.milestoneCard strong {
+  display: block;
+  font-size: 17px;
 }
 
 .connectorCard {
@@ -1162,6 +1324,9 @@ ol {
   .detailColumns,
   .heroPresetGrid,
   .comparisonGrid,
+  .priorityGrid,
+  .experimentGrid,
+  .priorityHero,
   .landingPresetGrid,
   .beforeAfterGrid,
   .marketingGrid {

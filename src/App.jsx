@@ -2,8 +2,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   Boxes,
+  Brain,
   CalendarDays,
+  CheckCircle2,
   Clipboard,
+  Cpu,
   Database,
   Download,
   Edit3,
@@ -21,12 +24,15 @@ import {
   Save,
   ShieldCheck,
   Sparkles,
+  Target,
+  TrendingUp,
   Wand2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { createNotionPayload, simulateNotionPublish } from "./integrations/notionConnector";
 import { buildCustomNotionExport, buildCustomPack } from "./localPackGenerator";
 import { buildMarketingKit, marketingKitToMarkdown } from "./marketingData";
+import { buildFounderPriorityPlan, founderMilestones, founderPlanToMarkdown, providerOptions } from "./productRoadmap";
 import {
   backendContract,
   buildLaunchCalendar,
@@ -324,6 +330,7 @@ function ForgeApp() {
   );
   const launchCalendar = useMemo(() => buildLaunchCalendar(pack), [pack]);
   const marketingKit = useMemo(() => buildMarketingKit(pack), [pack]);
+  const founderPlan = useMemo(() => buildFounderPriorityPlan(pack), [pack]);
   const selectedSection = pack.sections.find((section) => section.id === activeSection) || pack.sections[0];
   const selectedItems = editedItems[editScopeId]?.[selectedSection.id] || selectedSection.items;
   const selectedChannel =
@@ -466,6 +473,15 @@ function ForgeApp() {
       "application/json",
     );
     flash("Social launch copy exported.");
+  }
+
+  function exportFounderPlan() {
+    downloadFile(
+      `packsmith-${slugify(pack.name)}-founder-plan.md`,
+      founderPlanToMarkdown(pack, founderPlan),
+      "text/markdown",
+    );
+    flash("Founder plan exported.");
   }
 
   return (
@@ -805,6 +821,49 @@ function ForgeApp() {
             </div>
           </section>
 
+          <section className="panel priorityPanel">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">Founder priority command</p>
+                <h2>Next scope planner</h2>
+              </div>
+              <button type="button" onClick={exportFounderPlan}>
+                <Target size={17} />
+                Export plan
+              </button>
+            </div>
+            <div className="priorityHero">
+              <div>
+                <span>Build score</span>
+                <strong>{founderPlan.score}/100</strong>
+              </div>
+              <p>{founderPlan.headline}</p>
+              <small>{founderPlan.launchReadiness}</small>
+            </div>
+            <div className="priorityGrid">
+              {founderPlan.focus.map((item) => (
+                <article key={item.label}>
+                  <span>{item.priority}</span>
+                  <h3>{item.label}</h3>
+                  <p>{item.action}</p>
+                  <em>{item.reason}</em>
+                </article>
+              ))}
+            </div>
+            <div className="experimentGrid">
+              {founderPlan.experiments.map((experiment) => (
+                <article key={experiment.name}>
+                  <TrendingUp size={18} />
+                  <div>
+                    <strong>{experiment.name}</strong>
+                    <span>{experiment.price}</span>
+                    <p>{experiment.offer}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
           <nav className="sectionTabs" aria-label="Generated platform outputs">
             {pack.sections.map((section) => {
               const Icon = sectionIcons[section.id];
@@ -974,6 +1033,51 @@ function ForgeApp() {
         </section>
 
         <aside className="rightRail">
+          <section className="panel aiPanel">
+            <div className="panelHeader">
+              <Brain size={18} />
+              <div>
+                <p className="eyebrow">Real AI path</p>
+                <h2>Provider readiness</h2>
+              </div>
+            </div>
+
+            {providerOptions.map((provider) => (
+              <article className="providerCard" key={provider.id}>
+                <div>
+                  <Cpu size={17} />
+                  <strong>{provider.name}</strong>
+                  <small>{provider.status}</small>
+                </div>
+                <p>{provider.useCase}</p>
+                <div className="providerBar" aria-label={`${provider.name} readiness ${provider.readiness}`}>
+                  <i style={{ width: `${provider.readiness}%` }} />
+                </div>
+                <span>
+                  {provider.cost} / {provider.nextStep}
+                </span>
+              </article>
+            ))}
+          </section>
+
+          <section className="panel milestonePanel">
+            <div className="panelHeader">
+              <CheckCircle2 size={18} />
+              <div>
+                <p className="eyebrow">Founder milestones</p>
+                <h2>Next product moves</h2>
+              </div>
+            </div>
+
+            {founderMilestones.map((milestone) => (
+              <article className="milestoneCard" key={milestone.id}>
+                <span>{milestone.horizon}</span>
+                <strong>{milestone.label}</strong>
+                <p>{milestone.outcome}</p>
+              </article>
+            ))}
+          </section>
+
           <section className="panel notionPanel">
             <div className="panelHeader">
               <Layers3 size={18} />
