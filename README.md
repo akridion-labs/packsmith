@@ -27,7 +27,25 @@ npm run dev
 Then open:
 
 - `http://127.0.0.1:5173/` for the public landing page
+- `http://127.0.0.1:5173/launch` for the launch/traction page
 - `http://127.0.0.1:5173/app` for the Packsmith forge workspace
+
+## Supabase Setup
+
+Packsmith works without Supabase credentials, but cloud features stay in local fallback mode.
+
+1. Copy `.env.example` to `.env.local`.
+2. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+3. Run `supabase/schema.sql` in the Supabase SQL editor.
+4. Enable Google as an auth provider in Supabase.
+5. Deploy `supabase/functions/notion-publish` when ready for Notion publishing.
+
+Cloud features:
+
+- Google login
+- Waitlist lead capture
+- Saved template packs
+- Notion publish Edge Function contract
 
 ## Current Scope
 
@@ -35,6 +53,9 @@ Then open:
 - Polished Packsmith creator workspace
 - Multi-niche preset engine
 - Public landing page
+- Dedicated launch/traction page
+- Supabase-ready Google login
+- Supabase schema for waitlist, profiles, saved packs, and launch events
 - Local/mock custom pack generator
 - Editable generated outputs isolated per niche
 - Niche comparison view
@@ -59,14 +80,17 @@ Notion is the first full MVP connector target. The current app creates a payload
 
 The connector stub lives at `src/integrations/notionConnector.js`.
 
+The Supabase Edge Function contract lives at `supabase/functions/notion-publish/index.ts`.
+It validates login and payload shape while keeping `NOTION_TOKEN` server-side only.
+
 Figma and Canva are intentionally spec-first for now. They generate the design and pack plan before direct file creation is added.
 
 Healthcare templates are workflow and marketing operations templates only. They are not medical, legal, diagnostic, or treatment advice.
 
 ## Next Scope
 
-- Add a backend route for Notion API publishing
+- Wire actual Notion page/database creation into the Edge Function
 - Connect NVIDIA/OpenAI generation for new niches
 - Add image/screenshot inspiration input
-- Replace local waitlist storage with a real backend
+- Replace local fallback saves with production Supabase flows after credentials are added
 - Add Figma plugin/API export workflow

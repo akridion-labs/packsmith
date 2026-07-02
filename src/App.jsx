@@ -17,6 +17,8 @@ import {
   Gauge,
   Layers3,
   LockKeyhole,
+  LogIn,
+  LogOut,
   Mail,
   PenTool,
   Play,
@@ -28,8 +30,20 @@ import {
   TrendingUp,
   Wand2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createNotionPayload, simulateNotionPublish } from "./integrations/notionConnector";
+import {
+  getCurrentSession,
+  isSupabaseConfigured,
+  listTemplatePacks,
+  onAuthStateChange,
+  publishNotionWorkspace,
+  saveTemplatePack,
+  saveWaitlistLead,
+  signInWithGoogle,
+  signOut,
+  upsertProfile,
+} from "./integrations/supabaseClient";
 import { buildCustomNotionExport, buildCustomPack } from "./localPackGenerator";
 import { buildMarketingKit, marketingKitToMarkdown } from "./marketingData";
 import { buildFounderPriorityPlan, founderMilestones, founderPlanToMarkdown, providerOptions } from "./productRoadmap";
@@ -122,6 +136,23 @@ const outputShowcase = [
   },
 ];
 
+const launchAssets = {
+  linkedin:
+    "I’m building Packsmith: a template-pack forge for solo founders. It turns one rough niche idea into a Notion OS, Canva launch pack, Figma starter, marketplace listing, launch calendar, and video script. Today’s wedge: AI Agency, SaaS Launch, and Healthcare Practice Growth kits.",
+  xThread: [
+    "I’m building Packsmith: rough idea -> sellable template pack.",
+    "Pick a niche: AI Agency, SaaS Launch, or Healthcare Practice Growth.",
+    "Generate Notion, Canva, Figma, Gumroad copy, launch calendar, and video prompts in one forge flow.",
+    "Try first, then login with Google to save packs and prepare Notion publishing.",
+  ],
+  gumroad:
+    "Packsmith helps solo founders turn a niche idea into a ready-to-sell template pack: Notion workspace schema, Canva launch assets, Figma UI starter, marketplace copy, and a launch board.",
+  video:
+    "Show Packsmith homepage, pick AI Agency Launch Kit, generate a custom pack, reveal quality score, open Notion simulation, copy Gumroad listing, and end on the launch page CTA.",
+  prompt:
+    "Retro-futuristic SaaS product demo, dark founder command center, amber and green terminal accents, UI cards assembling into Notion Canva Figma launch pack, premium cinematic lighting, no readable text.",
+};
+
 function downloadFile(name, content, type) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
@@ -132,6 +163,20 @@ function downloadFile(name, content, type) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function saveWaitlistLocal(email, source) {
+  const existing = JSON.parse(localStorage.getItem("packsmith.waitlist") || "[]");
+  localStorage.setItem(
+    "packsmith.waitlist",
+    JSON.stringify([{ email, source, createdAt: new Date().toISOString() }, ...existing].slice(0, 100)),
+  );
+}
+
+function fallbackCloudMessage(action) {
+  return isSupabaseConfigured
+    ? `Login with Google to ${action}.`
+    : `Supabase is not configured yet. Add env vars to ${action}; local mode still works.`;
 }
 
 function slugify(value) {
@@ -192,17 +237,23 @@ function LandingPage() {
   const [email, setEmail] = useState("");
   const [notice, setNotice] = useState("");
 
-  function saveWaitlist(event) {
+  async function saveWaitlist(event) {
     event.preventDefault();
     const value = email.trim();
     if (!value) return;
-    const existing = JSON.parse(localStorage.getItem("packsmith.waitlist") || "[]");
-    localStorage.setItem(
-      "packsmith.waitlist",
-      JSON.stringify([{ email: value, createdAt: new Date().toISOString() }, ...existing].slice(0, 100)),
-    );
+    try {
+      if (isSupabaseConfigured) {
+        await saveWaitlistLead({ email: value, source: "homepage" });
+        setNotice("Saved to the early builder list.");
+      } else {
+        saveWaitlistLocal(value, "homepage-local");
+        setNotice("Saved locally. Add Supabase env vars to capture real leads.");
+      }
+    } catch {
+      saveWaitlistLocal(value, "homepage-fallback");
+      setNotice("Cloud save failed, so I saved this lead locally.");
+    }
     setEmail("");
-    setNotice("Saved locally. Connect a real waitlist backend when ready.");
   }
 
   return (
@@ -224,6 +275,7 @@ function LandingPage() {
             <span>Canva</span>
             <span>Figma</span>
             <span>Launch board</span>
+            <a href="/launch">Launch kit</a>
             <a href="/app">Try now</a>
           </div>
         </nav>
@@ -247,6 +299,7 @@ function LandingPage() {
                 <ArrowRight size={17} />
               </a>
               <a className="ghostLink" href="#presets">View niches</a>
+              <a className="ghostLink" href="/launch">Marketing kit</a>
             </div>
             <div className="heroStats" aria-label="Packsmith product stats">
               {landingStats.map(([value, label]) => (
@@ -409,7 +462,230 @@ function LandingPage() {
           />
           <button className="primary" type="submit">
             <Mail size={17} />
-            Save locally
+            Join list
+          </button>
+          {notice && <p>{notice}</p>}
+        </form>
+      </section>
+    </main>
+  );
+}
+
+function LaunchPage() {
+  const [email, setEmail] = useState("");
+  const [notice, setNotice] = useState("");
+  const featuredPack = useMemo(
+    () => buildLaunchKit(getPreset(defaultPresetId).brief, defaultPresetId),
+    [],
+  );
+
+  async function copyLaunchCopy(label, value) {
+    try {
+      await navigator.clipboard.writeText(Array.isArray(value) ? value.join("\n") : value);
+      setNotice(`${label} copied.`);
+    } catch {
+      setNotice("Copy was blocked by the browser.");
+    }
+  }
+
+  async function saveLaunchLead(event) {
+    event.preventDefault();
+    const value = email.trim();
+    if (!value) return;
+    try {
+      if (isSupabaseConfigured) {
+        await saveWaitlistLead({ email: value, source: "launch-page" });
+        setNotice("You are on the early builder list.");
+      } else {
+        saveWaitlistLocal(value, "launch-page-local");
+        setNotice("Saved locally. Add Supabase env vars to capture real leads.");
+      }
+      setEmail("");
+    } catch {
+      saveWaitlistLocal(value, "launch-page-fallback");
+      setNotice("Cloud save failed, so this lead was saved locally.");
+      setEmail("");
+    }
+  }
+
+  function exportLaunchKit() {
+    downloadFile(
+      "packsmith-launch-kit.json",
+      JSON.stringify({ featuredPack: featuredPack.name, launchAssets }, null, 2),
+      "application/json",
+    );
+    setNotice("Launch kit exported.");
+  }
+
+  return (
+    <main className="landingFrame launchFrame">
+      <section className="landingHero launchHero">
+        <div className="heroBackdrop" />
+        <nav className="topNav">
+          <a className="brandLockup" href="/">
+            <div className="brandMark">
+              <Flame size={24} />
+            </div>
+            <div>
+              <strong>Packsmith</strong>
+              <span>Launch kit</span>
+            </div>
+          </a>
+          <div className="navPills">
+            <a href="/">Home</a>
+            <a href="/app">Try the forge</a>
+          </div>
+        </nav>
+
+        <div className="landingGrid">
+          <motion.div className="heroCopy" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+            <p className="eyebrow gold">Today’s traction page</p>
+            <h1>Launch a template pack before the backend is perfect.</h1>
+            <p>
+              Packsmith’s public launch kit gives founders the message, demo path, channel copy,
+              and early-builder capture needed to start conversations today.
+            </p>
+            <div className="heroActions">
+              <a href="/app">
+                Try the forge
+                <ArrowRight size={17} />
+              </a>
+              <a className="ghostLink" href="#launch-copy">Copy launch assets</a>
+            </div>
+          </motion.div>
+
+          <motion.div className="launchCommandCard" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
+            <div className="consoleHeader">
+              <span />
+              <span />
+              <span />
+              <strong>packsmith://traction</strong>
+            </div>
+            <article>
+              <span>Featured wedge</span>
+              <strong>{featuredPack.name}</strong>
+              <p>{featuredPack.listing.description}</p>
+            </article>
+            <div className="launchMetricGrid">
+              <div>
+                <strong>{featuredPack.quality.overall}</strong>
+                <span>Quality score</span>
+              </div>
+              <div>
+                <strong>{featuredPack.launchChannels.length}</strong>
+                <span>Launch channels</span>
+              </div>
+              <div>
+                <strong>{featuredPack.sections.length}</strong>
+                <span>Pack surfaces</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="landingSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">What Packsmith does</p>
+          <h2>Turns a product idea into launchable template assets.</h2>
+        </div>
+        <div className="proofGrid">
+          {landingProof.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article key={item.title}>
+                <Icon size={22} />
+                <span>{item.label}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="landingSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Pick a niche</p>
+          <h2>Start with the buyer most likely to pay or give feedback.</h2>
+        </div>
+        <div className="landingPresetGrid">
+          {Object.values(nichePresets).map((preset) => (
+            <a className="landingPresetCard" href="/app" key={preset.id}>
+              <span>{preset.shortName}</span>
+              <strong>{preset.name}</strong>
+              <p>{preset.heroLine}</p>
+              <small>{preset.comparison.fastestChannel}</small>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection outputSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Launch assets included</p>
+          <h2>The first marketing push is generated with the product.</h2>
+        </div>
+        <div className="outputShowcaseGrid">
+          {outputShowcase.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article key={item.name}>
+                <Icon size={24} />
+                <h3>{item.name}</h3>
+                <p>{item.detail}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="landingSection launchCopySection" id="launch-copy">
+        <div className="sectionIntro">
+          <p className="eyebrow">Today’s launch copy</p>
+          <h2>Copy the posts, record the demo, and start outreach.</h2>
+        </div>
+        <div className="launchCopyGrid">
+          {Object.entries(launchAssets).map(([key, value]) => (
+            <article key={key}>
+              <span>{key.replace(/([A-Z])/g, " $1")}</span>
+              <p>{Array.isArray(value) ? value.join(" ") : value}</p>
+              <button type="button" onClick={() => copyLaunchCopy(key, value)}>
+                <Clipboard size={16} />
+                Copy
+              </button>
+            </article>
+          ))}
+        </div>
+        <button className="primary exportLaunchButton" type="button" onClick={exportLaunchKit}>
+          <FileJson size={17} />
+          Export launch kit JSON
+        </button>
+      </section>
+
+      <section className="landingSection waitlistPanel">
+        <div>
+          <p className="eyebrow">Join early builder list</p>
+          <h2>Capture the lead, then send them into the forge.</h2>
+          <p className="muted">
+            Supabase stores this when configured. Without credentials, Packsmith keeps the lead locally
+            so the demo still works.
+          </p>
+        </div>
+        <form onSubmit={saveLaunchLead}>
+          <a className="waitlistCta" href="/app">
+            Open Packsmith
+            <ArrowRight size={17} />
+          </a>
+          <input
+            type="email"
+            placeholder="founder@example.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+          <button className="primary" type="submit">
+            <Mail size={17} />
+            Join list
           </button>
           {notice && <p>{notice}</p>}
         </form>
@@ -427,9 +703,12 @@ function ForgeApp() {
   const [generatedNotionExport, setGeneratedNotionExport] = useState(null);
   const [activeSection, setActiveSection] = useState("notion");
   const [activeChannel, setActiveChannel] = useState("gumroad");
-  const [connection, setConnection] = useState({ parentPageId: "", tokenHint: "" });
+  const [connection, setConnection] = useState({ parentPageId: "" });
   const [editedItems, setEditedItems] = useState({});
   const [notice, setNotice] = useState("");
+  const [session, setSession] = useState(null);
+  const [cloudPacks, setCloudPacks] = useState([]);
+  const [publishResult, setPublishResult] = useState(null);
   const [savedPacks, setSavedPacks] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("packsmith.saved.react") || "[]");
@@ -437,6 +716,9 @@ function ForgeApp() {
       return [];
     }
   });
+  const user = session?.user || null;
+  const cloudReady = isSupabaseConfigured;
+  const cloudEnabled = cloudReady && user;
 
   const pack = useMemo(
     () => generatedPack || buildLaunchKit(brief, activePresetId),
@@ -463,6 +745,41 @@ function ForgeApp() {
   const selectedChannel =
     pack.launchChannels.find((channel) => channel.id === activeChannel) || pack.launchChannels[0];
   const SelectedIcon = sectionIcons[selectedSection.id] || Boxes;
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return undefined;
+
+    async function hydrateSession() {
+      try {
+        const nextSession = await getCurrentSession();
+        setSession(nextSession);
+        if (nextSession?.user) {
+          await upsertProfile(nextSession.user);
+          const rows = await listTemplatePacks(nextSession.user.id);
+          setCloudPacks(rows);
+        }
+      } catch {
+        flash("Cloud session could not be loaded.");
+      }
+    }
+
+    hydrateSession();
+    return onAuthStateChange(async (nextSession) => {
+      setSession(nextSession);
+      try {
+        if (nextSession?.user) {
+          await upsertProfile(nextSession.user);
+          const rows = await listTemplatePacks(nextSession.user.id);
+          setCloudPacks(rows);
+        } else {
+          setCloudPacks([]);
+        }
+      } catch {
+        setCloudPacks([]);
+        flash("Login worked, but cloud tables are not ready yet.");
+      }
+    });
+  }, []);
 
   function selectPreset(presetId) {
     const preset = getPreset(presetId);
@@ -548,6 +865,74 @@ function ForgeApp() {
     flash("Pack saved locally.");
   }
 
+  async function savePackToCloud() {
+    if (!cloudReady) {
+      flash("Add Supabase env vars to enable Google login and cloud save.");
+      return;
+    }
+    if (!user) {
+      flash("Login with Google to cloud save this pack.");
+      return;
+    }
+    try {
+      const saved = await saveTemplatePack({
+        userId: user.id,
+        pack: { ...pack, editedItems: editedItems[editScopeId] || {} },
+        brief,
+        notionPayload,
+      });
+      const rows = await listTemplatePacks(user.id);
+      setCloudPacks(rows);
+      flash(`Cloud saved: ${saved.name}`);
+    } catch {
+      flash("Cloud save failed. Check Supabase schema and login settings.");
+    }
+  }
+
+  async function handleGoogleLogin() {
+    try {
+      await signInWithGoogle();
+    } catch {
+      flash("Google login needs Supabase env vars and OAuth setup.");
+    }
+  }
+
+  async function handleSignOut() {
+    try {
+      await signOut();
+      setSession(null);
+      setCloudPacks([]);
+      flash("Signed out.");
+    } catch {
+      flash("Sign out failed.");
+    }
+  }
+
+  async function publishToNotion() {
+    if (!cloudReady) {
+      flash("Add Supabase env vars before publishing to Notion.");
+      return;
+    }
+    if (!user) {
+      flash("Login with Google to publish to Notion.");
+      return;
+    }
+    if (!connection.parentPageId.trim()) {
+      flash("Add a Notion parent page ID before publishing.");
+      return;
+    }
+    try {
+      const result = await publishNotionWorkspace({
+        parentPageId: connection.parentPageId.trim(),
+        notionPayload,
+      });
+      setPublishResult(result);
+      flash(result.status === "contract_ready" ? "Notion contract is ready; server token is next." : "Notion publish request sent.");
+    } catch {
+      flash("Notion publish failed. Check Edge Function deployment and secrets.");
+    }
+  }
+
   function exportMarkdown() {
     downloadFile(
       `packsmith-${slugify(pack.name)}.md`,
@@ -629,6 +1014,18 @@ function ForgeApp() {
             <span>Retro forge</span>
             <span>{pack.audience}</span>
             <span>{generatedPack ? "Local generated" : "Preset engine"}</span>
+            <span>{cloudReady ? "Supabase ready" : "Local mode"}</span>
+            {user ? (
+              <button className="navAuthButton" type="button" onClick={handleSignOut}>
+                <LogOut size={14} />
+                Sign out
+              </button>
+            ) : (
+              <button className="navAuthButton" type="button" onClick={handleGoogleLogin}>
+                <LogIn size={14} />
+                Continue with Google
+              </button>
+            )}
           </div>
         </nav>
 
@@ -839,18 +1236,37 @@ function ForgeApp() {
             <div className="panelHeader">
               <Save size={18} />
               <div>
-                <p className="eyebrow">Local memory</p>
+                <p className="eyebrow">Memory</p>
                 <h2>Saved runs</h2>
               </div>
             </div>
+            <div className="cloudNotice">
+              <LockKeyhole size={16} />
+              <span>
+                {user
+                  ? `Cloud enabled for ${user.email}`
+                  : fallbackCloudMessage("save packs to your account")}
+              </span>
+            </div>
             {savedPacks.length === 0 ? (
-              <p className="muted">Save a generated run when the direction feels useful.</p>
+              <p className="muted">Local saves appear here when a direction feels useful.</p>
             ) : (
               <div className="savedList">
                 {savedPacks.map((saved) => (
                   <button key={saved.savedAt} className="savedRun" type="button">
                     <strong>{saved.name}</strong>
                     <span>{new Date(saved.savedAt).toLocaleString()}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {cloudPacks.length > 0 && (
+              <div className="savedList cloudSavedList">
+                <p className="eyebrow">Cloud saves</p>
+                {cloudPacks.map((saved) => (
+                  <button key={saved.id} className="savedRun" type="button">
+                    <strong>{saved.name}</strong>
+                    <span>{new Date(saved.created_at).toLocaleString()}</span>
                   </button>
                 ))}
               </div>
@@ -874,7 +1290,11 @@ function ForgeApp() {
             <div className="actions">
               <button type="button" onClick={savePack}>
                 <Save size={17} />
-                Save
+                Local save
+              </button>
+              <button type="button" onClick={savePackToCloud}>
+                <LockKeyhole size={17} />
+                Cloud save
               </button>
               <button type="button" onClick={exportMarkdown}>
                 <Download size={17} />
@@ -1226,12 +1646,13 @@ function ForgeApp() {
             </label>
 
             <label>
-              Token handling
+              Server secret status
               <input
-                placeholder="server-side only; never stored here"
-                value={connection.tokenHint}
-                onChange={(event) =>
-                  setConnection((current) => ({ ...current, tokenHint: event.target.value }))
+                readOnly
+                value={
+                  cloudReady
+                    ? "Set NOTION_TOKEN in Supabase Edge Function secrets"
+                    : "Configure Supabase before adding server secrets"
                 }
               />
             </label>
@@ -1270,6 +1691,21 @@ function ForgeApp() {
               Export publish payload
               <ArrowRight size={17} />
             </button>
+            <button type="button" className="wide" onClick={publishToNotion}>
+              Publish with Notion
+              <LockKeyhole size={17} />
+            </button>
+            <p className="connectorHint">
+              {user
+                ? "Publishing calls the Supabase Edge Function; Notion token stays server-side."
+                : fallbackCloudMessage("publish to Notion")}
+            </p>
+            {publishResult && (
+              <div className="publishResult">
+                <strong>{publishResult.status}</strong>
+                <span>{(publishResult.errors || []).join(" ") || "Publish request completed."}</span>
+              </div>
+            )}
           </section>
 
           <section className="panel connectorPanel">
@@ -1320,7 +1756,9 @@ function ForgeApp() {
 }
 
 function App() {
-  return window.location.pathname === "/app" ? <ForgeApp /> : <LandingPage />;
+  if (window.location.pathname === "/app") return <ForgeApp />;
+  if (window.location.pathname === "/launch") return <LaunchPage />;
+  return <LandingPage />;
 }
 
 export default App;
