@@ -72,6 +72,56 @@ const initialCustomBrief = {
   visualDirection: "Dark command center, blueprint grid, amber/green terminal accents, launch-console cards.",
 };
 
+const landingStats = [
+  ["3", "sellable niche presets"],
+  ["5", "export paths"],
+  ["60s", "demo script included"],
+];
+
+const landingProof = [
+  {
+    icon: Sparkles,
+    label: "From rough idea",
+    title: "No blank-page start",
+    text: "Begin with a niche, buyer, pain point, and asset list. Packsmith turns it into a complete product direction.",
+  },
+  {
+    icon: Layers3,
+    label: "To platform assets",
+    title: "Notion, Canva, Figma",
+    text: "Generate the workspace schema, design/content specs, marketplace listing, and launch calendar in one flow.",
+  },
+  {
+    icon: Target,
+    label: "To first sale",
+    title: "Launch board built in",
+    text: "Get Gumroad copy, LinkedIn/X posts, preview checklist, pricing ladder, and risk notes for each niche.",
+  },
+];
+
+const outputShowcase = [
+  {
+    icon: Database,
+    name: "Notion OS",
+    detail: "Pages, databases, properties, sample records, and simulated publish payload.",
+  },
+  {
+    icon: PenTool,
+    name: "Canva Pack",
+    detail: "Pitch deck outline, social content prompts, preview checklist, and launch creatives.",
+  },
+  {
+    icon: Figma,
+    name: "Figma Starter",
+    detail: "UI tokens, landing frames, dashboard components, and handoff notes.",
+  },
+  {
+    icon: Rocket,
+    name: "Market Kit",
+    detail: "Listing copy, launch posts, pricing tests, video script, and channel plan.",
+  },
+];
+
 function downloadFile(name, content, type) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
@@ -174,6 +224,7 @@ function LandingPage() {
             <span>Canva</span>
             <span>Figma</span>
             <span>Launch board</span>
+            <a href="/app">Try now</a>
           </div>
         </nav>
 
@@ -184,20 +235,31 @@ function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="eyebrow gold">Public MVP</p>
-            <h1>Turn one rough idea into a sellable template pack.</h1>
+            <p className="eyebrow gold">Template-pack forge for solo founders</p>
+            <h1>Packsmith</h1>
             <p>
-              Packsmith generates niche-specific Notion systems, Canva packs, Figma starters,
-              marketplace copy, launch calendars, and marketing video prompts from one creator brief.
+              Turn one rough idea into a sellable template pack with niche-specific Notion systems,
+              Canva launch assets, Figma starters, marketplace copy, and a founder launch board.
             </p>
             <div className="heroActions">
-              <a href="/app">Generate a pack</a>
-              <a className="ghostLink" href="#waitlist">Join waitlist</a>
+              <a href="/app">
+                Try the forge
+                <ArrowRight size={17} />
+              </a>
+              <a className="ghostLink" href="#presets">View niches</a>
+            </div>
+            <div className="heroStats" aria-label="Packsmith product stats">
+              {landingStats.map(([value, label]) => (
+                <div key={label}>
+                  <strong>{value}</strong>
+                  <span>{label}</span>
+                </div>
+              ))}
             </div>
           </motion.div>
 
           <motion.div
-            className="consolePreview"
+            className="landingProductShot"
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.12, duration: 0.5 }}
@@ -208,23 +270,64 @@ function LandingPage() {
               <span />
               <strong>packsmith://forge</strong>
             </div>
-            {pipelineStages.map((stage, index) => (
-              <article key={stage.id}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
+            <div className="productShotGrid">
+              <article className="ideaTerminal">
+                <span>Rough input</span>
+                <strong>AI agency launch kit for freelancers</strong>
+                <p>Buyer, pain, assets, platform targets, visual style, marketplace.</p>
+              </article>
+              <article className="qualityDial">
+                <Gauge size={28} />
                 <div>
-                  <strong>{stage.label}</strong>
-                  <p>{stage.description}</p>
+                  <span>Pack quality</span>
+                  <strong>88/100</strong>
                 </div>
               </article>
-            ))}
+              <article className="outputStack">
+                {["Notion OS", "Canva Pack", "Figma Kit", "Gumroad Listing"].map((item) => (
+                  <div key={item}>
+                    <CheckCircle2 size={16} />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </article>
+            </div>
+            <div className="miniPipeline">
+              {pipelineStages.map((stage, index) => (
+                <article key={stage.id}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <strong>{stage.label}</strong>
+                </article>
+              ))}
+            </div>
           </motion.div>
         </div>
       </section>
 
-      <section className="landingSection">
+      <section className="landingSection proofSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Why try it</p>
+          <h2>A template business cockpit, not another blank generator.</h2>
+        </div>
+        <div className="proofGrid">
+          {landingProof.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article key={item.title}>
+                <Icon size={22} />
+                <span>{item.label}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="landingSection" id="presets">
         <div className="sectionIntro">
           <p className="eyebrow">Niche presets</p>
-          <h2>Start focused. Expand only after the wedge works.</h2>
+          <h2>Start with a marketable wedge, then generate the pack.</h2>
         </div>
         <div className="landingPresetGrid">
           {Object.values(nichePresets).map((preset) => (
@@ -235,8 +338,28 @@ function LandingPage() {
               <small>
                 {preset.comparison.expectedPrice} / {preset.comparison.bestMarketplace}
               </small>
+              <b>Open preset</b>
             </a>
           ))}
+        </div>
+      </section>
+
+      <section className="landingSection outputSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Outputs</p>
+          <h2>Everything needed to make the first template pack feel real.</h2>
+        </div>
+        <div className="outputShowcaseGrid">
+          {outputShowcase.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article key={item.name}>
+                <Icon size={24} />
+                <h3>{item.name}</h3>
+                <p>{item.detail}</p>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -266,14 +389,18 @@ function LandingPage() {
 
       <section className="landingSection waitlistPanel" id="waitlist">
         <div>
-          <p className="eyebrow">Waitlist</p>
-          <h2>Capture interest while the backend catches up.</h2>
+          <p className="eyebrow">Start now</p>
+          <h2>Try the forge, then join the early builder list.</h2>
           <p className="muted">
-            This placeholder stores leads locally for now. Replace it with ConvertKit, Loops, Supabase,
-            or a server route when deployment is ready.
+            The public MVP is ready to explore. Drop an email locally for now, then use the app to generate
+            the AI Agency, SaaS, or Healthcare template pack.
           </p>
         </div>
         <form onSubmit={saveWaitlist}>
+          <a className="waitlistCta" href="/app">
+            Open Packsmith
+            <ArrowRight size={17} />
+          </a>
           <input
             type="email"
             placeholder="founder@example.com"
