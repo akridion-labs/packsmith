@@ -1829,6 +1829,17 @@ function ForgeApp() {
             {publishResult && (
               <div className="publishResult">
                 <strong>{publishResult.status}</strong>
+                <span>
+                  {(publishResult.createdPageIds || []).length} pages /{" "}
+                  {(publishResult.createdDatabaseIds || []).length} databases returned
+                </span>
+                {[...(publishResult.createdPageIds || []), ...(publishResult.createdDatabaseIds || [])]
+                  .slice(0, 6)
+                  .map((item) => (
+                    <code key={typeof item === "string" ? item : item.id}>
+                      {typeof item === "string" ? item : `${item.name}: ${item.id}`}
+                    </code>
+                  ))}
                 <span>{(publishResult.errors || []).join(" ") || "Publish request completed."}</span>
               </div>
             )}

@@ -27,4 +27,5 @@ Packsmith currently handles emails, Google-authenticated profiles, saved templat
 - Review the privacy notice with counsel for target launch countries.
 - Add a user-facing data deletion/export workflow.
 - Add rate limiting or CAPTCHA to public waitlist capture if spam appears.
-- Fully implement Notion API calls inside `supabase/functions/notion-publish` before advertising live publish.
+- Test Notion publish against a dedicated sandbox workspace before advertising live publish.
+- Confirm the Notion integration has access only to the workspace/page the user intends to publish into.

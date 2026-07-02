@@ -40,13 +40,15 @@ Packsmith works without Supabase credentials, but cloud features stay in local f
 3. Run `supabase/schema.sql` in the Supabase SQL editor.
 4. Enable Google as an auth provider in Supabase.
 5. Deploy `supabase/functions/notion-publish` when ready for Notion publishing.
+6. Add `NOTION_TOKEN` as a Supabase Edge Function secret.
+7. Share the target Notion parent page with the Notion integration.
 
 Cloud features:
 
 - Google login
 - Waitlist lead capture
 - Saved template packs
-- Notion publish Edge Function contract
+- Notion publish Edge Function for pages, databases, and seed records
 
 ## Privacy and Security Baseline
 
@@ -91,8 +93,8 @@ Notion is the first full MVP connector target. The current app creates a payload
 
 The connector stub lives at `src/integrations/notionConnector.js`.
 
-The Supabase Edge Function contract lives at `supabase/functions/notion-publish/index.ts`.
-It validates login and payload shape while keeping `NOTION_TOKEN` server-side only.
+The Supabase Edge Function lives at `supabase/functions/notion-publish/index.ts`.
+It validates login, keeps `NOTION_TOKEN` server-side only, creates a Packsmith root page, creates child pages, creates databases, and seeds sample records. Relation fields are safely published as text until target-database mapping is added.
 
 Figma and Canva are intentionally spec-first for now. They generate the design and pack plan before direct file creation is added.
 
@@ -100,7 +102,7 @@ Healthcare templates are workflow and marketing operations templates only. They 
 
 ## Next Scope
 
-- Wire actual Notion page/database creation into the Edge Function
+- Add relation-aware Notion database mapping
 - Connect NVIDIA/OpenAI generation for new niches
 - Add image/screenshot inspiration input
 - Replace local fallback saves with production Supabase flows after credentials are added

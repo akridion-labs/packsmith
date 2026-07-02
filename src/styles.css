@@ -1037,6 +1037,17 @@ ol {
   font-size: 12px;
 }
 
+.publishResult code {
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: #d7fff1;
+  display: block;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+  padding: 6px 7px;
+}
+
 .cloudSavedList {
   border-top: 1px solid var(--line);
   padding-top: 12px;
