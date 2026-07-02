@@ -31,6 +31,8 @@ Then open:
 - `http://127.0.0.1:5173/app` for the Packsmith forge workspace
 - `http://127.0.0.1:5173/privacy` for the MVP privacy notice
 
+Generated repo graphs are written to `graphify-out/`, which is ignored by git.
+
 ## Supabase Setup
 
 Packsmith works without Supabase credentials, but cloud features stay in local fallback mode.
@@ -49,6 +51,8 @@ Cloud features:
 - Waitlist lead capture
 - Saved template packs
 - Notion publish Edge Function for pages, databases, and seed records
+- Browser data export and local data clearing controls
+- In-app beta setup checklist for Supabase, Google login, privacy, and Notion publish readiness
 
 ## Privacy and Security Baseline
 
@@ -69,6 +73,7 @@ Cloud features:
 - Dedicated launch/traction page
 - Supabase-ready Google login
 - Supabase schema for waitlist, profiles, saved packs, and launch events
+- In-app local data export/delete controls
 - Local/mock custom pack generator
 - Editable generated outputs isolated per niche
 - Niche comparison view
@@ -103,6 +108,7 @@ Healthcare templates are workflow and marketing operations templates only. They 
 ## Next Scope
 
 - Add relation-aware Notion database mapping
+- Add cloud account deletion/export workflow after Supabase project setup
 - Connect NVIDIA/OpenAI generation for new niches
 - Add image/screenshot inspiration input
 - Replace local fallback saves with production Supabase flows after credentials are added

@@ -1053,26 +1053,86 @@ ol {
   padding-top: 12px;
 }
 
+.dataControlGrid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+  margin-top: 12px;
+}
+
+.dataControlGrid button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 900;
+  gap: 8px;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 10px;
+}
+
 .connectorPanel {
   display: grid;
   gap: 10px;
 }
 
 .aiPanel,
-.milestonePanel {
+.milestonePanel,
+.opsPanel {
   box-shadow: none;
   display: grid;
   gap: 10px;
 }
 
 .providerCard,
-.milestoneCard {
+.milestoneCard,
+.opsCard {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--line);
   border-radius: 8px;
   display: grid;
   gap: 8px;
   padding: 12px;
+}
+
+.opsGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.opsCard {
+  border-left: 3px solid var(--coral);
+}
+
+.opsCard.ready {
+  border-left-color: var(--green);
+}
+
+.opsCard div {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.opsCard span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.opsCard strong {
+  font-size: 15px;
+}
+
+.opsCard p {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .providerCard > div:first-child {

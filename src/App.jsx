@@ -28,6 +28,7 @@ import {
   Sparkles,
   Target,
   TrendingUp,
+  Trash2,
   Wand2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -862,6 +863,47 @@ function ForgeApp() {
   const launchCalendar = useMemo(() => buildLaunchCalendar(pack), [pack]);
   const marketingKit = useMemo(() => buildMarketingKit(pack), [pack]);
   const founderPlan = useMemo(() => buildFounderPriorityPlan(pack), [pack]);
+  const setupChecklist = useMemo(
+    () => [
+      {
+        label: "Supabase env",
+        status: cloudReady ? "Ready" : "Local fallback",
+        ready: cloudReady,
+        detail: cloudReady ? "Cloud features can initialize." : "Add VITE_SUPABASE_URL and anon key.",
+      },
+      {
+        label: "Google login",
+        status: user ? "Connected" : "Try-first mode",
+        ready: Boolean(user),
+        detail: user ? user.email : "Login is only required for cloud save and publish.",
+      },
+      {
+        label: "Local data controls",
+        status: "Ready",
+        ready: true,
+        detail: "Users can export or clear browser-stored Packsmith data.",
+      },
+      {
+        label: "Privacy notice",
+        status: "Live",
+        ready: true,
+        detail: `Consent version ${privacyVersion} is shown on waitlist forms.`,
+      },
+      {
+        label: "Notion parent",
+        status: connection.parentPageId ? "Provided" : "Missing",
+        ready: Boolean(connection.parentPageId),
+        detail: connection.parentPageId ? "Ready for Edge Function publish attempt." : "Paste a parent page ID.",
+      },
+      {
+        label: "Notion secret",
+        status: "Server-side",
+        ready: cloudReady,
+        detail: "Set NOTION_TOKEN in Supabase Edge Function secrets before live publish.",
+      },
+    ],
+    [cloudReady, connection.parentPageId, user],
+  );
   const selectedSection = pack.sections.find((section) => section.id === activeSection) || pack.sections[0];
   const selectedItems = editedItems[editScopeId]?.[selectedSection.id] || selectedSection.items;
   const selectedChannel =
@@ -985,6 +1027,61 @@ function ForgeApp() {
     setSavedPacks(nextSaved);
     localStorage.setItem("packsmith.saved.react", JSON.stringify(nextSaved));
     flash("Pack saved locally.");
+  }
+
+  function exportLocalData() {
+    const waitlist = JSON.parse(localStorage.getItem("packsmith.waitlist") || "[]");
+    downloadFile(
+      "packsmith-local-data-export.json",
+      JSON.stringify(
+        {
+          exportedAt: new Date().toISOString(),
+          privacyVersion,
+          savedPacks,
+          waitlist,
+          activeDraft: {
+            pack: pack.name,
+            presetId: pack.presetId || pack.id,
+            editedItems: editedItems[editScopeId] || {},
+          },
+        },
+        null,
+        2,
+      ),
+      "application/json",
+    );
+    flash("Local data exported.");
+  }
+
+  function clearLocalData() {
+    localStorage.removeItem("packsmith.saved.react");
+    localStorage.removeItem("packsmith.waitlist");
+    setSavedPacks([]);
+    flash("Local Packsmith data cleared from this browser.");
+  }
+
+  function exportCloudSummary() {
+    downloadFile(
+      "packsmith-cloud-summary.json",
+      JSON.stringify(
+        {
+          exportedAt: new Date().toISOString(),
+          user: user ? { id: user.id, email: user.email } : null,
+          cloudReady,
+          cloudPackCount: cloudPacks.length,
+          cloudPacks: cloudPacks.map((saved) => ({
+            id: saved.id,
+            name: saved.name,
+            presetId: saved.preset_id,
+            createdAt: saved.created_at,
+          })),
+        },
+        null,
+        2,
+      ),
+      "application/json",
+    );
+    flash(user ? "Cloud summary exported." : "Cloud summary exported in local mode.");
   }
 
   async function savePackToCloud() {
@@ -1374,6 +1471,20 @@ function ForgeApp() {
             <p className="privacyMicrocopy">
               Try first without login. Google login is used only for cloud saves and publishing. Notion tokens stay server-side.
             </p>
+            <div className="dataControlGrid">
+              <button type="button" onClick={exportLocalData}>
+                <Download size={15} />
+                Export local data
+              </button>
+              <button type="button" onClick={clearLocalData}>
+                <Trash2 size={15} />
+                Clear local data
+              </button>
+              <button type="button" onClick={exportCloudSummary}>
+                <FileJson size={15} />
+                Cloud summary
+              </button>
+            </div>
             {savedPacks.length === 0 ? (
               <p className="muted">Local saves appear here when a direction feels useful.</p>
             ) : (
@@ -1706,6 +1817,27 @@ function ForgeApp() {
         </section>
 
         <aside className="rightRail">
+          <section className="panel opsPanel">
+            <div className="panelHeader">
+              <ShieldCheck size={18} />
+              <div>
+                <p className="eyebrow">Beta ops</p>
+                <h2>Setup checklist</h2>
+              </div>
+            </div>
+            <div className="opsGrid">
+              {setupChecklist.map((item) => (
+                <article className={item.ready ? "opsCard ready" : "opsCard"} key={item.label}>
+                  <div>
+                    <span>{item.status}</span>
+                    <strong>{item.label}</strong>
+                  </div>
+                  <p>{item.detail}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
           <section className="panel aiPanel">
             <div className="panelHeader">
               <Brain size={18} />

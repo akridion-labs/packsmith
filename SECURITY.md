@@ -20,12 +20,13 @@ Packsmith currently handles emails, Google-authenticated profiles, saved templat
 - `template_packs`: user-owned generated pack JSON and Notion payload JSON.
 - `launch_events`: user-owned launch asset metadata.
 - Browser local storage: local waitlist fallback and local saved packs when cloud is not configured.
+- Users can export or clear browser-stored Packsmith data from the app.
 
 ## Before Public Launch
 
 - Replace placeholder privacy contact language with a real support/privacy email.
 - Review the privacy notice with counsel for target launch countries.
-- Add a user-facing data deletion/export workflow.
+- Add cloud account deletion/export workflow after Supabase project setup.
 - Add rate limiting or CAPTCHA to public waitlist capture if spam appears.
 - Test Notion publish against a dedicated sandbox workspace before advertising live publish.
 - Confirm the Notion integration has access only to the workspace/page the user intends to publish into.
