@@ -4,8 +4,13 @@ create table if not exists public.waitlist_leads (
   id uuid primary key default gen_random_uuid(),
   email text not null,
   source text not null default 'packsmith',
+  consent_version text not null default '2026-07-02',
+  privacy_accepted_at timestamptz not null default now(),
   created_at timestamptz not null default now()
 );
+
+create unique index if not exists waitlist_leads_email_unique
+  on public.waitlist_leads (lower(email));
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -59,6 +64,10 @@ create policy "Users can update own profile"
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
+create policy "Users can delete own profile"
+  on public.profiles for delete
+  using (auth.uid() = id);
+
 create policy "Users can read own packs"
   on public.template_packs for select
   using (auth.uid() = user_id);
@@ -72,6 +81,10 @@ create policy "Users can update own packs"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+create policy "Users can delete own packs"
+  on public.template_packs for delete
+  using (auth.uid() = user_id);
+
 create policy "Users can read own launch events"
   on public.launch_events for select
   using (auth.uid() = user_id);
@@ -79,3 +92,7 @@ create policy "Users can read own launch events"
 create policy "Users can create own launch events"
   on public.launch_events for insert
   with check (auth.uid() = user_id);
+
+create policy "Users can delete own launch events"
+  on public.launch_events for delete
+  using (auth.uid() = user_id);

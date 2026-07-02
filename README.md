@@ -29,6 +29,7 @@ Then open:
 - `http://127.0.0.1:5173/` for the public landing page
 - `http://127.0.0.1:5173/launch` for the launch/traction page
 - `http://127.0.0.1:5173/app` for the Packsmith forge workspace
+- `http://127.0.0.1:5173/privacy` for the MVP privacy notice
 
 ## Supabase Setup
 
@@ -46,6 +47,16 @@ Cloud features:
 - Waitlist lead capture
 - Saved template packs
 - Notion publish Edge Function contract
+
+## Privacy and Security Baseline
+
+- Users can try Packsmith before login.
+- Waitlist forms require explicit privacy consent before saving emails.
+- Waitlist rows store consent version and acceptance timestamp.
+- Saved packs and launch events are protected with Supabase row-level security.
+- Notion tokens, Google OAuth secrets, and Supabase service-role keys must stay server-side only.
+- `.env` and `.env.local` are ignored and must never be committed.
+- See `SECURITY.md` before adding new auth, database, or connector behavior.
 
 ## Current Scope
 

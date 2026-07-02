@@ -26,7 +26,7 @@ export const pipelineStages = [
 export const backendContract = {
   method: "POST",
   path: "/api/notion/publish",
-  input: ["notionToken", "parentPageId", "workspacePayload"],
+  input: ["authenticatedUser", "parentPageId", "workspacePayload"],
   output: ["createdPageIds", "createdDatabaseIds", "status", "errors"],
   note: "Secrets must be sent to a backend route only. Do not save Notion tokens in browser storage.",
 };

@@ -12,7 +12,7 @@ export function createNotionPayload(notionExport, connection = {}) {
     backendContract: {
       method: "POST",
       path: "/api/notion/publish",
-      requiredSecrets: ["notionToken"],
+      requiredServerSecrets: ["NOTION_TOKEN"],
       requiredFields: ["parentPageId", "workspace"],
     },
   };
@@ -36,18 +36,5 @@ export function simulateNotionPublish(notionExport, connection = {}) {
       })),
     },
     payload,
-  };
-}
-
-export async function createNotionWorkspace({ notionToken, parentPageId, notionExport }) {
-  if (!notionToken || !parentPageId) {
-    throw new Error("A server-side Notion token and parent page ID are required.");
-  }
-
-  return {
-    status: "contract_ready",
-    message:
-      "Frontend contract is ready. Implement POST /api/notion/publish to send this payload to the Notion API from the server.",
-    payload: createNotionPayload(notionExport, { parentPageId }),
   };
 }

@@ -1651,6 +1651,72 @@ ol {
   margin-top: 0;
 }
 
+.consentLine {
+  align-items: flex-start;
+  display: flex;
+  gap: 9px;
+  margin-top: 2px;
+}
+
+.consentLine input {
+  margin: 3px 0 0;
+  width: auto;
+}
+
+.consentLine span,
+.privacyMicrocopy {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.consentLine a {
+  color: var(--gold);
+  font-weight: 900;
+}
+
+.privacyMicrocopy {
+  margin-top: 10px;
+}
+
+.privacyHero {
+  min-height: 100vh;
+}
+
+.privacyContent {
+  display: grid;
+  gap: 24px;
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 64px clamp(18px, 3vw, 38px);
+  position: relative;
+  z-index: 2;
+}
+
+.privacyContent h1 {
+  font-size: clamp(38px, 6vw, 72px);
+  letter-spacing: 0;
+  line-height: 0.96;
+}
+
+.privacyGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.privacyGrid article {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.privacyGrid h2 {
+  font-size: 22px;
+}
+
 .generatorPanel,
 .marketingPanel {
   display: grid;
@@ -1742,7 +1808,8 @@ ol {
   .productShotGrid,
   .miniPipeline,
   .launchMetricGrid,
-  .launchCopyGrid {
+  .launchCopyGrid,
+  .privacyGrid {
     grid-template-columns: 1fr;
   }
 

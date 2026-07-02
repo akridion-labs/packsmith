@@ -44,11 +44,13 @@ export async function signOut() {
   if (error) throw error;
 }
 
-export async function saveWaitlistLead({ email, source }) {
+export async function saveWaitlistLead({ email, source, consentVersion = "2026-07-02" }) {
   if (!supabase) throw new Error("Supabase is not configured yet.");
   const { error } = await supabase.from("waitlist_leads").insert({
     email,
     source,
+    consent_version: consentVersion,
+    privacy_accepted_at: new Date().toISOString(),
   });
   if (error) throw error;
 }

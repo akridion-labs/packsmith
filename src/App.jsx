@@ -153,6 +153,8 @@ const launchAssets = {
     "Retro-futuristic SaaS product demo, dark founder command center, amber and green terminal accents, UI cards assembling into Notion Canva Figma launch pack, premium cinematic lighting, no readable text.",
 };
 
+const privacyVersion = "2026-07-02";
+
 function downloadFile(name, content, type) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
@@ -169,7 +171,18 @@ function saveWaitlistLocal(email, source) {
   const existing = JSON.parse(localStorage.getItem("packsmith.waitlist") || "[]");
   localStorage.setItem(
     "packsmith.waitlist",
-    JSON.stringify([{ email, source, createdAt: new Date().toISOString() }, ...existing].slice(0, 100)),
+    JSON.stringify(
+      [
+        {
+          email,
+          source,
+          consentVersion: privacyVersion,
+          privacyAcceptedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        },
+        ...existing,
+      ].slice(0, 100),
+    ),
   );
 }
 
@@ -236,14 +249,19 @@ function marketplaceToJson(pack) {
 function LandingPage() {
   const [email, setEmail] = useState("");
   const [notice, setNotice] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   async function saveWaitlist(event) {
     event.preventDefault();
     const value = email.trim();
     if (!value) return;
+    if (!privacyAccepted) {
+      setNotice("Please accept the privacy notice before joining.");
+      return;
+    }
     try {
       if (isSupabaseConfigured) {
-        await saveWaitlistLead({ email: value, source: "homepage" });
+        await saveWaitlistLead({ email: value, source: "homepage", consentVersion: privacyVersion });
         setNotice("Saved to the early builder list.");
       } else {
         saveWaitlistLocal(value, "homepage-local");
@@ -276,6 +294,7 @@ function LandingPage() {
             <span>Figma</span>
             <span>Launch board</span>
             <a href="/launch">Launch kit</a>
+            <a href="/privacy">Privacy</a>
             <a href="/app">Try now</a>
           </div>
         </nav>
@@ -460,6 +479,16 @@ function LandingPage() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
+          <label className="consentLine">
+            <input
+              type="checkbox"
+              checked={privacyAccepted}
+              onChange={(event) => setPrivacyAccepted(event.target.checked)}
+            />
+            <span>
+              I agree to the <a href="/privacy">privacy notice</a> and consent to Packsmith storing this email for early access.
+            </span>
+          </label>
           <button className="primary" type="submit">
             <Mail size={17} />
             Join list
@@ -474,6 +503,7 @@ function LandingPage() {
 function LaunchPage() {
   const [email, setEmail] = useState("");
   const [notice, setNotice] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const featuredPack = useMemo(
     () => buildLaunchKit(getPreset(defaultPresetId).brief, defaultPresetId),
     [],
@@ -492,9 +522,13 @@ function LaunchPage() {
     event.preventDefault();
     const value = email.trim();
     if (!value) return;
+    if (!privacyAccepted) {
+      setNotice("Please accept the privacy notice before joining.");
+      return;
+    }
     try {
       if (isSupabaseConfigured) {
-        await saveWaitlistLead({ email: value, source: "launch-page" });
+        await saveWaitlistLead({ email: value, source: "launch-page", consentVersion: privacyVersion });
         setNotice("You are on the early builder list.");
       } else {
         saveWaitlistLocal(value, "launch-page-local");
@@ -533,6 +567,7 @@ function LaunchPage() {
           </a>
           <div className="navPills">
             <a href="/">Home</a>
+            <a href="/privacy">Privacy</a>
             <a href="/app">Try the forge</a>
           </div>
         </nav>
@@ -683,12 +718,99 @@ function LaunchPage() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
+          <label className="consentLine">
+            <input
+              type="checkbox"
+              checked={privacyAccepted}
+              onChange={(event) => setPrivacyAccepted(event.target.checked)}
+            />
+            <span>
+              I agree to the <a href="/privacy">privacy notice</a> and consent to Packsmith storing this email for early access.
+            </span>
+          </label>
           <button className="primary" type="submit">
             <Mail size={17} />
             Join list
           </button>
           {notice && <p>{notice}</p>}
         </form>
+      </section>
+    </main>
+  );
+}
+
+function PrivacyPage() {
+  return (
+    <main className="landingFrame privacyFrame">
+      <section className="landingHero privacyHero">
+        <div className="heroBackdrop" />
+        <nav className="topNav">
+          <a className="brandLockup" href="/">
+            <div className="brandMark">
+              <ShieldCheck size={24} />
+            </div>
+            <div>
+              <strong>Packsmith</strong>
+              <span>Privacy and security</span>
+            </div>
+          </a>
+          <div className="navPills">
+            <a href="/">Home</a>
+            <a href="/launch">Launch kit</a>
+            <a href="/app">Try the forge</a>
+          </div>
+        </nav>
+
+        <div className="privacyContent">
+          <div className="sectionIntro">
+            <p className="eyebrow gold">Privacy notice v{privacyVersion}</p>
+            <h1>Packsmith collects only what it needs to run the beta.</h1>
+            <p className="muted">
+              This page is a product privacy notice for the current MVP. It is not legal advice; before public launch,
+              have the final policy reviewed for the countries where you operate.
+            </p>
+          </div>
+
+          <div className="privacyGrid">
+            <article>
+              <h2>What we collect</h2>
+              <ul>
+                <li>Email address when you join the early builder list.</li>
+                <li>Google profile basics through Supabase Auth when you choose to login.</li>
+                <li>Template pack content you save to cloud storage.</li>
+                <li>Launch-event metadata when you save marketing actions.</li>
+                <li>Notion parent page ID and workspace payload when you publish.</li>
+              </ul>
+            </article>
+            <article>
+              <h2>What we do not store in the browser</h2>
+              <ul>
+                <li>Notion API tokens.</li>
+                <li>Supabase service-role keys.</li>
+                <li>Google OAuth secrets.</li>
+                <li>Payment information.</li>
+              </ul>
+            </article>
+            <article>
+              <h2>How data is protected</h2>
+              <ul>
+                <li>Supabase row-level security limits users to their own saved packs and launch events.</li>
+                <li>Notion publishing uses a server-side Edge Function contract.</li>
+                <li>Environment secrets are excluded from git through `.env` and `.env.local` ignores.</li>
+                <li>The app keeps working in local-only mode when cloud credentials are missing.</li>
+              </ul>
+            </article>
+            <article>
+              <h2>Your choices</h2>
+              <ul>
+                <li>You can try the generator without logging in.</li>
+                <li>Login is required only for cloud save and real publishing paths.</li>
+                <li>You can request removal of saved data through the Packsmith operator before public launch.</li>
+                <li>You can avoid cloud storage by using local export files only.</li>
+              </ul>
+            </article>
+          </div>
+        </div>
       </section>
     </main>
   );
@@ -1015,6 +1137,7 @@ function ForgeApp() {
             <span>{pack.audience}</span>
             <span>{generatedPack ? "Local generated" : "Preset engine"}</span>
             <span>{cloudReady ? "Supabase ready" : "Local mode"}</span>
+            <a href="/privacy">Privacy</a>
             {user ? (
               <button className="navAuthButton" type="button" onClick={handleSignOut}>
                 <LogOut size={14} />
@@ -1248,6 +1371,9 @@ function ForgeApp() {
                   : fallbackCloudMessage("save packs to your account")}
               </span>
             </div>
+            <p className="privacyMicrocopy">
+              Try first without login. Google login is used only for cloud saves and publishing. Notion tokens stay server-side.
+            </p>
             {savedPacks.length === 0 ? (
               <p className="muted">Local saves appear here when a direction feels useful.</p>
             ) : (
@@ -1758,6 +1884,7 @@ function ForgeApp() {
 function App() {
   if (window.location.pathname === "/app") return <ForgeApp />;
   if (window.location.pathname === "/launch") return <LaunchPage />;
+  if (window.location.pathname === "/privacy") return <PrivacyPage />;
   return <LandingPage />;
 }
 
