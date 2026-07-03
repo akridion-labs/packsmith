@@ -33,6 +33,15 @@ Then open:
 
 Generated repo graphs are written to `graphify-out/`, which is ignored by git.
 
+## Test
+
+```bash
+npm test
+npm run build
+```
+
+The current suite covers preset generation, custom pack generation, Notion payload safety, simulation states, and marketing kit exports.
+
 ## Supabase Setup
 
 Packsmith works without Supabase credentials, but cloud features stay in local fallback mode.
@@ -74,6 +83,7 @@ Cloud features:
 - Supabase-ready Google login
 - Supabase schema for waitlist, profiles, saved packs, and launch events
 - In-app local data export/delete controls
+- Automated unit tests for preset, custom generator, Notion connector, and marketing export contracts
 - Local/mock custom pack generator
 - Editable generated outputs isolated per niche
 - Niche comparison view
