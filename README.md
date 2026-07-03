@@ -99,7 +99,7 @@ Notion is the first full MVP connector target. The current app creates a payload
 The connector stub lives at `src/integrations/notionConnector.js`.
 
 The Supabase Edge Function lives at `supabase/functions/notion-publish/index.ts`.
-It validates login, keeps `NOTION_TOKEN` server-side only, creates a Packsmith root page, creates child pages, creates databases, and seeds sample records. Relation fields are safely published as text until target-database mapping is added.
+It validates login, keeps `NOTION_TOKEN` server-side only, creates a Packsmith root page, creates child pages, creates databases, and seeds sample records. Relation fields are mapped when Packsmith can infer an already-created target database; otherwise they safely publish as text with a warning.
 
 Figma and Canva are intentionally spec-first for now. They generate the design and pack plan before direct file creation is added.
 
@@ -107,7 +107,7 @@ Healthcare templates are workflow and marketing operations templates only. They 
 
 ## Next Scope
 
-- Add relation-aware Notion database mapping
+- Add explicit user-controlled Notion relation mapping
 - Add cloud account deletion/export workflow after Supabase project setup
 - Connect NVIDIA/OpenAI generation for new niches
 - Add image/screenshot inspiration input

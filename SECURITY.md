@@ -30,3 +30,4 @@ Packsmith currently handles emails, Google-authenticated profiles, saved templat
 - Add rate limiting or CAPTCHA to public waitlist capture if spam appears.
 - Test Notion publish against a dedicated sandbox workspace before advertising live publish.
 - Confirm the Notion integration has access only to the workspace/page the user intends to publish into.
+- Review inferred Notion relation mapping before using published workspaces with customer data.

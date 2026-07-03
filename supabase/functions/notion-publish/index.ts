@@ -105,22 +105,24 @@ serve(async (req) => {
     const createdDatabaseIds: Array<{ name: string; id: string }> = [];
     const warnings: string[] = [];
     const databaseIdByKey = new Map<string, string>();
+    const relationTargetIds = new Map<string, string>();
 
     for (const database of workspace.databases) {
       try {
         const createdDatabase = await notionRequest(notionToken, "/databases", {
           parent: { page_id: rootPage.id },
           title: [{ type: "text", text: { content: database.name } }],
-          properties: buildDatabaseProperties(database.properties, warnings, database.name),
+          properties: buildDatabaseProperties(database.properties, warnings, database.name, relationTargetIds),
         });
 
         databaseIdByKey.set(database.id, createdDatabase.id);
+        registerRelationTargets(relationTargetIds, database, createdDatabase.id);
         createdDatabaseIds.push({ name: database.name, id: createdDatabase.id });
 
         for (const record of database.sampleRecords || []) {
           const createdRecord = await notionRequest(notionToken, "/pages", {
             parent: { database_id: createdDatabase.id },
-            properties: buildRecordProperties(database.properties, record),
+            properties: buildRecordProperties(database.properties, record, relationTargetIds),
           });
           createdPageIds.push({ name: `${database.name} sample`, id: createdRecord.id });
         }
@@ -189,19 +191,25 @@ function buildDatabaseProperties(
   properties: PacksmithProperty[],
   warnings: string[],
   databaseName: string,
+  relationTargetIds: Map<string, string>,
 ) {
   const result: Record<string, unknown> = {};
   const hasTitle = properties.some((property) => property.type === "title");
 
   for (const property of properties) {
-    result[property.name] = databaseProperty(property, warnings, databaseName);
+    result[property.name] = databaseProperty(property, warnings, databaseName, relationTargetIds);
   }
 
   if (!hasTitle) result.Name = { title: {} };
   return result;
 }
 
-function databaseProperty(property: PacksmithProperty, warnings: string[], databaseName: string) {
+function databaseProperty(
+  property: PacksmithProperty,
+  warnings: string[],
+  databaseName: string,
+  relationTargetIds: Map<string, string>,
+) {
   switch (property.type) {
     case "title":
       return { title: {} };
@@ -215,29 +223,44 @@ function databaseProperty(property: PacksmithProperty, warnings: string[], datab
       return { checkbox: {} };
     case "person":
       return { people: {} };
-    case "relation":
-      warnings.push(`${databaseName}.${property.name}: relation fields publish as text until target mapping exists.`);
+    case "relation": {
+      const targetDatabaseId = inferRelationTarget(property.name, relationTargetIds);
+      if (targetDatabaseId) {
+        return {
+          relation: {
+            database_id: targetDatabaseId,
+            type: "single_property",
+            single_property: {},
+          },
+        };
+      }
+      warnings.push(`${databaseName}.${property.name}: relation target could not be inferred; published as text.`);
       return { rich_text: {} };
+    }
     case "text":
     default:
       return { rich_text: {} };
   }
 }
 
-function buildRecordProperties(properties: PacksmithProperty[], record: Record<string, unknown>) {
+function buildRecordProperties(
+  properties: PacksmithProperty[],
+  record: Record<string, unknown>,
+  relationTargetIds: Map<string, string>,
+) {
   const result: Record<string, unknown> = {};
 
   for (const property of properties) {
     const value = record[property.name];
     if (value === undefined || value === null || value === "") continue;
-    const notionValue = recordProperty(property, value);
+    const notionValue = recordProperty(property, value, relationTargetIds);
     if (notionValue) result[property.name] = notionValue;
   }
 
   return result;
 }
 
-function recordProperty(property: PacksmithProperty, value: unknown) {
+function recordProperty(property: PacksmithProperty, value: unknown, relationTargetIds: Map<string, string>) {
   switch (property.type) {
     case "title":
       return titleValue(String(value));
@@ -252,10 +275,47 @@ function recordProperty(property: PacksmithProperty, value: unknown) {
     case "person":
       return undefined;
     case "relation":
+      if (inferRelationTarget(property.name, relationTargetIds)) return undefined;
+      return richTextValue(String(value));
     case "text":
     default:
       return richTextValue(String(value));
   }
+}
+
+function registerRelationTargets(targets: Map<string, string>, database: PacksmithDatabase, notionDatabaseId: string) {
+  const keys = new Set([
+    database.id,
+    database.name,
+    database.name.replace(/s$/i, ""),
+    database.name.replace(/ies$/i, "y"),
+  ]);
+
+  for (const key of keys) {
+    const normalized = normalizeRelationKey(key);
+    if (normalized) targets.set(normalized, notionDatabaseId);
+  }
+}
+
+function inferRelationTarget(propertyName: string, targets: Map<string, string>) {
+  const base = normalizeRelationKey(propertyName);
+  const candidates = [
+    base,
+    `${base}s`,
+    base.endsWith("y") ? `${base.slice(0, -1)}ies` : "",
+    base.replace(/s$/, ""),
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    const target = targets.get(candidate);
+    if (target) return target;
+  }
+
+  return null;
+}
+
+function normalizeRelationKey(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 function titleValue(content: string) {
