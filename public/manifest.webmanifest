@@ -1,0 +1,39 @@
+{
+  "name": "Packsmith",
+  "short_name": "Packsmith",
+  "description": "Mobile-ready template-pack forge for Notion, Canva, Figma, and launch assets.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#080b0d",
+  "theme_color": "#efbd63",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/packsmith-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Forge",
+      "short_name": "Forge",
+      "url": "/app",
+      "icons": [{ "src": "/packsmith-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/packsmith-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Mobile Access",
+      "short_name": "Mobile",
+      "url": "/mobile",
+      "icons": [{ "src": "/packsmith-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}

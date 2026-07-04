@@ -30,7 +30,9 @@ import {
   Rocket,
   Save,
   ShieldCheck,
+  Smartphone,
   Sparkles,
+  TabletSmartphone,
   Target,
   TrendingUp,
   Trash2,
@@ -59,6 +61,12 @@ import {
 } from "./integrations/supabaseClient";
 import { buildCustomNotionExport, buildCustomPack } from "./localPackGenerator";
 import { buildMarketingKit, marketingKitToMarkdown } from "./marketingData";
+import {
+  buildAssistantHandoffPrompt,
+  buildMobileAccessChecklist,
+  mobileAccessModes,
+  nativeAppDecision,
+} from "./mobileAccessData";
 import { buildFounderPriorityPlan, founderMilestones, founderPlanToMarkdown, providerOptions } from "./productRoadmap";
 import {
   backendContract,
@@ -309,6 +317,7 @@ function LandingPage() {
             <span>Launch board</span>
             <a href="/launch">Launch kit</a>
             <a href="/dashboard">Dashboard</a>
+            <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
             <a href="/app">Try now</a>
           </div>
@@ -583,6 +592,7 @@ function LaunchPage() {
           <div className="navPills">
             <a href="/">Home</a>
             <a href="/dashboard">Dashboard</a>
+            <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
             <a href="/app">Try the forge</a>
           </div>
@@ -774,6 +784,7 @@ function PrivacyPage() {
             <a href="/">Home</a>
             <a href="/launch">Launch kit</a>
             <a href="/dashboard">Dashboard</a>
+            <a href="/mobile">Mobile</a>
             <a href="/app">Try the forge</a>
           </div>
         </nav>
@@ -1015,6 +1026,7 @@ function DashboardPage() {
             <a href="/">Home</a>
             <a href="/launch">Launch kit</a>
             <a href="/app">Forge</a>
+            <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
             {user ? (
               <button className="navAuthButton" type="button" onClick={handleSignOut}>
@@ -1280,6 +1292,177 @@ function DashboardPage() {
             </ol>
           </section>
         </aside>
+      </section>
+
+      {notice && (
+        <motion.div className="toast" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          {notice}
+        </motion.div>
+      )}
+    </main>
+  );
+}
+
+function MobileAccessPage() {
+  const [notice, setNotice] = useState("");
+  const checklist = useMemo(
+    () => buildMobileAccessChecklist({ hasSupabase: isSupabaseConfigured, hasNotionParent: false }),
+    [],
+  );
+  const assistantPrompt = useMemo(() => buildAssistantHandoffPrompt("a Packsmith-generated template pack"), []);
+
+  function flash(message) {
+    setNotice(message);
+    window.clearTimeout(flash.timer);
+    flash.timer = window.setTimeout(() => setNotice(""), 2800);
+  }
+
+  async function copyPrompt() {
+    try {
+      await navigator.clipboard.writeText(assistantPrompt);
+      flash("Assistant handoff prompt copied.");
+    } catch {
+      flash("Copy was blocked by the browser.");
+    }
+  }
+
+  return (
+    <main className="landingFrame mobileFrame">
+      <section className="mobileHero">
+        <div className="heroBackdrop" />
+        <nav className="topNav">
+          <a className="brandLockup" href="/">
+            <div className="brandMark">
+              <Smartphone size={24} />
+            </div>
+            <div>
+              <strong>Packsmith</strong>
+              <span>Mobile access</span>
+            </div>
+          </a>
+          <div className="navPills">
+            <a href="/">Home</a>
+            <a href="/app">Forge</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/launch">Launch kit</a>
+            <a href="/privacy">Privacy</a>
+          </div>
+        </nav>
+
+        <div className="mobileHeroGrid">
+          <motion.div className="heroCopy" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+            <p className="eyebrow gold">Phone, tablet, Notion, assistants</p>
+            <h1>Use Packsmith anywhere your template business happens.</h1>
+            <p>
+              Start with the mobile web app and PWA path. Use tablets for deeper editing, Notion mobile
+              after publish, and Claude or ChatGPT through clean exports.
+            </p>
+            <div className="heroActions">
+              <a href="/app">
+                Try on this device
+                <ArrowRight size={17} />
+              </a>
+              <button type="button" onClick={copyPrompt}>
+                <Clipboard size={17} />
+                Copy assistant prompt
+              </button>
+            </div>
+          </motion.div>
+
+          <motion.div className="mobileDevicePreview" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
+            <div className="phoneShell">
+              <div className="phoneSpeaker" />
+              <article>
+                <span>Packsmith mobile</span>
+                <strong>Dashboard</strong>
+                <p>Saved packs, quality score, exports, launch channels.</p>
+              </article>
+              <article>
+                <span>Notion handoff</span>
+                <strong>Publish path</strong>
+                <p>Simulate first, then open created pages in Notion mobile.</p>
+              </article>
+              <article>
+                <span>Assistant handoff</span>
+                <strong>Markdown + JSON</strong>
+                <p>Claude and ChatGPT get clean context, not screenshots.</p>
+              </article>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="landingSection mobileAccessSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Access modes</p>
+          <h2>Ship the mobile web app first. Keep native app as the second bet.</h2>
+        </div>
+        <div className="mobileModeGrid">
+          {mobileAccessModes.map((mode) => (
+            <article key={mode.id}>
+              <div>
+                <TabletSmartphone size={22} />
+                <span>{mode.status}</span>
+              </div>
+              <h3>{mode.label}</h3>
+              <strong>{mode.device}</strong>
+              <p>{mode.promise}</p>
+              <ul>
+                {mode.actions.map((action) => (
+                  <li key={action}>{action}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection mobileAccessSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Readiness</p>
+          <h2>What is already accessible, and what needs backend setup.</h2>
+        </div>
+        <div className="mobileChecklistGrid">
+          {checklist.map((item) => (
+            <article className={item.ready ? "ready" : ""} key={item.id}>
+              <CheckCircle2 size={18} />
+              <div>
+                <strong>{item.label}</strong>
+                <span>{item.status}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection nativeDecisionPanel">
+        <div>
+          <p className="eyebrow">Native app decision</p>
+          <h2>{nativeAppDecision.recommendation}</h2>
+          <p>{nativeAppDecision.reason}</p>
+        </div>
+        <div>
+          <h3>Build native when these signals show up</h3>
+          <ul>
+            {nativeAppDecision.nativeTriggers.map((trigger) => (
+              <li key={trigger}>{trigger}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="landingSection assistantPromptPanel">
+        <div className="sectionIntro">
+          <p className="eyebrow">Claude / ChatGPT prompt</p>
+          <h2>Use exports as assistant context.</h2>
+        </div>
+        <article>
+          <p>{assistantPrompt}</p>
+          <button className="primary" type="button" onClick={copyPrompt}>
+            <Clipboard size={17} />
+            Copy prompt
+          </button>
+        </article>
       </section>
 
       {notice && (
@@ -1755,6 +1938,7 @@ function ForgeApp() {
             <span>{generatedPack ? "Local generated" : "Preset engine"}</span>
             <span>{cloudReady ? "Supabase ready" : "Local mode"}</span>
             <a href="/dashboard">Dashboard</a>
+            <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
             {user ? (
               <button className="navAuthButton" type="button" onClick={handleSignOut}>
@@ -2549,6 +2733,7 @@ function App() {
   if (window.location.pathname === "/app") return <ForgeApp />;
   if (window.location.pathname === "/launch") return <LaunchPage />;
   if (window.location.pathname === "/dashboard") return <DashboardPage />;
+  if (window.location.pathname === "/mobile") return <MobileAccessPage />;
   if (window.location.pathname === "/privacy") return <PrivacyPage />;
   return <LandingPage />;
 }

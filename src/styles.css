@@ -2089,6 +2089,210 @@ ol {
   color: var(--muted);
 }
 
+.mobileFrame {
+  background:
+    radial-gradient(circle at 14% 2%, rgba(118, 168, 255, 0.1), transparent 30rem),
+    radial-gradient(circle at 84% 8%, rgba(66, 209, 160, 0.12), transparent 28rem);
+}
+
+.mobileHero {
+  border-bottom: 1px solid var(--line);
+  min-height: 620px;
+  overflow: hidden;
+  padding: 22px clamp(18px, 3vw, 38px) 46px;
+  position: relative;
+}
+
+.mobileHeroGrid {
+  align-items: center;
+  display: grid;
+  gap: 38px;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.72fr);
+  margin: 0 auto;
+  max-width: 1500px;
+  min-height: 520px;
+  padding-top: 42px;
+  position: relative;
+  z-index: 2;
+}
+
+.mobileDevicePreview {
+  display: flex;
+  justify-content: center;
+}
+
+.phoneShell {
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02)),
+    #080b0d;
+  border: 1px solid var(--line-strong);
+  border-radius: 34px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 12px;
+  max-width: 360px;
+  min-height: 560px;
+  padding: 22px 16px 18px;
+  position: relative;
+  width: 100%;
+}
+
+.phoneShell::before {
+  border: 1px solid rgba(239, 189, 99, 0.18);
+  border-radius: 28px;
+  content: "";
+  inset: 10px;
+  pointer-events: none;
+  position: absolute;
+}
+
+.phoneSpeaker {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  height: 6px;
+  justify-self: center;
+  width: 84px;
+}
+
+.phoneShell article {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.phoneShell span,
+.mobileModeGrid span,
+.mobileChecklistGrid span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.phoneShell strong {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.phoneShell p,
+.mobileModeGrid p,
+.nativeDecisionPanel p,
+.assistantPromptPanel p {
+  color: var(--muted);
+}
+
+.mobileAccessSection {
+  display: grid;
+  gap: 18px;
+}
+
+.mobileModeGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mobileModeGrid article {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.mobileModeGrid article > div:first-child {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.mobileModeGrid svg,
+.mobileChecklistGrid svg {
+  color: var(--green);
+}
+
+.mobileModeGrid h3 {
+  font-size: 21px;
+  line-height: 1.1;
+}
+
+.mobileModeGrid strong {
+  color: var(--blue);
+  font-size: 13px;
+}
+
+.mobileModeGrid ul {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.mobileChecklistGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.mobileChecklistGrid article {
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--coral);
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+}
+
+.mobileChecklistGrid article.ready {
+  border-left-color: var(--green);
+}
+
+.mobileChecklistGrid strong,
+.mobileChecklistGrid span {
+  display: block;
+}
+
+.nativeDecisionPanel {
+  align-items: start;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.65fr);
+}
+
+.nativeDecisionPanel h2 {
+  font-size: clamp(30px, 4vw, 52px);
+  line-height: 1;
+  margin: 6px 0 10px;
+}
+
+.nativeDecisionPanel h3 {
+  color: var(--gold);
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.assistantPromptPanel article {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.assistantPromptPanel button {
+  justify-self: start;
+}
+
 @media (max-width: 1260px) {
   .workspace {
     grid-template-columns: 320px minmax(0, 1fr);
@@ -2096,6 +2300,11 @@ ol {
 
   .dashboardWorkspace {
     grid-template-columns: 300px minmax(0, 1fr);
+  }
+
+  .mobileModeGrid,
+  .mobileChecklistGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dashboardWorkspace > .dashboardRail:last-child {
@@ -2122,6 +2331,7 @@ ol {
   .heroGrid,
   .landingGrid,
   .dashboardHeroGrid,
+  .mobileHeroGrid,
   .dashboardWorkspace,
   .dashboardWorkspace > .dashboardRail:last-child,
   .workspace,
@@ -2154,6 +2364,8 @@ ol {
   .channelGrid,
   .dashboardChannelGrid,
   .dashboardChecklist,
+  .mobileModeGrid,
+  .mobileChecklistGrid,
   .assetGrid,
   .detailColumns,
   .heroPresetGrid,
@@ -2172,6 +2384,7 @@ ol {
   .launchMetricGrid,
   .launchCopyGrid,
   .selectedPackStats,
+  .nativeDecisionPanel,
   .privacyGrid {
     grid-template-columns: 1fr;
   }
@@ -2186,6 +2399,7 @@ ol {
   .cinematicHero,
   .landingHero,
   .dashboardHero,
+  .mobileHero,
   .workspace {
     padding-left: 14px;
     padding-right: 14px;
