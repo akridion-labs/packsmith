@@ -17,6 +17,17 @@ describe("marketing kit generation", () => {
     ]);
     expect(kit.figmaProductLaunches).toHaveLength(3);
     expect(kit.mobileLaunchCampaign.linkedinPost).toContain("Figma product/UI kit");
+    expect(kit.mobileLaunchCampaign.xThread).toHaveLength(6);
+    expect(kit.mobileLaunchCampaign.shortVideoScript).toHaveLength(5);
+    expect(kit.mobileLaunchCampaign.screenshotChecklist).toEqual(
+      expect.arrayContaining(["Figma product launch section", "Dashboard saved-pack reopen flow"]),
+    );
+    expect(kit.emergingSharingStreams.map((item) => item.platform)).toEqual(
+      expect.arrayContaining(["Lemon8 / Pinterest", "Loops / Fediverse video"]),
+    );
+    expect(kit.aiCreativePlatforms.map((item) => item.platform)).toEqual(
+      expect.arrayContaining(["Gemini / Nano Banana", "Adobe Firefly / Adobe Express"]),
+    );
     expect(kit.linkedinPost).toContain("Packsmith");
     expect(kit.xThread.length).toBeGreaterThanOrEqual(5);
     expect(kit.runwayPrompts.every((prompt) => prompt.length > 20)).toBe(true);
@@ -34,6 +45,8 @@ describe("marketing kit generation", () => {
     expect(markdown).toContain("## Product Stack");
     expect(markdown).toContain("## Figma Product Launches");
     expect(markdown).toContain("## Mobile Launch Campaign");
+    expect(markdown).toContain("## Emerging Sharing Streams");
+    expect(markdown).toContain("## AI Creative Platforms");
     expect(markdown).toContain("## Canva Presentation Outline");
   });
 });

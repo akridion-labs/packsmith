@@ -312,6 +312,110 @@ function marketplaceToJson(pack) {
   };
 }
 
+function joinLines(items = []) {
+  return items.map((item, index) => `${index + 1}. ${item}`).join("\n");
+}
+
+function LaunchAssetStudio({ pack, kit, compact = false, onCopy, onExport }) {
+  const assets = [
+    {
+      id: "linkedin",
+      label: "LinkedIn post",
+      icon: FileText,
+      content: kit.mobileLaunchCampaign?.linkedinPost || kit.linkedinPost,
+      helper: "Founder launch story for the full product stack.",
+    },
+    {
+      id: "x",
+      label: "X thread",
+      icon: Clipboard,
+      content: joinLines(kit.mobileLaunchCampaign?.xThread || kit.xThread),
+      helper: "Short-form thread for curiosity and validation.",
+    },
+    {
+      id: "video",
+      label: "Short video script",
+      icon: Play,
+      content: (kit.mobileLaunchCampaign?.shortVideoScript || kit.videoScript.map((item) => `${item.time}: ${item.voiceover}`)).join("\n"),
+      helper: "60-second demo arc for phone, Figma, dashboard, and exports.",
+    },
+    {
+      id: "screenshots",
+      label: "Screenshot checklist",
+      icon: Smartphone,
+      content: joinLines(kit.mobileLaunchCampaign?.screenshotChecklist || kit.shotList),
+      helper: "Exact shots to capture for the launch post and Gumroad page.",
+    },
+    {
+      id: "figma",
+      label: "Figma bundle copy",
+      icon: Figma,
+      content: kit.figmaProductLaunches
+        .map((item) => `${item.name}\n${item.buyerPromise}\nMarketplace: ${item.marketplace}`)
+        .join("\n\n"),
+      helper: "Use this to pitch Figma Community, UI8, or Gumroad bundle upgrades.",
+    },
+    {
+      id: "emerging",
+      label: "Emerging sharing streams",
+      icon: TrendingUp,
+      content: kit.emergingSharingStreams
+        .map((item) => `${item.platform}\nFormat: ${item.format}\nAngle: ${item.angle}\nPrompt: ${item.prompt}`)
+        .join("\n\n"),
+      helper: "TikTok/Reels/Shorts, Threads/Bluesky, Lemon8/Pinterest, Loops, and Reddit-ready angles.",
+    },
+    {
+      id: "ai-platforms",
+      label: "AI creative platforms",
+      icon: Brain,
+      content: kit.aiCreativePlatforms
+        .map((item) => `${item.platform}\nUse: ${item.use}\nPrompt: ${item.prompt}`)
+        .join("\n\n"),
+      helper: "Nano Banana/Gemini, Adobe Firefly, Runway, Canva, CapCut, and avatar-video prompts.",
+    },
+  ];
+
+  return (
+    <section className={compact ? "launchAssetStudio compact" : "panel launchAssetStudio"}>
+      <div className="boardHeader">
+        <div>
+          <p className="eyebrow">Launch Asset Studio</p>
+          <h2>{compact ? "Copy launch assets" : "Copy, ship, and test the product story"}</h2>
+        </div>
+        <button type="button" onClick={() => onExport?.(kit)}>
+          <Download size={17} />
+          Export studio
+        </button>
+      </div>
+      {!compact && (
+        <p className="muted">
+          Built for {pack.name}: Notion OS, Figma product kit, Canva launch pack, mobile access,
+          and Claude/ChatGPT handoff.
+        </p>
+      )}
+      <div className="launchAssetGrid">
+        {assets.map((asset) => {
+          const Icon = asset.icon;
+          return (
+            <article key={asset.id}>
+              <div>
+                <Icon size={18} />
+                <span>{asset.label}</span>
+              </div>
+              <p>{asset.helper}</p>
+              <textarea readOnly value={asset.content} />
+              <button type="button" onClick={() => onCopy?.(asset.content, `${asset.label} copied.`)}>
+                <Clipboard size={16} />
+                Copy
+              </button>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function LandingPage() {
   const [email, setEmail] = useState("");
   const [notice, setNotice] = useState("");
@@ -621,6 +725,8 @@ function LaunchPage() {
           productStack: featuredMarketingKit.productStack,
           figmaProductLaunches: featuredMarketingKit.figmaProductLaunches,
           mobileLaunchCampaign: featuredMarketingKit.mobileLaunchCampaign,
+          emergingSharingStreams: featuredMarketingKit.emergingSharingStreams,
+          aiCreativePlatforms: featuredMarketingKit.aiCreativePlatforms,
         },
         null,
         2,
@@ -824,6 +930,38 @@ function LaunchPage() {
               <span>{item.marketplace}</span>
               <h3>{item.name}</h3>
               <p>{item.buyerPromise}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection emergingStreamsSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Beyond regular channels</p>
+          <h2>Launch where people already remix and share.</h2>
+          <p className="muted">
+            Packsmith prepares copy and prompts for classic channels plus newer short-form,
+            visual-discovery, fediverse, and AI creative workflows.
+          </p>
+        </div>
+        <div className="emergingStreamsGrid">
+          {featuredMarketingKit.emergingSharingStreams.map((item) => (
+            <article key={item.id}>
+              <TrendingUp size={19} />
+              <span>{item.format}</span>
+              <h3>{item.platform}</h3>
+              <p>{item.angle}</p>
+            </article>
+          ))}
+        </div>
+        <div className="aiPlatformStrip">
+          {featuredMarketingKit.aiCreativePlatforms.map((item) => (
+            <article key={item.id}>
+              <Brain size={18} />
+              <div>
+                <strong>{item.platform}</strong>
+                <span>{item.use}</span>
+              </div>
             </article>
           ))}
         </div>
@@ -1067,6 +1205,10 @@ function DashboardPage() {
   );
   const selectedRow = history.find((row) => row.id === selectedId) || history[0] || null;
   const selectedPack = selectedRow?.raw || null;
+  const selectedMarketingKit = useMemo(
+    () => (selectedPack ? buildMarketingKit(selectedPack) : null),
+    [selectedPack],
+  );
   const exportChecklist = useMemo(
     () => buildPackExportChecklist(selectedPack || {}),
     [selectedPack],
@@ -1192,6 +1334,28 @@ function DashboardPage() {
       "application/json",
     );
     flash("Dashboard snapshot exported.");
+  }
+
+  async function copyDashboardText(value, successMessage) {
+    try {
+      await navigator.clipboard.writeText(value);
+      flash(successMessage);
+    } catch {
+      flash("Copy was blocked by the browser.");
+    }
+  }
+
+  function exportDashboardLaunchStudio(kit = selectedMarketingKit) {
+    if (!selectedPack || !kit) {
+      flash("Select a saved pack first.");
+      return;
+    }
+    downloadFile(
+      `packsmith-${slugify(selectedPack.name)}-launch-asset-studio.json`,
+      JSON.stringify({ pack: selectedPack.name, launchAssetStudio: kit }, null, 2),
+      "application/json",
+    );
+    flash("Launch Asset Studio exported.");
   }
 
   function openSelectedPackInForge() {
@@ -1435,6 +1599,16 @@ function DashboardPage() {
               <p className="muted">Launch channels appear after selecting a saved pack.</p>
             )}
           </section>
+
+          {selectedPack && selectedMarketingKit && (
+            <LaunchAssetStudio
+              compact
+              pack={selectedPack}
+              kit={selectedMarketingKit}
+              onCopy={copyDashboardText}
+              onExport={exportDashboardLaunchStudio}
+            />
+          )}
         </section>
 
         <aside className="dashboardRail">
@@ -2104,6 +2278,15 @@ function ForgeApp() {
     flash("Social launch copy exported.");
   }
 
+  function exportLaunchAssetStudio(kit = marketingKit) {
+    downloadFile(
+      `packsmith-${slugify(pack.name)}-launch-asset-studio.json`,
+      JSON.stringify({ pack: pack.name, launchAssetStudio: kit }, null, 2),
+      "application/json",
+    );
+    flash("Launch Asset Studio exported.");
+  }
+
   function exportFounderPlan() {
     downloadFile(
       `packsmith-${slugify(pack.name)}-founder-plan.md`,
@@ -2714,6 +2897,13 @@ function ForgeApp() {
               </article>
             </div>
           </section>
+
+          <LaunchAssetStudio
+            pack={pack}
+            kit={marketingKit}
+            onCopy={copyText}
+            onExport={exportLaunchAssetStudio}
+          />
         </section>
 
         <aside className="rightRail">

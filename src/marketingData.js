@@ -87,6 +87,81 @@ export function buildMarketingKit(pack) {
         "Notion simulation and export buttons",
       ],
     },
+    emergingSharingStreams: [
+      {
+        id: "tiktok-reels-shorts",
+        platform: "TikTok / Reels / YouTube Shorts",
+        format: "Vertical 20-45s demo",
+        angle: "Show rough idea -> product stack -> copied launch asset.",
+        prompt: `Record ${pack.name} as a fast before/after: messy idea, Notion OS, Figma kit, Canva pack, mobile dashboard, export button.`,
+      },
+      {
+        id: "threads-bluesky",
+        platform: "Threads / Bluesky",
+        format: "Build-in-public thread",
+        angle: "Founder story, product decisions, and open feedback ask.",
+        prompt: `Share why ${pack.name} is not just a Notion template: it includes Figma product surfaces, Canva launch creative, and assistant exports.`,
+      },
+      {
+        id: "lemon8-pinterest",
+        platform: "Lemon8 / Pinterest",
+        format: "Visual checklist carousel",
+        angle: "Curated lifestyle/productivity board for template buyers.",
+        prompt: `Create a visual checklist: what buyers get in ${pack.name}, preview frames, dashboard screenshots, and launch steps.`,
+      },
+      {
+        id: "loops-fediverse",
+        platform: "Loops / Fediverse video",
+        format: "Privacy-friendly short demo",
+        angle: "Indie software, open web, and useful workflow story.",
+        prompt: `Post a concise indie-builder demo: Packsmith turns one product idea into Notion, Figma, Canva, mobile, and AI-assistant assets.`,
+      },
+      {
+        id: "reddit-communities",
+        platform: "Reddit communities",
+        format: "Feedback-first validation post",
+        angle: "Ask operators what is missing before selling.",
+        prompt: `Ask for feedback on ${pack.name}: would the Notion OS, Figma UI kit, and launch assets actually help this niche?`,
+      },
+    ],
+    aiCreativePlatforms: [
+      {
+        id: "nano-banana",
+        platform: "Gemini / Nano Banana",
+        use: "Fast image concepts and preview variants",
+        prompt: `Create retro-modern product preview images for ${pack.name}: phone screen, Figma UI kit, Notion dashboard, Canva social cards, amber/green command-center palette, no fake readable UI text.`,
+      },
+      {
+        id: "adobe-firefly",
+        platform: "Adobe Firefly / Adobe Express",
+        use: "Brand-safe launch visuals, short video, audio, and social variants",
+        prompt: `Generate premium retro-futuristic launch creatives for ${pack.name}: product mockups, vertical video background, social cover images, and clean marketplace preview graphics.`,
+      },
+      {
+        id: "runway",
+        platform: "Runway",
+        use: "Cinematic product demo b-roll",
+        prompt: `A retro-futuristic SaaS forge assembles Notion, Figma, Canva, mobile, and AI assistant cards into a sellable template pack, cinematic lighting, no readable text.`,
+      },
+      {
+        id: "canva",
+        platform: "Canva AI / Magic Studio",
+        use: "Carousels, pitch decks, and resized social creative",
+        prompt: `Turn ${pack.name} into a launch carousel: problem, product stack, Figma previews, mobile access, Notion handoff, CTA.`,
+      },
+      {
+        id: "capcut",
+        platform: "CapCut / TikTok creative tools",
+        use: "Fast vertical edits and captions",
+        prompt: `Create a fast vertical founder demo script for ${pack.name}: hook, screen recording beats, captions, CTA to try Packsmith.`,
+      },
+      {
+        id: "heygen-synthesia",
+        platform: "HeyGen / Synthesia",
+        use: "Avatar walkthrough",
+        prompt: `Avatar presenter explains ${pack.name} as a template product bundle: Notion OS, Figma product kit, Canva pack, mobile access, assistant handoff.`,
+      },
+    ],
     videoScript: [
       {
         time: "0-5s",
@@ -180,6 +255,12 @@ ${kit.mobileLaunchCampaign.linkedinPost}
 
 Thread:
 ${kit.mobileLaunchCampaign.xThread.map((tweet, index) => `${index + 1}. ${tweet}`).join("\n")}
+
+## Emerging Sharing Streams
+${kit.emergingSharingStreams.map((item) => `- ${item.platform}: ${item.format} - ${item.prompt}`).join("\n")}
+
+## AI Creative Platforms
+${kit.aiCreativePlatforms.map((item) => `- ${item.platform}: ${item.use}\n  Prompt: ${item.prompt}`).join("\n")}
 
 ## Product Demo Shot List
 ${kit.shotList.map((shot) => `- ${shot}`).join("\n")}

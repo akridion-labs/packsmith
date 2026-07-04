@@ -1918,6 +1918,69 @@ ol {
   color: var(--violet);
 }
 
+.emergingStreamsSection {
+  display: grid;
+  gap: 18px;
+}
+
+.emergingStreamsGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.emergingStreamsGrid article,
+.aiPlatformStrip article {
+  background:
+    linear-gradient(145deg, rgba(66, 209, 160, 0.08), rgba(255, 255, 255, 0.035)),
+    var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+}
+
+.emergingStreamsGrid svg,
+.aiPlatformStrip svg {
+  color: var(--green);
+}
+
+.emergingStreamsGrid span,
+.aiPlatformStrip span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.emergingStreamsGrid h3 {
+  font-size: 19px;
+  line-height: 1.05;
+}
+
+.emergingStreamsGrid p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.aiPlatformStrip {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.aiPlatformStrip article {
+  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.aiPlatformStrip strong,
+.aiPlatformStrip span {
+  display: block;
+}
+
 .launchMobileShowcase {
   position: relative;
 }
@@ -2420,6 +2483,90 @@ ol {
   color: var(--muted);
 }
 
+.launchAssetStudio {
+  display: grid;
+  gap: 14px;
+}
+
+.launchAssetStudio.compact {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.launchAssetGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.launchAssetGrid article {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.launchAssetGrid article > div:first-child {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.launchAssetGrid svg {
+  color: var(--green);
+  flex: 0 0 auto;
+}
+
+.launchAssetGrid span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.launchAssetGrid p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.launchAssetGrid textarea {
+  background: rgba(0, 0, 0, 0.18);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  min-height: 142px;
+  resize: vertical;
+}
+
+.launchAssetGrid button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 900;
+  gap: 8px;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 10px;
+}
+
+.launchAssetStudio.compact .launchAssetGrid {
+  grid-template-columns: 1fr;
+}
+
+.launchAssetStudio.compact .launchAssetGrid textarea {
+  min-height: 112px;
+}
+
 .mobileFrame {
   background:
     radial-gradient(circle at 14% 2%, rgba(118, 168, 255, 0.1), transparent 30rem),
@@ -2642,6 +2789,11 @@ ol {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .emergingStreamsGrid,
+  .aiPlatformStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .dashboardWorkspace > .dashboardRail:last-child {
     grid-column: 1 / -1;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2707,6 +2859,9 @@ ol {
   .productStackGrid,
   .figmaProductGrid,
   .mobileCampaignPanel,
+  .launchAssetGrid,
+  .emergingStreamsGrid,
+  .aiPlatformStrip,
   .assetGrid,
   .detailColumns,
   .heroPresetGrid,
