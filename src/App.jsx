@@ -1,21 +1,26 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
+  BarChart3,
   Boxes,
   Brain,
   CalendarDays,
   CheckCircle2,
   Clipboard,
+  Clock3,
   Cpu,
   Database,
   Download,
   Edit3,
   ExternalLink,
   Figma,
+  FileText,
   FileJson,
   Flame,
   Gauge,
+  History,
   Layers3,
+  LayoutDashboard,
   LockKeyhole,
   LogIn,
   LogOut,
@@ -32,6 +37,12 @@ import {
   Wand2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import {
+  buildDashboardMetrics,
+  buildLaunchTracker,
+  buildPackExportChecklist,
+  normalizePackHistory,
+} from "./dashboardData";
 import { createNotionPayload, simulateNotionPublish } from "./integrations/notionConnector";
 import {
   getCurrentSession,
@@ -295,6 +306,7 @@ function LandingPage() {
             <span>Figma</span>
             <span>Launch board</span>
             <a href="/launch">Launch kit</a>
+            <a href="/dashboard">Dashboard</a>
             <a href="/privacy">Privacy</a>
             <a href="/app">Try now</a>
           </div>
@@ -568,6 +580,7 @@ function LaunchPage() {
           </a>
           <div className="navPills">
             <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
             <a href="/privacy">Privacy</a>
             <a href="/app">Try the forge</a>
           </div>
@@ -758,6 +771,7 @@ function PrivacyPage() {
           <div className="navPills">
             <a href="/">Home</a>
             <a href="/launch">Launch kit</a>
+            <a href="/dashboard">Dashboard</a>
             <a href="/app">Try the forge</a>
           </div>
         </nav>
@@ -813,6 +827,451 @@ function PrivacyPage() {
           </div>
         </div>
       </section>
+    </main>
+  );
+}
+
+function readLocalArray(key) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function DashboardPage() {
+  const [session, setSession] = useState(null);
+  const [cloudPacks, setCloudPacks] = useState([]);
+  const [localPacks, setLocalPacks] = useState(() => readLocalArray("packsmith.saved.react"));
+  const [waitlistLeads, setWaitlistLeads] = useState(() => readLocalArray("packsmith.waitlist"));
+  const [selectedId, setSelectedId] = useState("");
+  const [notice, setNotice] = useState("");
+  const user = session?.user || null;
+  const cloudReady = isSupabaseConfigured;
+  const history = useMemo(
+    () => normalizePackHistory({ localPacks, cloudPacks }),
+    [cloudPacks, localPacks],
+  );
+  const metrics = useMemo(
+    () => buildDashboardMetrics({ history, waitlistLeads }),
+    [history, waitlistLeads],
+  );
+  const selectedRow = history.find((row) => row.id === selectedId) || history[0] || null;
+  const selectedPack = selectedRow?.raw || null;
+  const exportChecklist = useMemo(
+    () => buildPackExportChecklist(selectedPack || {}),
+    [selectedPack],
+  );
+  const launchTracker = useMemo(
+    () => buildLaunchTracker(selectedPack || {}),
+    [selectedPack],
+  );
+
+  useEffect(() => {
+    if (!history.length) {
+      setSelectedId("");
+      return;
+    }
+    if (!history.some((row) => row.id === selectedId)) {
+      setSelectedId(history[0].id);
+    }
+  }, [history, selectedId]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return undefined;
+
+    async function hydrateDashboard() {
+      try {
+        const nextSession = await getCurrentSession();
+        setSession(nextSession);
+        if (nextSession?.user) {
+          await upsertProfile(nextSession.user);
+          setCloudPacks(await listTemplatePacks(nextSession.user.id));
+        }
+      } catch {
+        flash("Cloud history could not be loaded.");
+      }
+    }
+
+    hydrateDashboard();
+    return onAuthStateChange(async (nextSession) => {
+      setSession(nextSession);
+      try {
+        if (nextSession?.user) {
+          await upsertProfile(nextSession.user);
+          setCloudPacks(await listTemplatePacks(nextSession.user.id));
+        } else {
+          setCloudPacks([]);
+        }
+      } catch {
+        setCloudPacks([]);
+        flash("Login worked, but saved pack tables are not ready yet.");
+      }
+    });
+  }, []);
+
+  function flash(message) {
+    setNotice(message);
+    window.clearTimeout(flash.timer);
+    flash.timer = window.setTimeout(() => setNotice(""), 2800);
+  }
+
+  function refreshLocalHistory() {
+    setLocalPacks(readLocalArray("packsmith.saved.react"));
+    setWaitlistLeads(readLocalArray("packsmith.waitlist"));
+    flash("Local history refreshed.");
+  }
+
+  async function refreshCloudHistory() {
+    if (!cloudReady) {
+      flash("Add Supabase env vars to enable cloud history.");
+      return;
+    }
+    if (!user) {
+      flash("Login with Google to load cloud history.");
+      return;
+    }
+    try {
+      setCloudPacks(await listTemplatePacks(user.id));
+      flash("Cloud history refreshed.");
+    } catch {
+      flash("Cloud history failed. Check Supabase tables and policies.");
+    }
+  }
+
+  async function handleGoogleLogin() {
+    try {
+      await signInWithGoogle();
+    } catch {
+      flash("Google login needs Supabase env vars and OAuth setup.");
+    }
+  }
+
+  async function handleSignOut() {
+    try {
+      await signOut();
+      setSession(null);
+      setCloudPacks([]);
+      flash("Signed out.");
+    } catch {
+      flash("Sign out failed.");
+    }
+  }
+
+  function exportDashboardSnapshot() {
+    downloadFile(
+      "packsmith-dashboard-snapshot.json",
+      JSON.stringify(
+        {
+          exportedAt: new Date().toISOString(),
+          user: user ? { id: user.id, email: user.email } : null,
+          metrics,
+          selectedPack: selectedPack?.name || null,
+          history: history.map((row) => ({
+            id: row.id,
+            name: row.name,
+            source: row.source,
+            presetId: row.presetId,
+            createdAt: row.createdAt,
+            quality: row.quality,
+            notionReady: row.notionReady,
+          })),
+        },
+        null,
+        2,
+      ),
+      "application/json",
+    );
+    flash("Dashboard snapshot exported.");
+  }
+
+  return (
+    <main className="landingFrame dashboardFrame">
+      <section className="dashboardHero">
+        <div className="heroBackdrop" />
+        <nav className="topNav">
+          <a className="brandLockup" href="/">
+            <div className="brandMark">
+              <LayoutDashboard size={24} />
+            </div>
+            <div>
+              <strong>Packsmith</strong>
+              <span>Founder dashboard</span>
+            </div>
+          </a>
+          <div className="navPills">
+            <a href="/">Home</a>
+            <a href="/launch">Launch kit</a>
+            <a href="/app">Forge</a>
+            <a href="/privacy">Privacy</a>
+            {user ? (
+              <button className="navAuthButton" type="button" onClick={handleSignOut}>
+                <LogOut size={14} />
+                Sign out
+              </button>
+            ) : (
+              <button className="navAuthButton" type="button" onClick={handleGoogleLogin}>
+                <LogIn size={14} />
+                Continue with Google
+              </button>
+            )}
+          </div>
+        </nav>
+
+        <div className="dashboardHeroGrid">
+          <motion.div className="heroCopy" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+            <p className="eyebrow gold">Returning user workspace</p>
+            <h1>Track every pack from idea to launch.</h1>
+            <p>
+              Saved packs, cloud history, export readiness, Notion status, and channel actions now live
+              in one founder dashboard.
+            </p>
+            <div className="heroActions">
+              <a href="/app">
+                Build another pack
+                <ArrowRight size={17} />
+              </a>
+              <button type="button" onClick={exportDashboardSnapshot}>
+                <FileJson size={17} />
+                Export snapshot
+              </button>
+            </div>
+          </motion.div>
+
+          <motion.div className="dashboardSignalPanel" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
+            <div className="consoleHeader">
+              <span />
+              <span />
+              <span />
+              <strong>packsmith://history</strong>
+            </div>
+            <div className="dashboardMetricGrid">
+              <article>
+                <History size={20} />
+                <strong>{metrics.totalPacks}</strong>
+                <span>Total packs</span>
+              </article>
+              <article>
+                <BarChart3 size={20} />
+                <strong>{metrics.averageQuality || "--"}</strong>
+                <span>Avg quality</span>
+              </article>
+              <article>
+                <Database size={20} />
+                <strong>{metrics.notionReady}</strong>
+                <span>Notion-ready</span>
+              </article>
+              <article>
+                <Rocket size={20} />
+                <strong>{metrics.launchAssets}</strong>
+                <span>Launch assets</span>
+              </article>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="dashboardWorkspace">
+        <aside className="dashboardRail">
+          <section className="panel">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">History</p>
+                <h2>Saved packs</h2>
+              </div>
+              <button type="button" onClick={refreshLocalHistory}>
+                <Clock3 size={16} />
+                Refresh
+              </button>
+            </div>
+            {history.length === 0 ? (
+              <div className="emptyDashboardState">
+                <Sparkles size={24} />
+                <strong>No saved packs yet</strong>
+                <p>Open the forge, generate a pack, and use Local save or Cloud save.</p>
+                <a href="/app">Open forge</a>
+              </div>
+            ) : (
+              <div className="historyList">
+                {history.map((row) => (
+                  <button
+                    key={row.id}
+                    className={selectedRow?.id === row.id ? "historyRow active" : "historyRow"}
+                    type="button"
+                    onClick={() => setSelectedId(row.id)}
+                  >
+                    <span>{row.source}</span>
+                    <strong>{row.name}</strong>
+                    <small>{new Date(row.createdAt).toLocaleString()}</small>
+                    <em>{row.quality ? `${row.quality}/100` : "No score"}</em>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="panel">
+            <div className="panelHeader">
+              <LockKeyhole size={18} />
+              <div>
+                <p className="eyebrow">Cloud sync</p>
+                <h2>{cloudReady ? "Supabase path" : "Local mode"}</h2>
+              </div>
+            </div>
+            <div className="dashboardCloudState">
+              <span>{user ? user.email : fallbackCloudMessage("load saved history")}</span>
+              <strong>{metrics.cloudPacks} cloud / {metrics.localPacks} local</strong>
+            </div>
+            <button className="wide" type="button" onClick={refreshCloudHistory}>
+              <Database size={17} />
+              Refresh cloud history
+            </button>
+          </section>
+        </aside>
+
+        <section className="dashboardMain">
+          <section className="panel dashboardSelectedPack">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">Selected pack</p>
+                <h2>{selectedPack?.name || "No pack selected"}</h2>
+              </div>
+              <a className="panelLinkButton" href="/app">
+                Continue in forge
+                <ArrowRight size={16} />
+              </a>
+            </div>
+            {selectedPack ? (
+              <>
+                <p>{selectedPack.promise || selectedPack.listing?.description}</p>
+                <div className="selectedPackStats">
+                  <article>
+                    <strong>{selectedRow.quality || "--"}</strong>
+                    <span>Quality</span>
+                  </article>
+                  <article>
+                    <strong>{selectedRow.sectionCount}</strong>
+                    <span>Surfaces</span>
+                  </article>
+                  <article>
+                    <strong>{selectedRow.channelCount}</strong>
+                    <span>Channels</span>
+                  </article>
+                  <article>
+                    <strong>{selectedRow.notionReady ? "Ready" : "Draft"}</strong>
+                    <span>Notion</span>
+                  </article>
+                </div>
+              </>
+            ) : (
+              <p className="muted">Your dashboard will fill up after the first save.</p>
+            )}
+          </section>
+
+          <section className="panel dashboardChecklistPanel">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">Export readiness</p>
+                <h2>What can ship now</h2>
+              </div>
+              <FileText size={22} />
+            </div>
+            <div className="dashboardChecklist">
+              {exportChecklist.map((item) => (
+                <article className={item.ready ? "ready" : ""} key={item.id}>
+                  <CheckCircle2 size={18} />
+                  <div>
+                    <strong>{item.label}</strong>
+                    <span>{item.status}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel dashboardLaunchPanel">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">Launch tracking</p>
+                <h2>Channel actions</h2>
+              </div>
+              <Rocket size={22} />
+            </div>
+            {launchTracker.length ? (
+              <div className="dashboardChannelGrid">
+                {launchTracker.map((channel) => (
+                  <article key={channel.id}>
+                    <span>{channel.priority}</span>
+                    <strong>{channel.name}</strong>
+                    <p>{channel.status}</p>
+                    <small>{channel.assetCount} assets / {channel.readiness}</small>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="muted">Launch channels appear after selecting a saved pack.</p>
+            )}
+          </section>
+        </section>
+
+        <aside className="dashboardRail">
+          <section className="panel dashboardOpsPanel">
+            <div className="panelHeader">
+              <ShieldCheck size={18} />
+              <div>
+                <p className="eyebrow">Business ops</p>
+                <h2>Today’s counters</h2>
+              </div>
+            </div>
+            <div className="opsGrid">
+              <article className="opsCard ready">
+                <div>
+                  <span>Waitlist</span>
+                  <strong>{metrics.waitlistLeads}</strong>
+                </div>
+                <p>Local early-builder leads captured on homepage and launch page.</p>
+              </article>
+              <article className={cloudReady ? "opsCard ready" : "opsCard"}>
+                <div>
+                  <span>Auth</span>
+                  <strong>{cloudReady ? "Ready" : "Setup"}</strong>
+                </div>
+                <p>{cloudReady ? "Google login can be enabled from Supabase." : "Add Supabase env vars for login."}</p>
+              </article>
+              <article className="opsCard ready">
+                <div>
+                  <span>Privacy</span>
+                  <strong>Live</strong>
+                </div>
+                <p>Dashboard exports avoid secrets and include only saved metadata.</p>
+              </article>
+            </div>
+          </section>
+
+          <section className="panel dashboardNextPanel">
+            <div className="panelHeader">
+              <Target size={18} />
+              <div>
+                <p className="eyebrow">Next revenue step</p>
+                <h2>Founder focus</h2>
+              </div>
+            </div>
+            <ol>
+              <li>Save one polished AI Agency pack to cloud.</li>
+              <li>Export Gumroad listing and launch calendar.</li>
+              <li>Publish one LinkedIn post with product screenshots.</li>
+              <li>Invite five beta users and track their packs here.</li>
+            </ol>
+          </section>
+        </aside>
+      </section>
+
+      {notice && (
+        <motion.div className="toast" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          {notice}
+        </motion.div>
+      )}
     </main>
   );
 }
@@ -1234,6 +1693,7 @@ function ForgeApp() {
             <span>{pack.audience}</span>
             <span>{generatedPack ? "Local generated" : "Preset engine"}</span>
             <span>{cloudReady ? "Supabase ready" : "Local mode"}</span>
+            <a href="/dashboard">Dashboard</a>
             <a href="/privacy">Privacy</a>
             {user ? (
               <button className="navAuthButton" type="button" onClick={handleSignOut}>
@@ -2027,6 +2487,7 @@ function ForgeApp() {
 function App() {
   if (window.location.pathname === "/app") return <ForgeApp />;
   if (window.location.pathname === "/launch") return <LaunchPage />;
+  if (window.location.pathname === "/dashboard") return <DashboardPage />;
   if (window.location.pathname === "/privacy") return <PrivacyPage />;
   return <LandingPage />;
 }
