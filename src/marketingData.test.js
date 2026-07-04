@@ -8,6 +8,15 @@ describe("marketing kit generation", () => {
     const kit = buildMarketingKit(pack);
 
     expect(kit.videoScript).toHaveLength(5);
+    expect(kit.productStack.map((item) => item.id)).toEqual([
+      "notion",
+      "figma",
+      "canva",
+      "mobile",
+      "assistants",
+    ]);
+    expect(kit.figmaProductLaunches).toHaveLength(3);
+    expect(kit.mobileLaunchCampaign.linkedinPost).toContain("Figma product/UI kit");
     expect(kit.linkedinPost).toContain("Packsmith");
     expect(kit.xThread.length).toBeGreaterThanOrEqual(5);
     expect(kit.runwayPrompts.every((prompt) => prompt.length > 20)).toBe(true);
@@ -22,6 +31,9 @@ describe("marketing kit generation", () => {
     expect(markdown).toContain(`# ${pack.name} Marketing Kit`);
     expect(markdown).toContain("## 60-Second Demo Script");
     expect(markdown).toContain("## X Thread");
+    expect(markdown).toContain("## Product Stack");
+    expect(markdown).toContain("## Figma Product Launches");
+    expect(markdown).toContain("## Mobile Launch Campaign");
     expect(markdown).toContain("## Canva Presentation Outline");
   });
 });

@@ -576,6 +576,7 @@ function LaunchPage() {
     () => buildLaunchKit(getPreset(defaultPresetId).brief, defaultPresetId),
     [],
   );
+  const featuredMarketingKit = useMemo(() => buildMarketingKit(featuredPack), [featuredPack]);
 
   async function copyLaunchCopy(label, value) {
     try {
@@ -613,7 +614,17 @@ function LaunchPage() {
   function exportLaunchKit() {
     downloadFile(
       "packsmith-launch-kit.json",
-      JSON.stringify({ featuredPack: featuredPack.name, launchAssets }, null, 2),
+      JSON.stringify(
+        {
+          featuredPack: featuredPack.name,
+          launchAssets,
+          productStack: featuredMarketingKit.productStack,
+          figmaProductLaunches: featuredMarketingKit.figmaProductLaunches,
+          mobileLaunchCampaign: featuredMarketingKit.mobileLaunchCampaign,
+        },
+        null,
+        2,
+      ),
       "application/json",
     );
     setNotice("Launch kit exported.");
@@ -776,6 +787,48 @@ function LaunchPage() {
         </div>
       </section>
 
+      <section className="landingSection productStackSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Not only Notion</p>
+          <h2>Sell a complete template product, not a single workspace.</h2>
+          <p className="muted">
+            The strongest version of Packsmith bundles the operating system, product design layer,
+            launch creative, mobile access, and assistant handoff.
+          </p>
+        </div>
+        <div className="productStackGrid">
+          {featuredMarketingKit.productStack.map((item) => (
+            <article key={item.id} className={`productStackCard ${item.id}`}>
+              <span>{item.platform}</span>
+              <h3>{item.product}</h3>
+              <strong>{item.angle}</strong>
+              <p>{item.proof}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection figmaProductSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Figma product wedge</p>
+          <h2>Make the pack look premium before the buyer even opens Notion.</h2>
+          <p className="muted">
+            Figma gives Packsmith a visually catchy product path: UI kits, landing pages,
+            dashboard screens, and marketplace preview assets.
+          </p>
+        </div>
+        <div className="figmaProductGrid">
+          {featuredMarketingKit.figmaProductLaunches.map((item) => (
+            <article key={item.name}>
+              <Figma size={22} />
+              <span>{item.marketplace}</span>
+              <h3>{item.name}</h3>
+              <p>{item.buyerPromise}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="landingSection launchMobileShowcase">
         <div className="sectionIntro">
           <p className="eyebrow">Mobile-first curiosity</p>
@@ -843,6 +896,22 @@ function LaunchPage() {
               </button>
             </article>
           ))}
+        </div>
+        <div className="mobileCampaignPanel">
+          <div>
+            <p className="eyebrow">Shareable launch angle</p>
+            <h3>Phone, tablet, Notion, Figma, Claude, ChatGPT.</h3>
+            <p>{featuredMarketingKit.mobileLaunchCampaign.linkedinPost}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              copyLaunchCopy("Mobile launch post", featuredMarketingKit.mobileLaunchCampaign.linkedinPost)
+            }
+          >
+            <Clipboard size={16} />
+            Copy mobile launch post
+          </button>
         </div>
         <button className="primary exportLaunchButton" type="button" onClick={exportLaunchKit}>
           <FileJson size={17} />
