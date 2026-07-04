@@ -9,6 +9,8 @@ export function normalizePackHistory({ localPacks = [], cloudPacks = [] } = {}) 
     sectionCount: pack.sections?.length || 0,
     channelCount: pack.launchChannels?.length || 0,
     notionReady: Boolean(pack.sections?.some((section) => section.id === "notion")),
+    brief: pack.brief || null,
+    notionPayload: pack.notionPayload || null,
     raw: pack,
   }));
 
@@ -25,12 +27,54 @@ export function normalizePackHistory({ localPacks = [], cloudPacks = [] } = {}) 
       sectionCount: pack.sections?.length || 0,
       channelCount: pack.launchChannels?.length || 0,
       notionReady: Boolean(row.notion_payload_json || pack.sections?.some((section) => section.id === "notion")),
+      brief: row.brief_json || pack.brief || null,
+      notionPayload: row.notion_payload_json || pack.notionPayload || null,
       raw: pack,
       cloudRow: row,
     };
   });
 
   return [...cloudRows, ...localRows].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+export function packToEditableBrief(pack = {}) {
+  return {
+    niche: pack.niche || pack.shortName || pack.name || "Saved template pack",
+    buyer: pack.buyer || pack.audience || "Saved pack buyer",
+    painPoint: pack.painPoint || "Review the saved buyer pain point.",
+    promise: pack.promise || pack.listing?.description || "Continue shaping this saved pack.",
+    assets: pack.assets || pack.sections?.map((section) => section.label).join(", ") || "Template assets",
+    platforms: pack.platforms || pack.sections?.map((section) => section.label?.replace(" OS", "")) || [],
+    style: pack.style || "Retro-futuristic forge",
+    marketplaceTarget: pack.marketplaceTarget || pack.comparison?.bestMarketplace || "Gumroad",
+    visualDirection: pack.visualDirection || "Saved Packsmith direction",
+  };
+}
+
+function removeSensitiveFields(value) {
+  if (Array.isArray(value)) return value.map(removeSensitiveFields);
+  if (!value || typeof value !== "object") return value;
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => !/(token|secret|password|api[-_]?key|access[-_]?token|refresh[-_]?token)/i.test(key))
+      .map(([key, childValue]) => [key, removeSensitiveFields(childValue)]),
+  );
+}
+
+export function createForgeResumePayload(row) {
+  const pack = removeSensitiveFields(row?.raw || {});
+  const presetId = row?.presetId || pack.presetId || pack.id || "custom";
+
+  return {
+    version: "2026-07-dashboard-resume-v1",
+    source: row?.source || "local",
+    savedPackId: row?.id || null,
+    presetId,
+    brief: removeSensitiveFields(row?.brief || pack.brief || packToEditableBrief(pack)),
+    pack,
+    notionPayload: removeSensitiveFields(row?.notionPayload || pack.notionPayload || null),
+  };
 }
 
 export function buildDashboardMetrics({ history = [], waitlistLeads = [] } = {}) {

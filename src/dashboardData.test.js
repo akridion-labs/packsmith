@@ -3,7 +3,9 @@ import {
   buildDashboardMetrics,
   buildLaunchTracker,
   buildPackExportChecklist,
+  createForgeResumePayload,
   normalizePackHistory,
+  packToEditableBrief,
 } from "./dashboardData";
 import { buildLaunchKit, getPreset } from "./packsmithData";
 
@@ -60,5 +62,33 @@ describe("dashboard history helpers", () => {
     expect(tracker[0].name).toBe("Gumroad");
     expect(tracker[0].status).toBe("Ready for first push");
     expect(tracker.every((channel) => channel.assetCount >= 4)).toBe(true);
+  });
+
+  it("derives an editable brief for older saved packs", () => {
+    const brief = packToEditableBrief(pack);
+
+    expect(brief.buyer).toBe(pack.buyer);
+    expect(brief.promise).toBe(pack.promise);
+    expect(brief.marketplaceTarget).toBe(pack.marketplaceTarget);
+  });
+
+  it("creates a forge resume payload without requiring URL data or sensitive fields", () => {
+    const history = normalizePackHistory({
+      localPacks: [
+        {
+          ...pack,
+          notionToken: "should-not-survive",
+          savedAt: "2026-07-01T10:00:00.000Z",
+        },
+      ],
+    });
+    const payload = createForgeResumePayload(history[0]);
+
+    expect(payload.version).toBe("2026-07-dashboard-resume-v1");
+    expect(payload.presetId).toBe("aiAgency");
+    expect(payload.pack.name).toBe(pack.name);
+    expect(payload.brief.buyer).toBe(pack.buyer);
+    expect(payload.pack.notionToken).toBeUndefined();
+    expect(payload.pack.sections[2].items.join(" ")).toMatch(/Design tokens/i);
   });
 });

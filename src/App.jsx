@@ -41,6 +41,7 @@ import {
   buildDashboardMetrics,
   buildLaunchTracker,
   buildPackExportChecklist,
+  createForgeResumePayload,
   normalizePackHistory,
 } from "./dashboardData";
 import { createNotionPayload, simulateNotionPublish } from "./integrations/notionConnector";
@@ -166,6 +167,7 @@ const launchAssets = {
 };
 
 const privacyVersion = "2026-07-02";
+const forgeResumeKey = "packsmith.resumePack";
 
 function downloadFile(name, content, type) {
   const blob = new Blob([content], { type });
@@ -986,6 +988,15 @@ function DashboardPage() {
     flash("Dashboard snapshot exported.");
   }
 
+  function openSelectedPackInForge() {
+    if (!selectedRow) {
+      flash("Select a saved pack first.");
+      return;
+    }
+    localStorage.setItem(forgeResumeKey, JSON.stringify(createForgeResumePayload(selectedRow)));
+    window.location.href = "/app?resume=pack";
+  }
+
   return (
     <main className="landingFrame dashboardFrame">
       <section className="dashboardHero">
@@ -1032,6 +1043,10 @@ function DashboardPage() {
                 Build another pack
                 <ArrowRight size={17} />
               </a>
+              <button type="button" onClick={openSelectedPackInForge}>
+                <Edit3 size={17} />
+                Reopen selected pack
+              </button>
               <button type="button" onClick={exportDashboardSnapshot}>
                 <FileJson size={17} />
                 Export snapshot
@@ -1137,10 +1152,10 @@ function DashboardPage() {
                 <p className="eyebrow">Selected pack</p>
                 <h2>{selectedPack?.name || "No pack selected"}</h2>
               </div>
-              <a className="panelLinkButton" href="/app">
-                Continue in forge
+              <button className="panelLinkButton" type="button" onClick={openSelectedPackInForge}>
+                Continue editing
                 <ArrowRight size={16} />
-              </a>
+              </button>
             </div>
             {selectedPack ? (
               <>
@@ -1370,6 +1385,50 @@ function ForgeApp() {
   const SelectedIcon = sectionIcons[selectedSection.id] || Boxes;
 
   useEffect(() => {
+    const rawResume = localStorage.getItem(forgeResumeKey);
+    if (!rawResume) return;
+
+    localStorage.removeItem(forgeResumeKey);
+
+    try {
+      const resume = JSON.parse(rawResume);
+      if (!resume?.pack?.sections?.length) {
+        flash("Saved pack could not be reopened.");
+        return;
+      }
+
+      const restoredPack = resume.pack;
+      const restoredPresetId = resume.presetId || restoredPack.presetId || restoredPack.id || "custom";
+      const restoredScopeId = restoredPack.presetId || restoredPack.id || restoredPresetId;
+      const restoresKnownPreset = Boolean(nichePresets[restoredPresetId]);
+      const restoresCustomPack = restoredPresetId === "custom" || !restoresKnownPreset;
+      const firstSection = restoredPack.sections[0]?.id || "notion";
+      const firstChannel = restoredPack.launchChannels?.[0]?.id || "gumroad";
+      const parentPageId = resume.notionPayload?.parentPageId || "";
+
+      setActivePresetId(restoresCustomPack ? "custom" : restoredPresetId);
+      setBrief(resume.brief || (restoresKnownPreset ? getPreset(restoredPresetId).brief : activePreset.brief));
+      setGeneratedPack(restoresCustomPack ? restoredPack : null);
+      setGeneratedNotionExport(
+        restoresCustomPack ? buildCustomNotionExport(restoredPack) : null,
+      );
+      setEditedItems((current) => ({
+        ...current,
+        [restoredScopeId]: restoredPack.editedItems || current[restoredScopeId] || {},
+      }));
+      setActiveSection(firstSection);
+      setActiveChannel(firstChannel);
+      setConnection((current) => ({
+        ...current,
+        parentPageId: parentPageId === "notion-parent-page-id" ? "" : parentPageId,
+      }));
+      flash(`Reopened ${restoredPack.name}.`);
+    } catch {
+      flash("Saved pack could not be reopened.");
+    }
+  }, []);
+
+  useEffect(() => {
     if (!isSupabaseConfigured) return undefined;
 
     async function hydrateSession() {
@@ -1479,7 +1538,9 @@ function ForgeApp() {
   function savePack() {
     const nextPack = {
       ...pack,
+      brief,
       editedItems: editedItems[editScopeId] || {},
+      notionPayload,
       savedAt: new Date().toISOString(),
     };
     const nextSaved = [nextPack, ...savedPacks].slice(0, 8);
