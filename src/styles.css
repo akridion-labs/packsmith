@@ -1405,6 +1405,33 @@ ol {
   text-transform: uppercase;
 }
 
+.launchMobileMini {
+  align-items: center;
+  background: rgba(66, 209, 160, 0.08);
+  border: 1px solid rgba(66, 209, 160, 0.22);
+  border-radius: 8px;
+  color: #d7fff1;
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+}
+
+.launchMobileMini svg {
+  color: var(--green);
+  flex: 0 0 auto;
+}
+
+.launchMobileMini strong,
+.launchMobileMini span {
+  display: block;
+}
+
+.launchMobileMini span {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
 .productShotGrid {
   display: grid;
   gap: 12px;
@@ -1716,6 +1743,157 @@ ol {
 
 .exportLaunchButton {
   justify-self: start;
+}
+
+.retroUpgradeBand {
+  background:
+    linear-gradient(135deg, rgba(239, 189, 99, 0.08), rgba(66, 209, 160, 0.05)),
+    rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  max-width: none;
+}
+
+.retroUpgradeBand > * {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1500px;
+  width: 100%;
+}
+
+.retroUpgradeGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.retroUpgradeGrid article {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.03)),
+    var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 10px;
+  min-height: 190px;
+  padding: 18px;
+}
+
+.retroUpgradeGrid span {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.retroUpgradeGrid article:first-child span {
+  color: var(--gold);
+}
+
+.retroUpgradeGrid h3 {
+  font-size: 24px;
+  line-height: 1.05;
+}
+
+.retroUpgradeGrid p {
+  color: var(--muted);
+}
+
+.launchMobileShowcase {
+  position: relative;
+}
+
+.launchMobileShowcase::before {
+  background:
+    linear-gradient(90deg, rgba(66, 209, 160, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(239, 189, 99, 0.07) 1px, transparent 1px);
+  background-size: 42px 42px;
+  content: "";
+  inset: 24px clamp(18px, 3vw, 38px);
+  opacity: 0.34;
+  pointer-events: none;
+  position: absolute;
+}
+
+.launchMobileGrid {
+  align-items: center;
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(280px, 0.68fr) minmax(0, 1fr);
+  position: relative;
+  z-index: 1;
+}
+
+.marketingPhoneStack {
+  display: flex;
+  justify-content: center;
+}
+
+.launchPhoneShell {
+  max-width: 330px;
+  min-height: 520px;
+  transform: rotate(-2deg);
+}
+
+.launchPhoneShell article strong {
+  font-size: 22px;
+}
+
+.launchMobileMoments {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.launchMobileMoments article {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.035)),
+    var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 8px;
+  min-height: 168px;
+  padding: 16px;
+}
+
+.launchMobileMoments span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.launchMobileMoments h3 {
+  font-size: 22px;
+  line-height: 1.08;
+}
+
+.launchMobileMoments p {
+  color: var(--muted);
+}
+
+.mobileLaunchCtas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+
+.mobileLaunchCtas a {
+  align-items: center;
+  background: linear-gradient(135deg, var(--gold), #d68a35);
+  border: 1px solid rgba(255, 232, 182, 0.55);
+  border-radius: 8px;
+  color: #18110a;
+  display: inline-flex;
+  font-weight: 900;
+  gap: 8px;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 14px;
 }
 
 .waitlistPanel input {
@@ -2332,6 +2510,7 @@ ol {
   .landingGrid,
   .dashboardHeroGrid,
   .mobileHeroGrid,
+  .launchMobileGrid,
   .dashboardWorkspace,
   .dashboardWorkspace > .dashboardRail:last-child,
   .workspace,
@@ -2366,6 +2545,8 @@ ol {
   .dashboardChecklist,
   .mobileModeGrid,
   .mobileChecklistGrid,
+  .launchMobileMoments,
+  .retroUpgradeGrid,
   .assetGrid,
   .detailColumns,
   .heroPresetGrid,
@@ -2392,6 +2573,10 @@ ol {
   .outputStack {
     grid-column: auto;
     grid-row: auto;
+  }
+
+  .launchPhoneShell {
+    transform: none;
   }
 }
 

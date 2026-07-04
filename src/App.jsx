@@ -174,6 +174,50 @@ const launchAssets = {
     "Retro-futuristic SaaS product demo, dark founder command center, amber and green terminal accents, UI cards assembling into Notion Canva Figma launch pack, premium cinematic lighting, no readable text.",
 };
 
+const launchMobileMoments = [
+  {
+    label: "Phone",
+    title: "Open the forge on the train, in a DM, or after a client call.",
+    detail: "Mobile web and PWA shell make Packsmith feel reachable before a native app is needed.",
+  },
+  {
+    label: "Tablet",
+    title: "Edit saved packs with enough room to think.",
+    detail: "Dashboard history, output blocks, exports, and launch tracking stay tablet-friendly.",
+  },
+  {
+    label: "Notion",
+    title: "Publish once, then open the workspace in the Notion app.",
+    detail: "The product remains export-first until the secure backend publish path is configured.",
+  },
+  {
+    label: "Claude / ChatGPT",
+    title: "Send clean Markdown and JSON instead of messy screenshots.",
+    detail: "Assistant handoff keeps Packsmith useful inside the tools founders already use.",
+  },
+];
+
+const generationalLaunchAngles = [
+  {
+    label: "Retro pull",
+    title: "Make it feel familiar, tactile, and worth sharing.",
+    detail:
+      "Y2K/early-web signals, console UI, device frames, and playful motion create the first click without making the product feel unserious.",
+  },
+  {
+    label: "Upgrade pull",
+    title: "Let users co-create instead of just watch.",
+    detail:
+      "Editable packs, saved history, assistant handoff, and mobile installability make the product feel like a tool they can shape.",
+  },
+  {
+    label: "Trust bridge",
+    title: "Show the practical path from curiosity to output.",
+    detail:
+      "The page now connects the story to real actions: try the forge, reopen a pack, export for Notion, and carry it into Claude or ChatGPT.",
+  },
+];
+
 const privacyVersion = "2026-07-02";
 const forgeResumeKey = "packsmith.resumePack";
 
@@ -601,15 +645,19 @@ function LaunchPage() {
         <div className="landingGrid">
           <motion.div className="heroCopy" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
             <p className="eyebrow gold">Today’s traction page</p>
-            <h1>Launch a template pack before the backend is perfect.</h1>
+            <h1>Retro enough to explore. Useful enough to return.</h1>
             <p>
-              Packsmith’s public launch kit gives founders the message, demo path, channel copy,
-              and early-builder capture needed to start conversations today.
+              Packsmith turns curiosity into a working template business flow: mobile-ready forge,
+              saved packs, Notion handoff, launch copy, and assistant-ready exports.
             </p>
             <div className="heroActions">
               <a href="/app">
                 Try the forge
                 <ArrowRight size={17} />
+              </a>
+              <a className="ghostLink" href="/mobile">
+                See mobile flow
+                <Smartphone size={17} />
               </a>
               <a className="ghostLink" href="#launch-copy">Copy launch assets</a>
             </div>
@@ -641,6 +689,13 @@ function LaunchPage() {
                 <span>Pack surfaces</span>
               </div>
             </div>
+            <div className="launchMobileMini">
+              <Smartphone size={18} />
+              <div>
+                <strong>Mobile-ready PWA path</strong>
+                <span>Phone, tablet, Notion app, Claude, ChatGPT</span>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -662,6 +717,26 @@ function LaunchPage() {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="landingSection retroUpgradeBand">
+        <div className="sectionIntro">
+          <p className="eyebrow">Retro x upgrade</p>
+          <h2>Nostalgia gets the click. Co-creation keeps the user.</h2>
+          <p className="muted">
+            The marketing page now pairs retro-futuristic energy with modern proof: mobile access,
+            editable packs, saved history, Notion compatibility, and AI assistant handoff.
+          </p>
+        </div>
+        <div className="retroUpgradeGrid">
+          {generationalLaunchAngles.map((angle) => (
+            <article key={angle.label}>
+              <span>{angle.label}</span>
+              <h3>{angle.title}</h3>
+              <p>{angle.detail}</p>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -698,6 +773,57 @@ function LaunchPage() {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="landingSection launchMobileShowcase">
+        <div className="sectionIntro">
+          <p className="eyebrow">Mobile-first curiosity</p>
+          <h2>It should feel alive on the device where the idea appears.</h2>
+          <p className="muted">
+            Packsmith starts as an installable mobile web app, then grows into native only when the signal is real.
+          </p>
+        </div>
+        <div className="launchMobileGrid">
+          <div className="marketingPhoneStack" aria-label="Packsmith mobile marketing preview">
+            <div className="phoneShell launchPhoneShell">
+              <div className="phoneSpeaker" />
+              <article>
+                <span>Saved pack</span>
+                <strong>AI Agency Launch Kit</strong>
+                <p>Reopen, edit, export, publish path.</p>
+              </article>
+              <article>
+                <span>Quality</span>
+                <strong>90/100</strong>
+                <p>Buyer clarity, assets, marketplace, connector readiness.</p>
+              </article>
+              <article>
+                <span>Launch</span>
+                <strong>Gumroad + LinkedIn</strong>
+                <p>Copy, calendar, video prompts.</p>
+              </article>
+            </div>
+          </div>
+          <div className="launchMobileMoments">
+            {launchMobileMoments.map((moment) => (
+              <article key={moment.label}>
+                <span>{moment.label}</span>
+                <h3>{moment.title}</h3>
+                <p>{moment.detail}</p>
+              </article>
+            ))}
+            <div className="mobileLaunchCtas">
+              <a href="/mobile">
+                Explore mobile access
+                <ArrowRight size={17} />
+              </a>
+              <a className="ghostLink" href="/app">
+                Try the forge
+                <Sparkles size={17} />
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
