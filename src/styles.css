@@ -3325,6 +3325,188 @@ ol {
   color: var(--text);
 }
 
+.apiConsoleFrame {
+  background:
+    radial-gradient(circle at 12% 3%, rgba(118, 168, 255, 0.12), transparent 30rem),
+    radial-gradient(circle at 88% 4%, rgba(66, 209, 160, 0.11), transparent 30rem);
+}
+
+.apiConsoleHero {
+  border-bottom: 1px solid var(--line);
+  min-height: 620px;
+  overflow: hidden;
+  padding: 22px clamp(18px, 3vw, 38px) 48px;
+  position: relative;
+}
+
+.apiConsoleHeroGrid {
+  align-items: center;
+  display: grid;
+  gap: 38px;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 0.78fr);
+  margin: 0 auto;
+  max-width: 1500px;
+  min-height: 510px;
+  padding-top: 42px;
+  position: relative;
+  z-index: 2;
+}
+
+.apiConsolePanel {
+  background:
+    linear-gradient(135deg, rgba(118, 168, 255, 0.11), rgba(66, 209, 160, 0.08)),
+    rgba(7, 11, 12, 0.86);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.apiConsolePanel p {
+  color: var(--muted);
+}
+
+.apiSignalGrid,
+.apiRouteGrid,
+.chatGptSetupGrid,
+.securityChecklistGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.apiSignalGrid article,
+.apiRouteGrid article,
+.chatGptSetupGrid article,
+.securityChecklistGrid article,
+.apiSamplesGrid article {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.apiSignalGrid article {
+  display: grid;
+  gap: 6px;
+  min-height: 116px;
+  padding: 14px;
+}
+
+.apiSignalGrid strong {
+  color: var(--green);
+  font-size: 38px;
+  line-height: 1;
+}
+
+.apiSignalGrid span,
+.apiRouteGrid span,
+.chatGptSetupGrid span,
+.apiSamplesGrid span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.apiRouteGrid article,
+.chatGptSetupGrid article,
+.apiSamplesGrid article {
+  display: grid;
+  gap: 11px;
+  padding: 16px;
+}
+
+.apiRouteGrid h3,
+.apiSamplesGrid h3 {
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.apiRouteGrid code {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--green);
+  display: block;
+  overflow-x: auto;
+  padding: 10px;
+  white-space: nowrap;
+}
+
+.apiRouteGrid p,
+.chatGptSetupGrid li,
+.chatGptSetupGrid p,
+.securityChecklistGrid p {
+  color: var(--muted);
+}
+
+.chatGptSetupGrid ol,
+.chatGptSetupGrid ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.promptCard button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  display: inline-flex;
+  font-weight: 900;
+  gap: 8px;
+  justify-self: start;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.apiSamplesGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+.sampleCodeGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sampleCodeGrid strong {
+  color: var(--text);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.sampleCodeGrid pre {
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  padding: 12px;
+}
+
+.securityChecklistGrid article {
+  align-items: start;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 14px;
+}
+
+.securityChecklistGrid svg {
+  color: var(--green);
+  margin-top: 2px;
+}
+
 @media (max-width: 1260px) {
   .workspace {
     grid-template-columns: 320px minmax(0, 1fr);
@@ -3336,6 +3518,12 @@ ol {
 
   .platformPathGrid {
     grid-template-columns: 1fr;
+  }
+
+  .apiRouteGrid,
+  .chatGptSetupGrid,
+  .securityChecklistGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .mobileModeGrid,
@@ -3380,12 +3568,14 @@ ol {
   .mobileHeroGrid,
   .revenueHeroGrid,
   .platformHeroGrid,
+  .apiConsoleHeroGrid,
   .launchMobileGrid,
   .gumroadPrepGrid,
   .dashboardWorkspace,
   .dashboardWorkspace > .dashboardRail:last-child,
   .workspace,
   .rightRail,
+  .sampleCodeGrid,
   .waitlistPanel {
     grid-template-columns: 1fr;
   }
@@ -3486,7 +3676,11 @@ ol {
   .presetSwitch,
   .payloadStats,
   .platformSummaryGrid,
-  .platformWaveGrid {
+  .platformWaveGrid,
+  .apiSignalGrid,
+  .apiRouteGrid,
+  .chatGptSetupGrid,
+  .securityChecklistGrid {
     grid-template-columns: 1fr;
   }
 

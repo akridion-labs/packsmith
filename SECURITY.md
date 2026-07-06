@@ -15,6 +15,7 @@ Packsmith currently handles emails, Google-authenticated profiles, saved templat
 - Keep ChatGPT Actions, Claude MCP, and plugin surfaces limited to explicit Packsmith tools; never expose arbitrary shell, filesystem, or network actions.
 - Strip token-like fields from API/MCP input and keep connector secrets on the server side only.
 - Require explicit user intent before save, publish, checkout, or external export actions from assistant/plugin surfaces.
+- Keep API console examples synthetic and secret-free; never paste real production tokens into OpenAPI samples or Custom GPT instructions.
 
 ## Current Data Surfaces
 

@@ -46,6 +46,7 @@ import {
   buildAnalyticsEvent,
   summarizeAnalyticsEvents,
 } from "./analyticsData";
+import { buildApiConsoleModel } from "./apiConsoleData";
 import {
   buildDashboardMetrics,
   buildLaunchTracker,
@@ -531,6 +532,7 @@ function LandingPage() {
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/launch">Launch kit</a>
             <a href="/platforms">Platforms</a>
+            <a href="/api-console">API Console</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
@@ -828,6 +830,7 @@ function LaunchPage() {
             <a href="/">Home</a>
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/platforms">Platforms</a>
+            <a href="/api-console">API Console</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
@@ -1854,6 +1857,7 @@ function DashboardPage() {
             <a href="/">Home</a>
             <a href="/launch">Launch kit</a>
             <a href="/platforms">Platforms</a>
+            <a href="/api-console">API Console</a>
             <a href="/app">Forge</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
@@ -2462,6 +2466,7 @@ function PlatformExpansionPage() {
             <a href="/">Home</a>
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/launch">Launch kit</a>
+            <a href="/api-console">API Console</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
             <a href="/app">Forge</a>
@@ -2571,6 +2576,232 @@ function PlatformExpansionPage() {
                 <strong>Revenue</strong>
                 <span>{path.monetization}</span>
               </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {notice && (
+        <motion.div className="toast" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          {notice}
+        </motion.div>
+      )}
+    </main>
+  );
+}
+
+function ApiConsolePage() {
+  const [notice, setNotice] = useState("");
+  const consoleModel = useMemo(() => buildApiConsoleModel(), []);
+
+  useEffect(() => {
+    trackLocalAnalytics("viewed_api_console_page", { page: "/api-console" });
+  }, []);
+
+  function flash(message) {
+    setNotice(message);
+    window.clearTimeout(flash.timer);
+    flash.timer = window.setTimeout(() => setNotice(""), 2800);
+  }
+
+  function exportOpenApiSpec() {
+    downloadFile(
+      "packsmith-openapi.json",
+      JSON.stringify(consoleModel.openApiSpec, null, 2),
+      "application/json",
+    );
+    trackLocalAnalytics("exported_packsmith_openapi", { routeCount: consoleModel.routes.length });
+    flash("OpenAPI schema exported.");
+  }
+
+  function exportActionSamples() {
+    downloadFile(
+      "packsmith-chatgpt-action-samples.json",
+      JSON.stringify(
+        {
+          exportedAt: new Date().toISOString(),
+          baseUrl: consoleModel.baseUrl,
+          instructions: consoleModel.instructions,
+          samples: consoleModel.samples,
+          securityChecklist: consoleModel.securityChecklist,
+        },
+        null,
+        2,
+      ),
+      "application/json",
+    );
+    trackLocalAnalytics("exported_chatgpt_action_samples", { sampleCount: consoleModel.samples.length });
+    flash("Action samples exported.");
+  }
+
+  async function copyStarterPrompt() {
+    try {
+      await navigator.clipboard.writeText(consoleModel.instructions.starterPrompt);
+      trackLocalAnalytics("copied_chatgpt_action_prompt", { page: "/api-console" });
+      flash("ChatGPT starter prompt copied.");
+    } catch {
+      flash("Copy was blocked by the browser.");
+    }
+  }
+
+  return (
+    <main className="landingFrame apiConsoleFrame">
+      <section className="apiConsoleHero">
+        <div className="heroBackdrop" />
+        <nav className="topNav">
+          <a className="brandLockup" href="/">
+            <div className="brandMark">
+              <FileJson size={24} />
+            </div>
+            <div>
+              <strong>Packsmith</strong>
+              <span>API console</span>
+            </div>
+          </a>
+          <div className="navPills">
+            <a href="/">Home</a>
+            <a href="/platforms">Platforms</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/app">Forge</a>
+            <a href="/launch">Launch kit</a>
+          </div>
+        </nav>
+
+        <div className="apiConsoleHeroGrid">
+          <motion.div className="heroCopy" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+            <p className="eyebrow gold">ChatGPT Action spec</p>
+            <h1>Turn Packsmith into an assistant action surface.</h1>
+            <p>
+              Export the OpenAPI contract, test safe example payloads, and use the starter prompt to create
+              a Custom GPT that can generate template packs and marketplace-ready assets.
+            </p>
+            <div className="heroActions">
+              <button type="button" onClick={exportOpenApiSpec}>
+                <Download size={17} />
+                Export OpenAPI
+              </button>
+              <button type="button" onClick={exportActionSamples}>
+                <FileJson size={17} />
+                Export samples
+              </button>
+              <button type="button" onClick={copyStarterPrompt}>
+                <Clipboard size={17} />
+                Copy GPT prompt
+              </button>
+            </div>
+          </motion.div>
+
+          <motion.div className="apiConsolePanel" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
+            <div className="consoleHeader">
+              <span />
+              <span />
+              <span />
+              <strong>packsmith://openapi</strong>
+            </div>
+            <div className="apiSignalGrid">
+              <article>
+                <strong>{consoleModel.routes.length}</strong>
+                <span>Routes</span>
+              </article>
+              <article>
+                <strong>{consoleModel.samples.length}</strong>
+                <span>Samples</span>
+              </article>
+              <article>
+                <strong>0</strong>
+                <span>Secrets</span>
+              </article>
+            </div>
+            <p>{consoleModel.instructions.summary}</p>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="landingSection apiRouteSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Contract routes</p>
+          <h2>One API surface for ChatGPT, Claude, and future plugin stores.</h2>
+        </div>
+        <div className="apiRouteGrid">
+          {consoleModel.routes.map((route) => (
+            <article key={route.id}>
+              <span>{route.auth} auth</span>
+              <h3>{route.id}</h3>
+              <code>{route.method} {route.path}</code>
+              <p>{route.summary}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection chatGptSetupSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Custom GPT setup</p>
+          <h2>Use this as the founder checklist for the ChatGPT Action.</h2>
+        </div>
+        <div className="chatGptSetupGrid">
+          <article>
+            <span>Steps</span>
+            <ol>
+              {consoleModel.instructions.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </article>
+          <article>
+            <span>Auth and security</span>
+            <ul>
+              {consoleModel.instructions.authNotes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          </article>
+          <article className="promptCard">
+            <span>Starter prompt</span>
+            <p>{consoleModel.instructions.starterPrompt}</p>
+            <button type="button" onClick={copyStarterPrompt}>
+              <Clipboard size={17} />
+              Copy prompt
+            </button>
+          </article>
+        </div>
+      </section>
+
+      <section className="landingSection apiSamplesSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Safe examples</p>
+          <h2>Sample requests and responses avoid secrets and payment data.</h2>
+        </div>
+        <div className="apiSamplesGrid">
+          {consoleModel.samples.map((sample) => (
+            <article key={sample.id}>
+              <span>{sample.routeId}</span>
+              <h3>{sample.label}</h3>
+              <div className="sampleCodeGrid">
+                <div>
+                  <strong>Request</strong>
+                  <pre>{JSON.stringify(sample.request, null, 2)}</pre>
+                </div>
+                <div>
+                  <strong>Response</strong>
+                  <pre>{JSON.stringify(sample.response, null, 2)}</pre>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection apiSecuritySection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Security baseline</p>
+          <h2>The action starts public for generation, private for save and publish.</h2>
+        </div>
+        <div className="securityChecklistGrid">
+          {consoleModel.securityChecklist.map((item) => (
+            <article key={item}>
+              <ShieldCheck size={18} />
+              <p>{item}</p>
             </article>
           ))}
         </div>
@@ -3085,6 +3316,7 @@ function ForgeApp() {
             <a href="/dashboard">Dashboard</a>
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/platforms">Platforms</a>
+            <a href="/api-console">API Console</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
             {user ? (
@@ -3895,6 +4127,7 @@ function App() {
   if (window.location.pathname === "/dashboard") return <DashboardPage />;
   if (window.location.pathname === "/mobile") return <MobileAccessPage />;
   if (window.location.pathname === "/platforms") return <PlatformExpansionPage />;
+  if (window.location.pathname === "/api-console") return <ApiConsolePage />;
   if (window.location.pathname === "/privacy") return <PrivacyPage />;
   return <LandingPage />;
 }

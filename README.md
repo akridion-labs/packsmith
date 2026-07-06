@@ -30,6 +30,7 @@ Then open:
 - `http://127.0.0.1:5173/launch` for the launch/traction page
 - `http://127.0.0.1:5173/ai-agency-launch-kit` for the first revenue product page
 - `http://127.0.0.1:5173/platforms` for the ChatGPT, Claude, Adobe, Figma, Canva, and browser extension roadmap
+- `http://127.0.0.1:5173/api-console` for the OpenAPI/ChatGPT Actions console
 - `http://127.0.0.1:5173/app` for the Packsmith forge workspace
 - `http://127.0.0.1:5173/privacy` for the MVP privacy notice
 
@@ -74,6 +75,20 @@ npm run mcp:packsmith
 ```
 
 This prototype is intentionally local and tool-limited. It does not execute shell commands, does not accept arbitrary file paths, and strips token-like fields from tool input. Production remote MCP should sit behind Packsmith auth and use the same server-side secret rules as Notion publishing.
+
+The in-app API console lives at `/api-console`. It exports:
+
+- `packsmith-openapi.json` for ChatGPT Actions
+- `packsmith-chatgpt-action-samples.json` with safe sample requests and responses
+- a starter Custom GPT prompt for Packsmith generation and exports
+
+Recommended ChatGPT Action flow:
+
+1. Export `packsmith-openapi.json`.
+2. Create a Custom GPT and import the schema under Actions.
+3. Start with unauthenticated generation/export routes.
+4. Add Packsmith login only for saved history, cloud exports, and publish actions.
+5. Keep Notion, Supabase, Google, and payment secrets server-side only.
 
 ## Supabase Setup
 
@@ -132,6 +147,7 @@ Cloud features:
 - Connector roadmap cards for Notion, Figma, and Canva
 - AI Agency revenue page with Gumroad listing, license, refund policy, setup checklist, and local pricing-intent analytics
 - Platform expansion roadmap for ChatGPT Apps/GPT Actions, Claude MCP, Adobe Express add-on, Photoshop UXP, Figma plugin, Canva importer, and browser extension paths
+- API console for exporting the ChatGPT Action OpenAPI schema, safe sample payloads, and starter prompt
 
 ## Connector Direction
 
