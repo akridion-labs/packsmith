@@ -2959,6 +2959,7 @@ function ForgeApp() {
   );
   const launchCalendar = useMemo(() => buildLaunchCalendar(pack), [pack]);
   const marketingKit = useMemo(() => buildMarketingKit(pack), [pack]);
+  const figmaPreviewSchema = useMemo(() => buildFigmaExportSchema(pack, marketingKit), [pack, marketingKit]);
   const founderPlan = useMemo(() => buildFounderPriorityPlan(pack), [pack]);
   const setupChecklist = useMemo(
     () => [
@@ -3754,6 +3755,51 @@ function ForgeApp() {
               </article>
             ))}
           </div>
+
+          <section className="panel visualPreviewPanel">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">Visual pack reveal</p>
+                <h2>Figma-style preview board</h2>
+              </div>
+              <button type="button" onClick={exportFigmaJson}>
+                <Figma size={17} />
+                Export board JSON
+              </button>
+            </div>
+            <div className="previewBoard">
+              <article className="packCoverFrame">
+                <span>{pack.marketplaceTarget}</span>
+                <h3>{pack.shortName || pack.name}</h3>
+                <p>{pack.promise}</p>
+                <div className="coverMeta">
+                  <strong>{pack.suggestedPrice}</strong>
+                  <small>{pack.quality.overall}/100 quality</small>
+                </div>
+              </article>
+              {figmaPreviewSchema.frames.slice(0, 4).map((frame, index) => (
+                <article className={`previewFrame frame-${index}`} key={frame.id}>
+                  <div className="previewFrameHeader">
+                    <span>{frame.size}</span>
+                    <strong>{frame.name}</strong>
+                  </div>
+                  <div className="previewSkeleton" aria-hidden="true">
+                    {frame.sections.slice(0, 5).map((section) => (
+                      <i key={section} />
+                    ))}
+                  </div>
+                  <p>{frame.purpose}</p>
+                </article>
+              ))}
+            </div>
+            <div className="previewTokenStrip">
+              {figmaPreviewSchema.designSystem.colorTokens.slice(0, 6).map((token) => (
+                <span key={token.name} style={{ "--swatch": token.value }}>
+                  {token.name}
+                </span>
+              ))}
+            </div>
+          </section>
 
           <section className="panel comparePanel">
             <div className="boardHeader">

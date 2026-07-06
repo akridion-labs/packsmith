@@ -771,6 +771,181 @@ select:focus {
   height: 100%;
 }
 
+.visualPreviewPanel {
+  display: grid;
+  gap: 14px;
+  overflow: hidden;
+  position: relative;
+}
+
+.visualPreviewPanel::before {
+  background:
+    linear-gradient(90deg, rgba(239, 189, 99, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(66, 209, 160, 0.06) 1px, transparent 1px);
+  background-size: 42px 42px;
+  content: "";
+  inset: 56px 0 0;
+  opacity: 0.28;
+  pointer-events: none;
+  position: absolute;
+}
+
+.visualPreviewPanel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.previewBoard {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1.12fr repeat(2, minmax(0, 1fr));
+}
+
+.packCoverFrame,
+.previewFrame {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), transparent 42%),
+    rgba(7, 11, 12, 0.84);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow:
+    0 22px 70px rgba(0, 0, 0, 0.28),
+    var(--inner-glow);
+  display: grid;
+  gap: 12px;
+  min-height: 220px;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.packCoverFrame {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(239, 189, 99, 0.25), transparent 15rem),
+    radial-gradient(circle at 90% 80%, rgba(66, 209, 160, 0.2), transparent 15rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), transparent 46%),
+    #0a0f10;
+  grid-row: span 2;
+  min-height: 452px;
+}
+
+.packCoverFrame span,
+.previewFrameHeader span,
+.previewTokenStrip span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.packCoverFrame h3 {
+  font-size: clamp(34px, 4vw, 58px);
+  line-height: 0.92;
+  max-width: 460px;
+}
+
+.packCoverFrame p,
+.previewFrame p {
+  color: var(--muted);
+}
+
+.coverMeta {
+  align-items: end;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.coverMeta strong {
+  color: var(--green);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.coverMeta small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.previewFrameHeader {
+  display: grid;
+  gap: 5px;
+}
+
+.previewFrameHeader strong {
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.previewSkeleton {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(246, 225, 177, 0.09);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  min-height: 112px;
+  padding: 10px;
+}
+
+.previewSkeleton i {
+  background:
+    linear-gradient(90deg, rgba(239, 189, 99, 0.18), rgba(66, 209, 160, 0.12)),
+    rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  display: block;
+  min-height: 14px;
+}
+
+.previewSkeleton i:nth-child(1) {
+  min-height: 34px;
+  width: 76%;
+}
+
+.previewSkeleton i:nth-child(2) {
+  width: 92%;
+}
+
+.previewSkeleton i:nth-child(3) {
+  width: 64%;
+}
+
+.previewSkeleton i:nth-child(4) {
+  min-height: 28px;
+  width: 88%;
+}
+
+.previewSkeleton i:nth-child(5) {
+  width: 48%;
+}
+
+.previewTokenStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.previewTokenStrip span {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  display: inline-flex;
+  gap: 7px;
+  padding: 7px 10px;
+}
+
+.previewTokenStrip span::before {
+  background: var(--swatch);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  content: "";
+  height: 12px;
+  width: 12px;
+}
+
 .comparePanel {
   display: grid;
   gap: 14px;
@@ -3833,8 +4008,15 @@ ol {
 
   .apiRouteGrid,
   .chatGptSetupGrid,
-  .securityChecklistGrid {
+  .securityChecklistGrid,
+  .previewBoard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .packCoverFrame {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    min-height: 320px;
   }
 
   .mobileModeGrid,
@@ -3887,6 +4069,7 @@ ol {
   .workspace,
   .rightRail,
   .sampleCodeGrid,
+  .previewBoard,
   .waitlistPanel {
     grid-template-columns: 1fr;
   }
@@ -3960,6 +4143,10 @@ ol {
 
   .landingProductShot {
     transform: none;
+  }
+
+  .packCoverFrame {
+    min-height: 280px;
   }
 
   .ideaTerminal,
