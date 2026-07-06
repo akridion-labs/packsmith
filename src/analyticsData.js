@@ -1,5 +1,38 @@
 const sensitiveKeyPattern = /(token|secret|password|api[-_]?key|access[-_]?token|refresh[-_]?token|authorization|credential)/i;
 
+const defaultRevenueFunnelStages = [
+  {
+    id: "home",
+    label: "Homepage",
+    eventTypes: ["viewed_home_page"],
+  },
+  {
+    id: "launch",
+    label: "Launch page",
+    eventTypes: ["viewed_launch_page"],
+  },
+  {
+    id: "product",
+    label: "AI kit page",
+    eventTypes: ["viewed_ai_agency_product_page"],
+  },
+  {
+    id: "cta",
+    label: "Gumroad intent",
+    eventTypes: ["gumroad_cta_clicked"],
+  },
+  {
+    id: "lead",
+    label: "Buyer lead",
+    eventTypes: ["submitted_ai_agency_waitlist", "submitted_ai_agency_waitlist_local_fallback"],
+  },
+  {
+    id: "export",
+    label: "Revenue brief",
+    eventTypes: ["exported_ai_agency_revenue_brief"],
+  },
+];
+
 export function sanitizeAnalyticsMetadata(value) {
   if (Array.isArray(value)) return value.map(sanitizeAnalyticsMetadata);
   if (!value || typeof value !== "object") return value;
@@ -35,5 +68,68 @@ export function summarizeAnalyticsEvents(events = []) {
     saves: countType((type) => type === "saved_pack_local" || type === "saved_pack_cloud"),
     reopens: countType((type) => type === "reopened_saved_pack"),
     ctaClicks: countType((type) => type.endsWith("_cta_clicked")),
+  };
+}
+
+function percentage(numerator, denominator) {
+  if (!denominator) return 0;
+  return Math.round((numerator / denominator) * 100);
+}
+
+export function buildRevenueFunnel(events = [], stages = defaultRevenueFunnelStages) {
+  return stages.map((stage, index) => {
+    const count = events.filter((event) => stage.eventTypes.includes(event.type)).length;
+    const previousStage = index > 0 ? stages[index - 1] : null;
+    const previousCount = previousStage
+      ? events.filter((event) => previousStage.eventTypes.includes(event.type)).length
+      : count;
+    const firstCount = events.filter((event) => stages[0].eventTypes.includes(event.type)).length;
+
+    return {
+      ...stage,
+      count,
+      conversionFromPrevious: index === 0 ? 100 : percentage(count, previousCount),
+      conversionFromStart: index === 0 ? 100 : percentage(count, firstCount),
+    };
+  });
+}
+
+export function buildPricingExperiment(events = [], tiers = []) {
+  const pricingEvents = events.filter((event) => event.type === "gumroad_cta_clicked");
+  const totalClicks = pricingEvents.length;
+  const tierRows = tiers.map((tier) => {
+    const tierClicks = pricingEvents.filter((event) => event.metadata?.tier === tier.name);
+    const latestClick = tierClicks
+      .map((event) => event.createdAt)
+      .filter(Boolean)
+      .sort()
+      .at(-1);
+
+    return {
+      name: tier.name,
+      price: tier.price,
+      promise: tier.promise,
+      clicks: tierClicks.length,
+      share: percentage(tierClicks.length, totalClicks),
+      lastClickedAt: latestClick || null,
+    };
+  });
+  const recommendedTier = tierRows.reduce(
+    (winner, tier) => {
+      if (tier.clicks > winner.clicks) return tier;
+      if (tier.clicks === winner.clicks && tier.clicks > 0) {
+        const winnerPrice = Number(String(winner.price || "").replace(/[^0-9.]/g, "")) || 0;
+        const tierPrice = Number(String(tier.price || "").replace(/[^0-9.]/g, "")) || 0;
+        return tierPrice > winnerPrice ? tier : winner;
+      }
+      return winner;
+    },
+    { name: "Collect more clicks", price: "--", clicks: 0, share: 0 },
+  );
+
+  return {
+    totalClicks,
+    tiers: tierRows,
+    recommendedTier,
   };
 }

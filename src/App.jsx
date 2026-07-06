@@ -41,6 +41,8 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import {
   appendAnalyticsEvent,
+  buildPricingExperiment,
+  buildRevenueFunnel,
   buildAnalyticsEvent,
   summarizeAnalyticsEvents,
 } from "./analyticsData";
@@ -1518,6 +1520,11 @@ function DashboardPage() {
     [history, waitlistLeads],
   );
   const analyticsSummary = useMemo(() => summarizeAnalyticsEvents(analyticsEvents), [analyticsEvents]);
+  const revenueFunnel = useMemo(() => buildRevenueFunnel(analyticsEvents), [analyticsEvents]);
+  const pricingExperiment = useMemo(
+    () => buildPricingExperiment(analyticsEvents, aiAgencyPricing),
+    [analyticsEvents],
+  );
   const selectedRow = history.find((row) => row.id === selectedId) || history[0] || null;
   const selectedPack = selectedRow?.raw || null;
   const selectedMarketingKit = useMemo(
@@ -1638,6 +1645,11 @@ function DashboardPage() {
           exportedAt: new Date().toISOString(),
           user: user ? { id: user.id, email: user.email } : null,
           metrics,
+          revenueAnalytics: {
+            summary: analyticsSummary,
+            funnel: revenueFunnel,
+            pricingExperiment,
+          },
           selectedPack: selectedPack?.name || null,
           history: history.map((row) => ({
             id: row.id,
@@ -1662,7 +1674,17 @@ function DashboardPage() {
     const events = readLocalArray(analyticsEventsKey);
     downloadFile(
       "packsmith-local-analytics-events.json",
-      JSON.stringify({ exportedAt: new Date().toISOString(), summary: summarizeAnalyticsEvents(events), events }, null, 2),
+      JSON.stringify(
+        {
+          exportedAt: new Date().toISOString(),
+          summary: summarizeAnalyticsEvents(events),
+          revenueFunnel: buildRevenueFunnel(events),
+          pricingExperiment: buildPricingExperiment(events, aiAgencyPricing),
+          events,
+        },
+        null,
+        2,
+      ),
       "application/json",
     );
     trackLocalAnalytics("exported_local_analytics", { eventCount: events.length });
@@ -1994,6 +2016,62 @@ function DashboardPage() {
                 <p>Dashboard exports avoid secrets and include only saved metadata.</p>
               </article>
             </div>
+          </section>
+
+          <section className="panel revenueFunnelPanel">
+            <div className="panelHeader">
+              <TrendingUp size={18} />
+              <div>
+                <p className="eyebrow">Revenue funnel</p>
+                <h2>Drop-off map</h2>
+              </div>
+            </div>
+            <div className="funnelList">
+              {revenueFunnel.map((stage) => (
+                <article key={stage.id}>
+                  <div>
+                    <strong>{stage.label}</strong>
+                    <span>{stage.count} events</span>
+                  </div>
+                  <em>{stage.conversionFromPrevious}%</em>
+                </article>
+              ))}
+            </div>
+            <p className="privacyMicrocopy">
+              Conversion shows each step against the previous step, so weak spots become obvious quickly.
+            </p>
+          </section>
+
+          <section className="panel pricingExperimentPanel">
+            <div className="panelHeader">
+              <Gauge size={18} />
+              <div>
+                <p className="eyebrow">Pricing experiment</p>
+                <h2>{pricingExperiment.totalClicks ? pricingExperiment.recommendedTier.name : "Collect clicks first"}</h2>
+              </div>
+            </div>
+            <div className="recommendedPrice">
+              <span>Recommended launch price</span>
+              <strong>{pricingExperiment.totalClicks ? pricingExperiment.recommendedTier.price : "--"}</strong>
+              <small>{pricingExperiment.totalClicks} Gumroad-intent clicks tracked</small>
+            </div>
+            <div className="pricingSignalList">
+              {pricingExperiment.tiers.map((tier) => (
+                <article key={tier.name}>
+                  <div>
+                    <strong>{tier.name}</strong>
+                    <span>{tier.price}</span>
+                  </div>
+                  <div className="pricingSignalBar" aria-label={`${tier.name} click share ${tier.share}%`}>
+                    <span style={{ width: `${tier.share}%` }} />
+                  </div>
+                  <em>{tier.clicks} clicks / {tier.share}%</em>
+                </article>
+              ))}
+            </div>
+            <p className="privacyMicrocopy">
+              Start with intent clicks before checkout wiring, then replace placeholders with real Gumroad links.
+            </p>
           </section>
 
           <section className="panel dashboardAnalyticsPanel">

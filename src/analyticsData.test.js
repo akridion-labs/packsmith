@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   appendAnalyticsEvent,
+  buildPricingExperiment,
+  buildRevenueFunnel,
   buildAnalyticsEvent,
   sanitizeAnalyticsMetadata,
   summarizeAnalyticsEvents,
@@ -52,5 +54,50 @@ describe("analytics data helpers", () => {
       reopens: 1,
       ctaClicks: 1,
     });
+  });
+
+  it("builds revenue funnel conversion percentages", () => {
+    const events = [
+      { type: "viewed_home_page" },
+      { type: "viewed_home_page" },
+      { type: "viewed_launch_page" },
+      { type: "viewed_ai_agency_product_page" },
+      { type: "gumroad_cta_clicked" },
+      { type: "submitted_ai_agency_waitlist" },
+    ];
+
+    const funnel = buildRevenueFunnel(events);
+
+    expect(funnel.map((stage) => [stage.id, stage.count, stage.conversionFromPrevious])).toEqual([
+      ["home", 2, 100],
+      ["launch", 1, 50],
+      ["product", 1, 100],
+      ["cta", 1, 100],
+      ["lead", 1, 100],
+      ["export", 0, 0],
+    ]);
+  });
+
+  it("builds pricing experiment intent and recommends the strongest tier", () => {
+    const tiers = [
+      { name: "Launch", price: "$29", promise: "Starter pack" },
+      { name: "Premium", price: "$79", promise: "Best bundle" },
+      { name: "Commercial", price: "$149", promise: "Client license" },
+    ];
+    const events = [
+      { type: "gumroad_cta_clicked", metadata: { tier: "Premium" }, createdAt: "2026-07-06T00:00:00.000Z" },
+      { type: "gumroad_cta_clicked", metadata: { tier: "Commercial" }, createdAt: "2026-07-06T00:01:00.000Z" },
+      { type: "gumroad_cta_clicked", metadata: { tier: "Commercial" }, createdAt: "2026-07-06T00:02:00.000Z" },
+    ];
+
+    const experiment = buildPricingExperiment(events, tiers);
+
+    expect(experiment.totalClicks).toBe(3);
+    expect(experiment.tiers.map((tier) => [tier.name, tier.clicks, tier.share])).toEqual([
+      ["Launch", 0, 0],
+      ["Premium", 1, 33],
+      ["Commercial", 2, 67],
+    ]);
+    expect(experiment.recommendedTier.name).toBe("Commercial");
   });
 });

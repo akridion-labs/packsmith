@@ -2627,10 +2627,107 @@ ol {
 }
 
 .dashboardOpsPanel,
+.revenueFunnelPanel,
+.pricingExperimentPanel,
 .dashboardAnalyticsPanel,
 .dashboardNextPanel {
   display: grid;
   gap: 10px;
+}
+
+.funnelList,
+.pricingSignalList {
+  display: grid;
+  gap: 8px;
+}
+
+.funnelList article,
+.pricingSignalList article,
+.recommendedPrice {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.funnelList article {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.funnelList strong,
+.funnelList span,
+.pricingSignalList strong,
+.pricingSignalList span,
+.pricingSignalList em,
+.recommendedPrice span,
+.recommendedPrice strong,
+.recommendedPrice small {
+  display: block;
+}
+
+.funnelList strong,
+.pricingSignalList strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.funnelList span,
+.pricingSignalList span,
+.pricingSignalList em,
+.recommendedPrice span,
+.recommendedPrice small {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.funnelList em {
+  color: var(--green);
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.recommendedPrice {
+  background:
+    linear-gradient(135deg, rgba(66, 209, 160, 0.12), rgba(239, 189, 99, 0.1)),
+    rgba(255, 255, 255, 0.055);
+}
+
+.recommendedPrice strong {
+  color: var(--gold);
+  font-size: 36px;
+  line-height: 1;
+  margin: 8px 0 6px;
+}
+
+.pricingSignalList article {
+  display: grid;
+  gap: 8px;
+}
+
+.pricingSignalList article > div:first-child {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.pricingSignalBar {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.pricingSignalBar span {
+  background: linear-gradient(90deg, var(--green), var(--gold));
+  border-radius: inherit;
+  height: 100%;
 }
 
 .analyticsGrid {
