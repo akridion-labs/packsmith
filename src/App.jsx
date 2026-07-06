@@ -46,7 +46,14 @@ import {
   createForgeResumePayload,
   normalizePackHistory,
 } from "./dashboardData";
+import { buildFigmaExportSchema } from "./figmaExport";
 import { createNotionPayload, simulateNotionPublish } from "./integrations/notionConnector";
+import {
+  buildInitialLaunchAssetTracking,
+  buildLaunchAssetStudioItems,
+  buildLaunchAssetTrackingSummary,
+  launchAssetStatuses,
+} from "./launchAssetStudioData";
 import {
   getCurrentSession,
   isSupabaseConfigured,
@@ -220,6 +227,7 @@ const generationalLaunchAngles = [
 
 const privacyVersion = "2026-07-02";
 const forgeResumeKey = "packsmith.resumePack";
+const launchAssetTrackingKey = "packsmith.launchAssetTracking";
 
 function downloadFile(name, content, type) {
   const blob = new Blob([content], { type });
@@ -312,68 +320,51 @@ function marketplaceToJson(pack) {
   };
 }
 
-function joinLines(items = []) {
-  return items.map((item, index) => `${index + 1}. ${item}`).join("\n");
+function readJsonObject(key) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
 }
 
-function LaunchAssetStudio({ pack, kit, compact = false, onCopy, onExport }) {
-  const assets = [
-    {
-      id: "linkedin",
-      label: "LinkedIn post",
-      icon: FileText,
-      content: kit.mobileLaunchCampaign?.linkedinPost || kit.linkedinPost,
-      helper: "Founder launch story for the full product stack.",
-    },
-    {
-      id: "x",
-      label: "X thread",
-      icon: Clipboard,
-      content: joinLines(kit.mobileLaunchCampaign?.xThread || kit.xThread),
-      helper: "Short-form thread for curiosity and validation.",
-    },
-    {
-      id: "video",
-      label: "Short video script",
-      icon: Play,
-      content: (kit.mobileLaunchCampaign?.shortVideoScript || kit.videoScript.map((item) => `${item.time}: ${item.voiceover}`)).join("\n"),
-      helper: "60-second demo arc for phone, Figma, dashboard, and exports.",
-    },
-    {
-      id: "screenshots",
-      label: "Screenshot checklist",
-      icon: Smartphone,
-      content: joinLines(kit.mobileLaunchCampaign?.screenshotChecklist || kit.shotList),
-      helper: "Exact shots to capture for the launch post and Gumroad page.",
-    },
-    {
-      id: "figma",
-      label: "Figma bundle copy",
-      icon: Figma,
-      content: kit.figmaProductLaunches
-        .map((item) => `${item.name}\n${item.buyerPromise}\nMarketplace: ${item.marketplace}`)
-        .join("\n\n"),
-      helper: "Use this to pitch Figma Community, UI8, or Gumroad bundle upgrades.",
-    },
-    {
-      id: "emerging",
-      label: "Emerging sharing streams",
-      icon: TrendingUp,
-      content: kit.emergingSharingStreams
-        .map((item) => `${item.platform}\nFormat: ${item.format}\nAngle: ${item.angle}\nPrompt: ${item.prompt}`)
-        .join("\n\n"),
-      helper: "TikTok/Reels/Shorts, Threads/Bluesky, Lemon8/Pinterest, Loops, and Reddit-ready angles.",
-    },
-    {
-      id: "ai-platforms",
-      label: "AI creative platforms",
-      icon: Brain,
-      content: kit.aiCreativePlatforms
-        .map((item) => `${item.platform}\nUse: ${item.use}\nPrompt: ${item.prompt}`)
-        .join("\n\n"),
-      helper: "Nano Banana/Gemini, Adobe Firefly, Runway, Canva, CapCut, and avatar-video prompts.",
-    },
-  ];
+function writeJsonObject(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+const launchStudioIconMap = {
+  brain: Brain,
+  clipboard: Clipboard,
+  figma: Figma,
+  file: FileText,
+  phone: Smartphone,
+  play: Play,
+  trending: TrendingUp,
+};
+
+function LaunchAssetStudio({ pack, kit, compact = false, onCopy, onExport, onFigmaExport }) {
+  const assetScope = `${pack.presetId || pack.id || "custom"}:${slugify(pack.name)}`;
+  const assets = useMemo(() => buildLaunchAssetStudioItems(kit), [kit]);
+  const [tracking, setTracking] = useState(() => {
+    const allTracking = readJsonObject(launchAssetTrackingKey);
+    return buildInitialLaunchAssetTracking(kit, allTracking[assetScope] || {});
+  });
+  const trackingSummary = useMemo(() => buildLaunchAssetTrackingSummary(tracking), [tracking]);
+
+  useEffect(() => {
+    const allTracking = readJsonObject(launchAssetTrackingKey);
+    setTracking(buildInitialLaunchAssetTracking(kit, allTracking[assetScope] || {}));
+  }, [assetScope, kit]);
+
+  function updateAssetStatus(assetId, status) {
+    if (!launchAssetStatuses.includes(status)) return;
+    const nextTracking = { ...tracking, [assetId]: status };
+    const allTracking = readJsonObject(launchAssetTrackingKey);
+    allTracking[assetScope] = nextTracking;
+    writeJsonObject(launchAssetTrackingKey, allTracking);
+    setTracking(nextTracking);
+  }
 
   return (
     <section className={compact ? "launchAssetStudio compact" : "panel launchAssetStudio"}>
@@ -382,9 +373,13 @@ function LaunchAssetStudio({ pack, kit, compact = false, onCopy, onExport }) {
           <p className="eyebrow">Launch Asset Studio</p>
           <h2>{compact ? "Copy launch assets" : "Copy, ship, and test the product story"}</h2>
         </div>
-        <button type="button" onClick={() => onExport?.(kit)}>
+        <button type="button" onClick={() => onExport?.(kit, tracking)}>
           <Download size={17} />
           Export studio
+        </button>
+        <button type="button" onClick={() => onFigmaExport?.()}>
+          <Figma size={17} />
+          Figma JSON
         </button>
       </div>
       {!compact && (
@@ -393,9 +388,15 @@ function LaunchAssetStudio({ pack, kit, compact = false, onCopy, onExport }) {
           and Claude/ChatGPT handoff.
         </p>
       )}
+      <div className="launchTrackingSummary" aria-label="Launch asset action tracking summary">
+        <span>{trackingSummary.posted} posted</span>
+        <span>{trackingSummary.tested} tested</span>
+        <span>{trackingSummary.converted} converted</span>
+        <span>{trackingSummary.needsRewrite} rewrites</span>
+      </div>
       <div className="launchAssetGrid">
         {assets.map((asset) => {
-          const Icon = asset.icon;
+          const Icon = launchStudioIconMap[asset.icon] || FileText;
           return (
             <article key={asset.id}>
               <div>
@@ -403,6 +404,19 @@ function LaunchAssetStudio({ pack, kit, compact = false, onCopy, onExport }) {
                 <span>{asset.label}</span>
               </div>
               <p>{asset.helper}</p>
+              <label className="assetStatusControl">
+                Status
+                <select
+                  value={tracking[asset.id] || "Drafted"}
+                  onChange={(event) => updateAssetStatus(asset.id, event.target.value)}
+                >
+                  {launchAssetStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <textarea readOnly value={asset.content} />
               <button type="button" onClick={() => onCopy?.(asset.content, `${asset.label} copied.`)}>
                 <Clipboard size={16} />
@@ -1345,17 +1359,30 @@ function DashboardPage() {
     }
   }
 
-  function exportDashboardLaunchStudio(kit = selectedMarketingKit) {
+  function exportDashboardLaunchStudio(kit = selectedMarketingKit, tracking = {}) {
     if (!selectedPack || !kit) {
       flash("Select a saved pack first.");
       return;
     }
     downloadFile(
       `packsmith-${slugify(selectedPack.name)}-launch-asset-studio.json`,
-      JSON.stringify({ pack: selectedPack.name, launchAssetStudio: kit }, null, 2),
+      JSON.stringify({ pack: selectedPack.name, launchAssetStudio: kit, actionTracking: tracking }, null, 2),
       "application/json",
     );
     flash("Launch Asset Studio exported.");
+  }
+
+  function exportDashboardFigmaSchema() {
+    if (!selectedPack || !selectedMarketingKit) {
+      flash("Select a saved pack first.");
+      return;
+    }
+    downloadFile(
+      `packsmith-${slugify(selectedPack.name)}-figma-export.json`,
+      JSON.stringify(buildFigmaExportSchema(selectedPack, selectedMarketingKit), null, 2),
+      "application/json",
+    );
+    flash("Figma export schema downloaded.");
   }
 
   function openSelectedPackInForge() {
@@ -1607,6 +1634,7 @@ function DashboardPage() {
               kit={selectedMarketingKit}
               onCopy={copyDashboardText}
               onExport={exportDashboardLaunchStudio}
+              onFigmaExport={exportDashboardFigmaSchema}
             />
           )}
         </section>
@@ -2251,6 +2279,15 @@ function ForgeApp() {
     flash("Marketplace JSON exported.");
   }
 
+  function exportFigmaJson() {
+    downloadFile(
+      `packsmith-${slugify(pack.name)}-figma-export.json`,
+      JSON.stringify(buildFigmaExportSchema(pack, marketingKit), null, 2),
+      "application/json",
+    );
+    flash("Figma export schema downloaded.");
+  }
+
   function exportLaunchCalendar() {
     downloadFile(
       `packsmith-${slugify(pack.name)}-launch-calendar.md`,
@@ -2278,10 +2315,10 @@ function ForgeApp() {
     flash("Social launch copy exported.");
   }
 
-  function exportLaunchAssetStudio(kit = marketingKit) {
+  function exportLaunchAssetStudio(kit = marketingKit, tracking = {}) {
     downloadFile(
       `packsmith-${slugify(pack.name)}-launch-asset-studio.json`,
-      JSON.stringify({ pack: pack.name, launchAssetStudio: kit }, null, 2),
+      JSON.stringify({ pack: pack.name, launchAssetStudio: kit, actionTracking: tracking }, null, 2),
       "application/json",
     );
     flash("Launch Asset Studio exported.");
@@ -2624,6 +2661,10 @@ function ForgeApp() {
                 <FileJson size={17} />
                 Market JSON
               </button>
+              <button type="button" onClick={exportFigmaJson}>
+                <Figma size={17} />
+                Figma JSON
+              </button>
               <button type="button" className="primary" onClick={exportNotionJson}>
                 <Database size={17} />
                 Notion JSON
@@ -2903,6 +2944,7 @@ function ForgeApp() {
             kit={marketingKit}
             onCopy={copyText}
             onExport={exportLaunchAssetStudio}
+            onFigmaExport={exportFigmaJson}
           />
         </section>
 
