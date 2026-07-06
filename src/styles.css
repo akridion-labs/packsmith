@@ -1336,6 +1336,157 @@ ol {
   min-height: 620px;
 }
 
+.revenueFrame {
+  background:
+    radial-gradient(circle at 12% 4%, rgba(239, 189, 99, 0.12), transparent 30rem),
+    radial-gradient(circle at 86% 8%, rgba(169, 139, 255, 0.11), transparent 28rem);
+}
+
+.revenueHero {
+  border-bottom: 1px solid var(--line);
+  min-height: 640px;
+  overflow: hidden;
+  padding: 22px clamp(18px, 3vw, 38px) 48px;
+  position: relative;
+}
+
+.revenueHeroGrid {
+  align-items: center;
+  display: grid;
+  gap: 38px;
+  grid-template-columns: minmax(0, 1fr) minmax(400px, 0.82fr);
+  margin: 0 auto;
+  max-width: 1500px;
+  min-height: 540px;
+  padding-top: 42px;
+  position: relative;
+  z-index: 2;
+}
+
+.revenuePreviewPanel {
+  background:
+    linear-gradient(135deg, rgba(239, 189, 99, 0.11), rgba(169, 139, 255, 0.08)),
+    rgba(7, 11, 12, 0.86);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.revenuePreviewPanel article {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.revenuePreviewPanel article span,
+.revenuePreviewGrid span,
+.pricingGrid span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.revenuePreviewPanel article strong {
+  color: var(--green);
+  font-size: clamp(42px, 6vw, 76px);
+  line-height: 0.9;
+}
+
+.revenuePreviewPanel article p,
+.revenuePreviewGrid p,
+.pricingGrid p,
+.pricingGrid small {
+  color: var(--muted);
+}
+
+.revenueMiniGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.revenueMiniGrid div {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.revenueMiniGrid strong,
+.revenueMiniGrid span {
+  display: block;
+}
+
+.revenueMiniGrid strong {
+  color: var(--green);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.revenueMiniGrid span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.revenuePreviewGrid,
+.pricingGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.revenuePreviewGrid article,
+.pricingGrid article {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.revenuePreviewGrid h3 {
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.pricingGrid article.featured {
+  background:
+    linear-gradient(135deg, rgba(239, 189, 99, 0.14), rgba(66, 209, 160, 0.06)),
+    var(--panel);
+  border-color: rgba(239, 189, 99, 0.45);
+}
+
+.pricingGrid strong {
+  color: var(--green);
+  font-size: 42px;
+  line-height: 1;
+}
+
+.pricingGrid button {
+  align-items: center;
+  background: linear-gradient(135deg, var(--gold), #d68a35);
+  border: 1px solid rgba(255, 232, 182, 0.55);
+  border-radius: 8px;
+  color: #18110a;
+  display: inline-flex;
+  font-weight: 900;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 12px;
+}
+
 .launchCommandCard {
   background:
     linear-gradient(135deg, rgba(239, 189, 99, 0.1), rgba(66, 209, 160, 0.08)),
@@ -2476,9 +2627,42 @@ ol {
 }
 
 .dashboardOpsPanel,
+.dashboardAnalyticsPanel,
 .dashboardNextPanel {
   display: grid;
   gap: 10px;
+}
+
+.analyticsGrid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.analyticsGrid article {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.analyticsGrid strong,
+.analyticsGrid span {
+  display: block;
+}
+
+.analyticsGrid strong {
+  color: var(--green);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.analyticsGrid span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  margin-top: 5px;
+  text-transform: uppercase;
 }
 
 .dashboardNextPanel ol {
@@ -2849,6 +3033,7 @@ ol {
   .landingGrid,
   .dashboardHeroGrid,
   .mobileHeroGrid,
+  .revenueHeroGrid,
   .launchMobileGrid,
   .dashboardWorkspace,
   .dashboardWorkspace > .dashboardRail:last-child,
@@ -2908,6 +3093,9 @@ ol {
   .productShotGrid,
   .miniPipeline,
   .launchMetricGrid,
+  .revenueMiniGrid,
+  .revenuePreviewGrid,
+  .pricingGrid,
   .launchCopyGrid,
   .selectedPackStats,
   .nativeDecisionPanel,
@@ -2930,6 +3118,7 @@ ol {
   .landingHero,
   .dashboardHero,
   .mobileHero,
+  .revenueHero,
   .workspace {
     padding-left: 14px;
     padding-right: 14px;

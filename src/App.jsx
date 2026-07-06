@@ -40,6 +40,11 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
+  appendAnalyticsEvent,
+  buildAnalyticsEvent,
+  summarizeAnalyticsEvents,
+} from "./analyticsData";
+import {
   buildDashboardMetrics,
   buildLaunchTracker,
   buildPackExportChecklist,
@@ -225,9 +230,31 @@ const generationalLaunchAngles = [
   },
 ];
 
+const aiAgencyPricing = [
+  {
+    name: "Launch",
+    price: "$29",
+    promise: "Core Notion OS, launch board, and starter marketing copy.",
+    bestFor: "Freelancers validating the kit quickly.",
+  },
+  {
+    name: "Premium",
+    price: "$79",
+    promise: "Notion OS, Figma product kit, Canva launch pack, and full Launch Asset Studio exports.",
+    bestFor: "Operators who want the full product bundle.",
+  },
+  {
+    name: "Commercial",
+    price: "$149",
+    promise: "Premium bundle plus commercial-use license and founder setup-review bonus.",
+    bestFor: "Agencies selling or adapting the system for clients.",
+  },
+];
+
 const privacyVersion = "2026-07-02";
 const forgeResumeKey = "packsmith.resumePack";
 const launchAssetTrackingKey = "packsmith.launchAssetTracking";
+const analyticsEventsKey = "packsmith.analyticsEvents";
 
 function downloadFile(name, content, type) {
   const blob = new Blob([content], { type });
@@ -333,6 +360,17 @@ function writeJsonObject(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function trackLocalAnalytics(type, metadata = {}) {
+  try {
+    const current = JSON.parse(localStorage.getItem(analyticsEventsKey) || "[]");
+    const safeCurrent = Array.isArray(current) ? current : [];
+    const next = appendAnalyticsEvent(safeCurrent, buildAnalyticsEvent(type, metadata));
+    localStorage.setItem(analyticsEventsKey, JSON.stringify(next));
+  } catch {
+    localStorage.setItem(analyticsEventsKey, JSON.stringify([buildAnalyticsEvent(type, metadata)]));
+  }
+}
+
 const launchStudioIconMap = {
   brain: Brain,
   clipboard: Clipboard,
@@ -435,6 +473,10 @@ function LandingPage() {
   const [notice, setNotice] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
+  useEffect(() => {
+    trackLocalAnalytics("viewed_home_page", { page: "/" });
+  }, []);
+
   async function saveWaitlist(event) {
     event.preventDefault();
     const value = email.trim();
@@ -477,6 +519,7 @@ function LandingPage() {
             <span>Canva</span>
             <span>Figma</span>
             <span>Launch board</span>
+            <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/launch">Launch kit</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
@@ -696,9 +739,14 @@ function LaunchPage() {
   );
   const featuredMarketingKit = useMemo(() => buildMarketingKit(featuredPack), [featuredPack]);
 
+  useEffect(() => {
+    trackLocalAnalytics("viewed_launch_page", { page: "/launch", pack: featuredPack.name });
+  }, [featuredPack.name]);
+
   async function copyLaunchCopy(label, value) {
     try {
       await navigator.clipboard.writeText(Array.isArray(value) ? value.join("\n") : value);
+      trackLocalAnalytics("copied_launch_asset", { label, page: "/launch" });
       setNotice(`${label} copied.`);
     } catch {
       setNotice("Copy was blocked by the browser.");
@@ -721,6 +769,7 @@ function LaunchPage() {
         saveWaitlistLocal(value, "launch-page-local");
         setNotice("Saved locally. Add Supabase env vars to capture real leads.");
       }
+      trackLocalAnalytics("submitted_launch_waitlist", { source: "launch-page" });
       setEmail("");
     } catch {
       saveWaitlistLocal(value, "launch-page-fallback");
@@ -747,6 +796,7 @@ function LaunchPage() {
       ),
       "application/json",
     );
+    trackLocalAnalytics("exported_launch_kit_json", { pack: featuredPack.name });
     setNotice("Launch kit exported.");
   }
 
@@ -766,6 +816,7 @@ function LaunchPage() {
           </a>
           <div className="navPills">
             <a href="/">Home</a>
+            <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
@@ -1112,7 +1163,254 @@ function LaunchPage() {
   );
 }
 
+function AiAgencyLaunchKitPage() {
+  const [email, setEmail] = useState("");
+  const [notice, setNotice] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const pack = useMemo(() => buildLaunchKit(getPreset("aiAgency").brief, "aiAgency"), []);
+  const kit = useMemo(() => buildMarketingKit(pack), [pack]);
+  const figmaSchema = useMemo(() => buildFigmaExportSchema(pack, kit), [pack, kit]);
+  const notionExport = useMemo(() => buildNotionExport(pack), [pack]);
+
+  useEffect(() => {
+    trackLocalAnalytics("viewed_ai_agency_product_page", { pack: pack.name });
+  }, [pack.name]);
+
+  async function saveProductLead(event) {
+    event.preventDefault();
+    const value = email.trim();
+    if (!value) return;
+    if (!privacyAccepted) {
+      setNotice("Please accept the privacy notice before joining.");
+      return;
+    }
+    try {
+      if (isSupabaseConfigured) {
+        await saveWaitlistLead({ email: value, source: "ai-agency-product-page", consentVersion: privacyVersion });
+        setNotice("You are on the early buyer list.");
+      } else {
+        saveWaitlistLocal(value, "ai-agency-product-page-local");
+        setNotice("Saved locally. Add Supabase env vars to capture real leads.");
+      }
+      trackLocalAnalytics("submitted_ai_agency_waitlist", { pack: pack.name });
+      setEmail("");
+    } catch {
+      saveWaitlistLocal(value, "ai-agency-product-page-fallback");
+      trackLocalAnalytics("submitted_ai_agency_waitlist_local_fallback", { pack: pack.name });
+      setNotice("Cloud save failed, so this lead was saved locally.");
+      setEmail("");
+    }
+  }
+
+  function clickGumroadPlaceholder(tier = "Premium") {
+    trackLocalAnalytics("gumroad_cta_clicked", { pack: pack.name, tier });
+    setNotice("Gumroad checkout is a placeholder until the product page is connected.");
+  }
+
+  function exportRevenuePageBrief() {
+    downloadFile(
+      "ai-agency-launch-kit-revenue-brief.json",
+      JSON.stringify(
+        {
+          pack: pack.name,
+          pricing: aiAgencyPricing,
+          listing: pack.listing,
+          productStack: kit.productStack,
+          figmaFrames: figmaSchema.frames,
+          notionDatabases: notionExport.databases.map((database) => database.name),
+        },
+        null,
+        2,
+      ),
+      "application/json",
+    );
+    trackLocalAnalytics("exported_ai_agency_revenue_brief", { pack: pack.name });
+    setNotice("Revenue brief exported.");
+  }
+
+  return (
+    <main className="landingFrame revenueFrame">
+      <section className="revenueHero">
+        <div className="heroBackdrop" />
+        <nav className="topNav">
+          <a className="brandLockup" href="/">
+            <div className="brandMark">
+              <Rocket size={24} />
+            </div>
+            <div>
+              <strong>Packsmith</strong>
+              <span>AI Agency Launch Kit</span>
+            </div>
+          </a>
+          <div className="navPills">
+            <a href="/">Home</a>
+            <a href="/ai-agency-launch-kit">AI Agency Kit</a>
+            <a href="/launch">Launch kit</a>
+            <a href="/mobile">Mobile</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/app">Forge</a>
+          </div>
+        </nav>
+
+        <div className="revenueHeroGrid">
+          <motion.div className="heroCopy" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+            <p className="eyebrow gold">First revenue product</p>
+            <h1>AI Agency Launch Kit</h1>
+            <p>
+              A ready-to-sell operating system for automation freelancers: Notion CRM, Figma product
+              surfaces, Canva launch assets, mobile access story, and launch copy in one bundle.
+            </p>
+            <div className="heroActions">
+              <button type="button" onClick={() => clickGumroadPlaceholder("Premium")}>
+                Preorder placeholder
+                <ArrowRight size={17} />
+              </button>
+              <a className="ghostLink" href="/app">
+                Try in forge
+                <Sparkles size={17} />
+              </a>
+              <button type="button" onClick={exportRevenuePageBrief}>
+                <FileJson size={17} />
+                Export brief
+              </button>
+            </div>
+          </motion.div>
+
+          <motion.div className="revenuePreviewPanel" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
+            <div className="consoleHeader">
+              <span />
+              <span />
+              <span />
+              <strong>packsmith://paid-pack</strong>
+            </div>
+            <article>
+              <span>Bundle value</span>
+              <strong>{pack.quality.overall}/100</strong>
+              <p>{pack.promise}</p>
+            </article>
+            <div className="revenueMiniGrid">
+              <div>
+                <strong>{notionExport.databases.length}</strong>
+                <span>Notion databases</span>
+              </div>
+              <div>
+                <strong>{figmaSchema.frames.length}</strong>
+                <span>Figma frames</span>
+              </div>
+              <div>
+                <strong>{kit.mobileLaunchCampaign.screenshotChecklist.length}</strong>
+                <span>Preview shots</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="landingSection revenueStackSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">What buyers get</p>
+          <h2>Not a loose template. A launchable product system.</h2>
+        </div>
+        <div className="productStackGrid">
+          {kit.productStack.map((item) => (
+            <article className={`productStackCard ${item.id}`} key={item.id}>
+              <span>{item.platform}</span>
+              <h3>{item.product}</h3>
+              <strong>{item.angle}</strong>
+              <p>{item.proof}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection revenuePreviewSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Product preview</p>
+          <h2>The pieces that make the bundle feel premium.</h2>
+        </div>
+        <div className="revenuePreviewGrid">
+          {pack.sections.map((section) => (
+            <article key={section.id}>
+              <span>{section.label}</span>
+              <h3>{section.summary}</h3>
+              <ul>
+                {section.items.slice(0, 4).map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection revenuePricingSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Pricing ladder</p>
+          <h2>Start low, learn fast, and keep room for commercial value.</h2>
+        </div>
+        <div className="pricingGrid">
+          {aiAgencyPricing.map((tier) => (
+            <article key={tier.name} className={tier.name === "Premium" ? "featured" : ""}>
+              <span>{tier.name}</span>
+              <strong>{tier.price}</strong>
+              <p>{tier.promise}</p>
+              <small>{tier.bestFor}</small>
+              <button type="button" onClick={() => clickGumroadPlaceholder(tier.name)}>
+                Gumroad CTA placeholder
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="landingSection waitlistPanel" id="early-access">
+        <div>
+          <p className="eyebrow">Founder setup-review bonus</p>
+          <h2>First 10 buyers get a setup review.</h2>
+          <p className="muted">
+            This gives early buyers confidence and gives Packsmith real feedback before the full checkout
+            flow is connected.
+          </p>
+        </div>
+        <form onSubmit={saveProductLead}>
+          <input
+            type="email"
+            placeholder="founder@example.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+          <label className="consentLine">
+            <input
+              type="checkbox"
+              checked={privacyAccepted}
+              onChange={(event) => setPrivacyAccepted(event.target.checked)}
+            />
+            <span>
+              I agree to the <a href="/privacy">privacy notice</a> and consent to Packsmith storing this email for early access.
+            </span>
+          </label>
+          <button className="primary" type="submit">
+            <Mail size={17} />
+            Join early buyer list
+          </button>
+          {notice && <p>{notice}</p>}
+        </form>
+      </section>
+
+      {notice && (
+        <motion.div className="toast" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          {notice}
+        </motion.div>
+      )}
+    </main>
+  );
+}
+
 function PrivacyPage() {
+  useEffect(() => {
+    trackLocalAnalytics("viewed_privacy_page", { page: "/privacy" });
+  }, []);
+
   return (
     <main className="landingFrame privacyFrame">
       <section className="landingHero privacyHero">
@@ -1129,6 +1427,7 @@ function PrivacyPage() {
           </a>
           <div className="navPills">
             <a href="/">Home</a>
+            <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/launch">Launch kit</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
@@ -1205,6 +1504,7 @@ function DashboardPage() {
   const [cloudPacks, setCloudPacks] = useState([]);
   const [localPacks, setLocalPacks] = useState(() => readLocalArray("packsmith.saved.react"));
   const [waitlistLeads, setWaitlistLeads] = useState(() => readLocalArray("packsmith.waitlist"));
+  const [analyticsEvents, setAnalyticsEvents] = useState(() => readLocalArray(analyticsEventsKey));
   const [selectedId, setSelectedId] = useState("");
   const [notice, setNotice] = useState("");
   const user = session?.user || null;
@@ -1217,6 +1517,7 @@ function DashboardPage() {
     () => buildDashboardMetrics({ history, waitlistLeads }),
     [history, waitlistLeads],
   );
+  const analyticsSummary = useMemo(() => summarizeAnalyticsEvents(analyticsEvents), [analyticsEvents]);
   const selectedRow = history.find((row) => row.id === selectedId) || history[0] || null;
   const selectedPack = selectedRow?.raw || null;
   const selectedMarketingKit = useMemo(
@@ -1231,6 +1532,11 @@ function DashboardPage() {
     () => buildLaunchTracker(selectedPack || {}),
     [selectedPack],
   );
+
+  useEffect(() => {
+    trackLocalAnalytics("viewed_dashboard_page", { page: "/dashboard" });
+    setAnalyticsEvents(readLocalArray(analyticsEventsKey));
+  }, []);
 
   useEffect(() => {
     if (!history.length) {
@@ -1284,6 +1590,7 @@ function DashboardPage() {
   function refreshLocalHistory() {
     setLocalPacks(readLocalArray("packsmith.saved.react"));
     setWaitlistLeads(readLocalArray("packsmith.waitlist"));
+    setAnalyticsEvents(readLocalArray(analyticsEventsKey));
     flash("Local history refreshed.");
   }
 
@@ -1347,12 +1654,25 @@ function DashboardPage() {
       ),
       "application/json",
     );
+    trackLocalAnalytics("exported_dashboard_snapshot", { selectedPack: selectedPack?.name || null });
     flash("Dashboard snapshot exported.");
+  }
+
+  function exportLocalAnalytics() {
+    const events = readLocalArray(analyticsEventsKey);
+    downloadFile(
+      "packsmith-local-analytics-events.json",
+      JSON.stringify({ exportedAt: new Date().toISOString(), summary: summarizeAnalyticsEvents(events), events }, null, 2),
+      "application/json",
+    );
+    trackLocalAnalytics("exported_local_analytics", { eventCount: events.length });
+    flash("Local analytics exported.");
   }
 
   async function copyDashboardText(value, successMessage) {
     try {
       await navigator.clipboard.writeText(value);
+      trackLocalAnalytics("copied_dashboard_launch_asset", { message: successMessage });
       flash(successMessage);
     } catch {
       flash("Copy was blocked by the browser.");
@@ -1369,6 +1689,7 @@ function DashboardPage() {
       JSON.stringify({ pack: selectedPack.name, launchAssetStudio: kit, actionTracking: tracking }, null, 2),
       "application/json",
     );
+    trackLocalAnalytics("exported_dashboard_launch_asset_studio", { pack: selectedPack.name });
     flash("Launch Asset Studio exported.");
   }
 
@@ -1382,6 +1703,7 @@ function DashboardPage() {
       JSON.stringify(buildFigmaExportSchema(selectedPack, selectedMarketingKit), null, 2),
       "application/json",
     );
+    trackLocalAnalytics("exported_dashboard_figma_json", { pack: selectedPack.name });
     flash("Figma export schema downloaded.");
   }
 
@@ -1390,6 +1712,7 @@ function DashboardPage() {
       flash("Select a saved pack first.");
       return;
     }
+    trackLocalAnalytics("reopened_saved_pack", { pack: selectedRow.name, source: selectedRow.source });
     localStorage.setItem(forgeResumeKey, JSON.stringify(createForgeResumePayload(selectedRow)));
     window.location.href = "/app?resume=pack";
   }
@@ -1673,6 +1996,49 @@ function DashboardPage() {
             </div>
           </section>
 
+          <section className="panel dashboardAnalyticsPanel">
+            <div className="panelHeader">
+              <BarChart3 size={18} />
+              <div>
+                <p className="eyebrow">Traction events</p>
+                <h2>Local analytics</h2>
+              </div>
+            </div>
+            <div className="analyticsGrid">
+              <article>
+                <strong>{analyticsSummary.total}</strong>
+                <span>Total</span>
+              </article>
+              <article>
+                <strong>{analyticsSummary.pageViews}</strong>
+                <span>Views</span>
+              </article>
+              <article>
+                <strong>{analyticsSummary.exports}</strong>
+                <span>Exports</span>
+              </article>
+              <article>
+                <strong>{analyticsSummary.ctaClicks}</strong>
+                <span>CTA clicks</span>
+              </article>
+              <article>
+                <strong>{analyticsSummary.copies}</strong>
+                <span>Copies</span>
+              </article>
+              <article>
+                <strong>{analyticsSummary.reopens}</strong>
+                <span>Reopens</span>
+              </article>
+            </div>
+            <button className="wide" type="button" onClick={exportLocalAnalytics}>
+              <Download size={17} />
+              Export analytics
+            </button>
+            <p className="privacyMicrocopy">
+              Local-only MVP tracking. No API tokens, OAuth secrets, or generated payload bodies are stored.
+            </p>
+          </section>
+
           <section className="panel dashboardNextPanel">
             <div className="panelHeader">
               <Target size={18} />
@@ -1708,6 +2074,10 @@ function MobileAccessPage() {
   );
   const assistantPrompt = useMemo(() => buildAssistantHandoffPrompt("a Packsmith-generated template pack"), []);
 
+  useEffect(() => {
+    trackLocalAnalytics("viewed_mobile_page", { page: "/mobile" });
+  }, []);
+
   function flash(message) {
     setNotice(message);
     window.clearTimeout(flash.timer);
@@ -1717,6 +2087,7 @@ function MobileAccessPage() {
   async function copyPrompt() {
     try {
       await navigator.clipboard.writeText(assistantPrompt);
+      trackLocalAnalytics("copied_mobile_assistant_prompt", { page: "/mobile" });
       flash("Assistant handoff prompt copied.");
     } catch {
       flash("Copy was blocked by the browser.");
@@ -1739,6 +2110,7 @@ function MobileAccessPage() {
           </a>
           <div className="navPills">
             <a href="/">Home</a>
+            <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/app">Forge</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/launch">Launch kit</a>
@@ -1965,6 +2337,10 @@ function ForgeApp() {
   const SelectedIcon = sectionIcons[selectedSection.id] || Boxes;
 
   useEffect(() => {
+    trackLocalAnalytics("viewed_forge_page", { page: "/app" });
+  }, []);
+
+  useEffect(() => {
     const rawResume = localStorage.getItem(forgeResumeKey);
     if (!rawResume) return;
 
@@ -2109,6 +2485,7 @@ function ForgeApp() {
   async function copyText(value, successMessage) {
     try {
       await navigator.clipboard.writeText(value);
+      trackLocalAnalytics("copied_forge_asset", { pack: pack.name, message: successMessage });
       flash(successMessage);
     } catch {
       flash("Copy was blocked by the browser.");
@@ -2126,6 +2503,7 @@ function ForgeApp() {
     const nextSaved = [nextPack, ...savedPacks].slice(0, 8);
     setSavedPacks(nextSaved);
     localStorage.setItem("packsmith.saved.react", JSON.stringify(nextSaved));
+    trackLocalAnalytics("saved_pack_local", { pack: pack.name, presetId: pack.presetId || pack.id });
     flash("Pack saved locally.");
   }
 
@@ -2150,6 +2528,7 @@ function ForgeApp() {
       ),
       "application/json",
     );
+    trackLocalAnalytics("exported_local_data", { pack: pack.name });
     flash("Local data exported.");
   }
 
@@ -2202,6 +2581,7 @@ function ForgeApp() {
       });
       const rows = await listTemplatePacks(user.id);
       setCloudPacks(rows);
+      trackLocalAnalytics("saved_pack_cloud", { pack: pack.name, presetId: pack.presetId || pack.id });
       flash(`Cloud saved: ${saved.name}`);
     } catch {
       flash("Cloud save failed. Check Supabase schema and login settings.");
@@ -2258,6 +2638,7 @@ function ForgeApp() {
       packToMarkdown(pack, editedItems[editScopeId] || {}),
       "text/markdown",
     );
+    trackLocalAnalytics("exported_markdown", { pack: pack.name });
     flash("Markdown exported.");
   }
 
@@ -2267,6 +2648,7 @@ function ForgeApp() {
       JSON.stringify(notionPayload, null, 2),
       "application/json",
     );
+    trackLocalAnalytics("exported_notion_json", { pack: pack.name });
     flash("Notion payload exported.");
   }
 
@@ -2276,6 +2658,7 @@ function ForgeApp() {
       JSON.stringify(marketplaceToJson(pack), null, 2),
       "application/json",
     );
+    trackLocalAnalytics("exported_marketplace_json", { pack: pack.name });
     flash("Marketplace JSON exported.");
   }
 
@@ -2285,6 +2668,7 @@ function ForgeApp() {
       JSON.stringify(buildFigmaExportSchema(pack, marketingKit), null, 2),
       "application/json",
     );
+    trackLocalAnalytics("exported_figma_json", { pack: pack.name });
     flash("Figma export schema downloaded.");
   }
 
@@ -2294,6 +2678,7 @@ function ForgeApp() {
       launchCalendarToMarkdown(launchCalendar, pack),
       "text/markdown",
     );
+    trackLocalAnalytics("exported_launch_calendar", { pack: pack.name });
     flash("Launch calendar exported.");
   }
 
@@ -2303,6 +2688,7 @@ function ForgeApp() {
       marketingKitToMarkdown(pack, marketingKit),
       "text/markdown",
     );
+    trackLocalAnalytics("exported_marketing_markdown", { pack: pack.name });
     flash("Marketing kit exported.");
   }
 
@@ -2312,6 +2698,7 @@ function ForgeApp() {
       JSON.stringify({ pack: pack.name, marketingKit }, null, 2),
       "application/json",
     );
+    trackLocalAnalytics("exported_marketing_json", { pack: pack.name });
     flash("Social launch copy exported.");
   }
 
@@ -2321,6 +2708,7 @@ function ForgeApp() {
       JSON.stringify({ pack: pack.name, launchAssetStudio: kit, actionTracking: tracking }, null, 2),
       "application/json",
     );
+    trackLocalAnalytics("exported_launch_asset_studio", { pack: pack.name });
     flash("Launch Asset Studio exported.");
   }
 
@@ -2353,6 +2741,7 @@ function ForgeApp() {
             <span>{generatedPack ? "Local generated" : "Preset engine"}</span>
             <span>{cloudReady ? "Supabase ready" : "Local mode"}</span>
             <a href="/dashboard">Dashboard</a>
+            <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
             {user ? (
@@ -3159,6 +3548,7 @@ function ForgeApp() {
 function App() {
   if (window.location.pathname === "/app") return <ForgeApp />;
   if (window.location.pathname === "/launch") return <LaunchPage />;
+  if (window.location.pathname === "/ai-agency-launch-kit") return <AiAgencyLaunchKitPage />;
   if (window.location.pathname === "/dashboard") return <DashboardPage />;
   if (window.location.pathname === "/mobile") return <MobileAccessPage />;
   if (window.location.pathname === "/privacy") return <PrivacyPage />;
