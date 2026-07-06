@@ -29,6 +29,7 @@ Then open:
 - `http://127.0.0.1:5173/` for the public landing page
 - `http://127.0.0.1:5173/launch` for the launch/traction page
 - `http://127.0.0.1:5173/ai-agency-launch-kit` for the first revenue product page
+- `http://127.0.0.1:5173/platforms` for the ChatGPT, Claude, Adobe, Figma, Canva, and browser extension roadmap
 - `http://127.0.0.1:5173/app` for the Packsmith forge workspace
 - `http://127.0.0.1:5173/privacy` for the MVP privacy notice
 
@@ -99,6 +100,7 @@ Cloud features:
 - Social launch copy JSON export
 - Connector roadmap cards for Notion, Figma, and Canva
 - AI Agency revenue page with Gumroad listing, license, refund policy, setup checklist, and local pricing-intent analytics
+- Platform expansion roadmap for ChatGPT Apps/GPT Actions, Claude MCP, Adobe Express add-on, Photoshop UXP, Figma plugin, Canva importer, and browser extension paths
 
 ## Connector Direction
 
@@ -115,6 +117,8 @@ The Supabase Edge Function lives at `supabase/functions/notion-publish/index.ts`
 It validates login, keeps `NOTION_TOKEN` server-side only, creates a Packsmith root page, creates child pages, creates databases, and seeds sample records. Relation fields are mapped when Packsmith can infer an already-created target database; otherwise they safely publish as text with a warning.
 
 Figma and Canva are intentionally spec-first for now. They generate the design and pack plan before direct file creation is added.
+
+The plugin/app expansion strategy is to build one shared Packsmith API/MCP contract first, then ship ChatGPT and Claude assistant surfaces before heavier creative marketplace plugins. Adobe Express is the first Adobe target; Photoshop UXP is later because it carries higher build and support cost.
 
 Healthcare templates are workflow and marketing operations templates only. They are not medical, legal, diagnostic, or treatment advice.
 

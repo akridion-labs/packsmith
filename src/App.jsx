@@ -83,6 +83,11 @@ import {
 } from "./mobileAccessData";
 import { buildFounderPriorityPlan, founderMilestones, founderPlanToMarkdown, providerOptions } from "./productRoadmap";
 import {
+  buildPlatformExpansionMarkdown,
+  buildPlatformExpansionSummary,
+  platformExpansionPaths,
+} from "./platformExpansionData";
+import {
   backendContract,
   buildLaunchCalendar,
   buildLaunchKit,
@@ -525,6 +530,7 @@ function LandingPage() {
             <span>Launch board</span>
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/launch">Launch kit</a>
+            <a href="/platforms">Platforms</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
@@ -821,6 +827,7 @@ function LaunchPage() {
           <div className="navPills">
             <a href="/">Home</a>
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
+            <a href="/platforms">Platforms</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
@@ -1846,6 +1853,7 @@ function DashboardPage() {
           <div className="navPills">
             <a href="/">Home</a>
             <a href="/launch">Launch kit</a>
+            <a href="/platforms">Platforms</a>
             <a href="/app">Forge</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
@@ -2281,6 +2289,7 @@ function MobileAccessPage() {
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/app">Forge</a>
             <a href="/dashboard">Dashboard</a>
+            <a href="/platforms">Platforms</a>
             <a href="/launch">Launch kit</a>
             <a href="/privacy">Privacy</a>
           </div>
@@ -2400,6 +2409,171 @@ function MobileAccessPage() {
             Copy prompt
           </button>
         </article>
+      </section>
+
+      {notice && (
+        <motion.div className="toast" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          {notice}
+        </motion.div>
+      )}
+    </main>
+  );
+}
+
+function PlatformExpansionPage() {
+  const [notice, setNotice] = useState("");
+  const summary = useMemo(() => buildPlatformExpansionSummary(platformExpansionPaths), []);
+
+  useEffect(() => {
+    trackLocalAnalytics("viewed_platform_expansion_page", { page: "/platforms" });
+  }, []);
+
+  function flash(message) {
+    setNotice(message);
+    window.clearTimeout(flash.timer);
+    flash.timer = window.setTimeout(() => setNotice(""), 2800);
+  }
+
+  function exportPlatformPlan() {
+    downloadFile(
+      "packsmith-platform-expansion-plan.md",
+      buildPlatformExpansionMarkdown(platformExpansionPaths),
+      "text/markdown",
+    );
+    trackLocalAnalytics("exported_platform_expansion_plan", { platformCount: platformExpansionPaths.length });
+    flash("Platform expansion plan exported.");
+  }
+
+  return (
+    <main className="landingFrame platformFrame">
+      <section className="platformHero">
+        <div className="heroBackdrop" />
+        <nav className="topNav">
+          <a className="brandLockup" href="/">
+            <div className="brandMark">
+              <Boxes size={24} />
+            </div>
+            <div>
+              <strong>Packsmith</strong>
+              <span>Platform expansion</span>
+            </div>
+          </a>
+          <div className="navPills">
+            <a href="/">Home</a>
+            <a href="/ai-agency-launch-kit">AI Agency Kit</a>
+            <a href="/launch">Launch kit</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/mobile">Mobile</a>
+            <a href="/app">Forge</a>
+          </div>
+        </nav>
+
+        <div className="platformHeroGrid">
+          <motion.div className="heroCopy" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+            <p className="eyebrow gold">Plugin and app strategy</p>
+            <h1>Build Packsmith once, let it appear where founders already work.</h1>
+            <p>
+              The strongest expansion path is a shared Packsmith API/MCP contract, then ChatGPT and Claude first,
+              Adobe Express and Figma second, and heavier creative plugins after traction.
+            </p>
+            <div className="heroActions">
+              <a href="/app">
+                Build in forge
+                <Sparkles size={17} />
+              </a>
+              <button type="button" onClick={exportPlatformPlan}>
+                <Download size={17} />
+                Export roadmap
+              </button>
+            </div>
+          </motion.div>
+
+          <motion.div className="platformSignalPanel" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
+            <div className="consoleHeader">
+              <span />
+              <span />
+              <span />
+              <strong>packsmith://platforms</strong>
+            </div>
+            <div className="platformSummaryGrid">
+              <article>
+                <strong>{summary.total}</strong>
+                <span>Expansion paths</span>
+              </article>
+              <article>
+                <strong>{summary.averageReadiness}</strong>
+                <span>Avg readiness</span>
+              </article>
+              <article>
+                <strong>{summary.firstWave.length}</strong>
+                <span>First wave</span>
+              </article>
+            </div>
+            <p>{summary.recommendation}</p>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="landingSection platformWaveSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Execution order</p>
+          <h2>Do not build every plugin first. Build the shared connector core first.</h2>
+        </div>
+        <div className="platformWaveGrid">
+          <article>
+            <span>First</span>
+            <strong>{summary.firstWave.join(" + ")}</strong>
+            <p>Best for fast distribution because both can use Packsmith as tools and structured exports.</p>
+          </article>
+          <article>
+            <span>Second</span>
+            <strong>{summary.secondWave.join(" + ")}</strong>
+            <p>Best for visual proof after the generator and paid kit have clear demand.</p>
+          </article>
+          <article>
+            <span>Later</span>
+            <strong>{summary.laterWave.join(" + ")}</strong>
+            <p>Useful, but heavier review, permissions, and support surface make them later bets.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="landingSection platformPathSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Platform map</p>
+          <h2>Each path has a product angle, security boundary, and monetization job.</h2>
+        </div>
+        <div className="platformPathGrid">
+          {platformExpansionPaths.map((path) => (
+            <article key={path.id} className={`platformPathCard ${path.priority.toLowerCase()}`}>
+              <div className="platformCardHeader">
+                <div>
+                  <span>{path.priority} wave</span>
+                  <h3>{path.platform}</h3>
+                </div>
+                <strong>{path.readiness}</strong>
+              </div>
+              <p className="platformLane">{path.lane}</p>
+              <p>{path.productIdea}</p>
+              <div className="platformReadinessBar" aria-label={`${path.platform} readiness ${path.readiness}`}>
+                <i style={{ width: `${path.readiness}%` }} />
+              </div>
+              <ul>
+                {path.mvpActions.map((action) => (
+                  <li key={action}>{action}</li>
+                ))}
+              </ul>
+              <div className="platformBoundary">
+                <strong>Security</strong>
+                <span>{path.dataBoundary}</span>
+              </div>
+              <div className="platformBoundary">
+                <strong>Revenue</strong>
+                <span>{path.monetization}</span>
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
 
       {notice && (
@@ -2910,6 +3084,7 @@ function ForgeApp() {
             <span>{cloudReady ? "Supabase ready" : "Local mode"}</span>
             <a href="/dashboard">Dashboard</a>
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
+            <a href="/platforms">Platforms</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
             {user ? (
@@ -3719,6 +3894,7 @@ function App() {
   if (window.location.pathname === "/ai-agency-launch-kit") return <AiAgencyLaunchKitPage />;
   if (window.location.pathname === "/dashboard") return <DashboardPage />;
   if (window.location.pathname === "/mobile") return <MobileAccessPage />;
+  if (window.location.pathname === "/platforms") return <PlatformExpansionPage />;
   if (window.location.pathname === "/privacy") return <PrivacyPage />;
   return <LandingPage />;
 }

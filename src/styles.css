@@ -3143,6 +3143,188 @@ ol {
   justify-self: start;
 }
 
+.platformFrame {
+  background:
+    radial-gradient(circle at 10% 2%, rgba(66, 209, 160, 0.11), transparent 30rem),
+    radial-gradient(circle at 90% 4%, rgba(239, 189, 99, 0.11), transparent 30rem);
+}
+
+.platformHero {
+  border-bottom: 1px solid var(--line);
+  min-height: 620px;
+  overflow: hidden;
+  padding: 22px clamp(18px, 3vw, 38px) 48px;
+  position: relative;
+}
+
+.platformHeroGrid {
+  align-items: center;
+  display: grid;
+  gap: 38px;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 0.78fr);
+  margin: 0 auto;
+  max-width: 1500px;
+  min-height: 510px;
+  padding-top: 42px;
+  position: relative;
+  z-index: 2;
+}
+
+.platformSignalPanel {
+  background:
+    linear-gradient(135deg, rgba(66, 209, 160, 0.1), rgba(239, 189, 99, 0.08)),
+    rgba(7, 11, 12, 0.86);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.platformSignalPanel p {
+  color: var(--muted);
+}
+
+.platformSummaryGrid,
+.platformWaveGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.platformSummaryGrid article,
+.platformWaveGrid article,
+.platformPathCard {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.platformSummaryGrid article {
+  display: grid;
+  gap: 6px;
+  min-height: 116px;
+  padding: 14px;
+}
+
+.platformSummaryGrid strong {
+  color: var(--green);
+  font-size: 38px;
+  line-height: 1;
+}
+
+.platformSummaryGrid span,
+.platformWaveGrid span,
+.platformPathCard span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.platformWaveGrid article {
+  display: grid;
+  gap: 10px;
+  min-height: 180px;
+  padding: 16px;
+}
+
+.platformWaveGrid strong {
+  color: var(--text);
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.platformWaveGrid p,
+.platformPathCard p,
+.platformPathCard li,
+.platformBoundary span {
+  color: var(--muted);
+}
+
+.platformPathGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.platformPathCard {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.platformPathCard.first {
+  border-color: rgba(66, 209, 160, 0.42);
+}
+
+.platformPathCard.second {
+  border-color: rgba(239, 189, 99, 0.38);
+}
+
+.platformCardHeader {
+  align-items: start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.platformCardHeader h3 {
+  font-size: 26px;
+  line-height: 1.05;
+  margin-top: 5px;
+}
+
+.platformCardHeader strong {
+  color: var(--green);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.platformLane {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 900;
+  justify-self: start;
+  padding: 7px 10px;
+}
+
+.platformReadinessBar {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.platformReadinessBar i {
+  background: linear-gradient(90deg, var(--green), var(--gold));
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+}
+
+.platformPathCard ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.platformBoundary {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+}
+
+.platformBoundary strong {
+  color: var(--text);
+}
+
 @media (max-width: 1260px) {
   .workspace {
     grid-template-columns: 320px minmax(0, 1fr);
@@ -3150,6 +3332,10 @@ ol {
 
   .dashboardWorkspace {
     grid-template-columns: 300px minmax(0, 1fr);
+  }
+
+  .platformPathGrid {
+    grid-template-columns: 1fr;
   }
 
   .mobileModeGrid,
@@ -3193,6 +3379,7 @@ ol {
   .dashboardHeroGrid,
   .mobileHeroGrid,
   .revenueHeroGrid,
+  .platformHeroGrid,
   .launchMobileGrid,
   .gumroadPrepGrid,
   .dashboardWorkspace,
@@ -3297,7 +3484,9 @@ ol {
   .sectionTabs,
   .toggleGrid,
   .presetSwitch,
-  .payloadStats {
+  .payloadStats,
+  .platformSummaryGrid,
+  .platformWaveGrid {
     grid-template-columns: 1fr;
   }
 
