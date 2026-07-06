@@ -28,6 +28,7 @@ Then open:
 
 - `http://127.0.0.1:5173/` for the public landing page
 - `http://127.0.0.1:5173/launch` for the launch/traction page
+- `http://127.0.0.1:5173/ai-agency-launch-kit` for the first revenue product page
 - `http://127.0.0.1:5173/app` for the Packsmith forge workspace
 - `http://127.0.0.1:5173/privacy` for the MVP privacy notice
 
@@ -48,11 +49,12 @@ Packsmith works without Supabase credentials, but cloud features stay in local f
 
 1. Copy `.env.example` to `.env.local`.
 2. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-3. Run `supabase/schema.sql` in the Supabase SQL editor.
-4. Enable Google as an auth provider in Supabase.
-5. Deploy `supabase/functions/notion-publish` when ready for Notion publishing.
-6. Add `NOTION_TOKEN` as a Supabase Edge Function secret.
-7. Share the target Notion parent page with the Notion integration.
+3. Add `VITE_GUMROAD_AI_AGENCY_URL` after the Gumroad product page is created.
+4. Run `supabase/schema.sql` in the Supabase SQL editor.
+5. Enable Google as an auth provider in Supabase.
+6. Deploy `supabase/functions/notion-publish` when ready for Notion publishing.
+7. Add `NOTION_TOKEN` as a Supabase Edge Function secret.
+8. Share the target Notion parent page with the Notion integration.
 
 Cloud features:
 
@@ -96,6 +98,7 @@ Cloud features:
 - Marketing script markdown export
 - Social launch copy JSON export
 - Connector roadmap cards for Notion, Figma, and Canva
+- AI Agency revenue page with Gumroad listing, license, refund policy, setup checklist, and local pricing-intent analytics
 
 ## Connector Direction
 

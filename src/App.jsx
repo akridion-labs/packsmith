@@ -94,6 +94,7 @@ import {
   pipelineStages,
   platformOptions,
 } from "./packsmithData";
+import { buildGumroadCheckoutPlan, buildGumroadListingMarkdown } from "./revenueOpsData";
 
 const sectionIcons = {
   notion: Database,
@@ -257,6 +258,7 @@ const privacyVersion = "2026-07-02";
 const forgeResumeKey = "packsmith.resumePack";
 const launchAssetTrackingKey = "packsmith.launchAssetTracking";
 const analyticsEventsKey = "packsmith.analyticsEvents";
+const gumroadAiAgencyUrl = import.meta.env.VITE_GUMROAD_AI_AGENCY_URL || "";
 
 function downloadFile(name, content, type) {
   const blob = new Blob([content], { type });
@@ -1173,6 +1175,10 @@ function AiAgencyLaunchKitPage() {
   const kit = useMemo(() => buildMarketingKit(pack), [pack]);
   const figmaSchema = useMemo(() => buildFigmaExportSchema(pack, kit), [pack, kit]);
   const notionExport = useMemo(() => buildNotionExport(pack), [pack]);
+  const gumroadPlan = useMemo(
+    () => buildGumroadCheckoutPlan({ pack, pricing: aiAgencyPricing, kit, checkoutUrl: gumroadAiAgencyUrl }),
+    [pack, kit],
+  );
 
   useEffect(() => {
     trackLocalAnalytics("viewed_ai_agency_product_page", { pack: pack.name });
@@ -1205,8 +1211,13 @@ function AiAgencyLaunchKitPage() {
   }
 
   function clickGumroadPlaceholder(tier = "Premium") {
-    trackLocalAnalytics("gumroad_cta_clicked", { pack: pack.name, tier });
-    setNotice("Gumroad checkout is a placeholder until the product page is connected.");
+    trackLocalAnalytics("gumroad_cta_clicked", { pack: pack.name, tier, checkoutReady: Boolean(gumroadPlan.checkoutUrl) });
+    if (gumroadPlan.checkoutUrl) {
+      window.open(gumroadPlan.checkoutUrl, "_blank", "noopener,noreferrer");
+      setNotice(`${tier} checkout opened in a new tab.`);
+      return;
+    }
+    setNotice("Gumroad checkout is ready for a URL. Add VITE_GUMROAD_AI_AGENCY_URL after the product is created.");
   }
 
   function exportRevenuePageBrief() {
@@ -1216,6 +1227,7 @@ function AiAgencyLaunchKitPage() {
         {
           pack: pack.name,
           pricing: aiAgencyPricing,
+          gumroadPlan,
           listing: pack.listing,
           productStack: kit.productStack,
           figmaFrames: figmaSchema.frames,
@@ -1228,6 +1240,37 @@ function AiAgencyLaunchKitPage() {
     );
     trackLocalAnalytics("exported_ai_agency_revenue_brief", { pack: pack.name });
     setNotice("Revenue brief exported.");
+  }
+
+  function exportGumroadListing() {
+    downloadFile(
+      "ai-agency-launch-kit-gumroad-listing.md",
+      buildGumroadListingMarkdown(gumroadPlan),
+      "text/markdown",
+    );
+    trackLocalAnalytics("exported_gumroad_listing_markdown", { pack: pack.name });
+    setNotice("Gumroad listing markdown exported.");
+  }
+
+  function exportCheckoutTerms() {
+    downloadFile(
+      "ai-agency-launch-kit-checkout-terms.json",
+      JSON.stringify(
+        {
+          productName: gumroadPlan.productName,
+          pricingTiers: gumroadPlan.pricingTiers,
+          license: gumroadPlan.license,
+          refundPolicy: gumroadPlan.refundPolicy,
+          faq: gumroadPlan.faq,
+          setupChecklist: gumroadPlan.setupChecklist,
+        },
+        null,
+        2,
+      ),
+      "application/json",
+    );
+    trackLocalAnalytics("exported_gumroad_checkout_terms", { pack: pack.name });
+    setNotice("Checkout terms exported.");
   }
 
   return (
@@ -1264,7 +1307,7 @@ function AiAgencyLaunchKitPage() {
             </p>
             <div className="heroActions">
               <button type="button" onClick={() => clickGumroadPlaceholder("Premium")}>
-                Preorder placeholder
+                {gumroadPlan.checkoutUrl ? "Open Gumroad checkout" : "Track preorder intent"}
                 <ArrowRight size={17} />
               </button>
               <a className="ghostLink" href="/app">
@@ -1351,17 +1394,64 @@ function AiAgencyLaunchKitPage() {
           <h2>Start low, learn fast, and keep room for commercial value.</h2>
         </div>
         <div className="pricingGrid">
-          {aiAgencyPricing.map((tier) => (
+          {gumroadPlan.pricingTiers.map((tier) => (
             <article key={tier.name} className={tier.name === "Premium" ? "featured" : ""}>
               <span>{tier.name}</span>
               <strong>{tier.price}</strong>
               <p>{tier.promise}</p>
               <small>{tier.bestFor}</small>
               <button type="button" onClick={() => clickGumroadPlaceholder(tier.name)}>
-                Gumroad CTA placeholder
+                {gumroadPlan.checkoutUrl ? tier.ctaLabel : "Track Gumroad intent"}
               </button>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="landingSection gumroadPrepSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Checkout prep</p>
+          <h2>Gumroad page assets are ready before the payment link is live.</h2>
+        </div>
+        <div className="gumroadPrepGrid">
+          <article className="gumroadListingCard">
+            <span>Listing copy</span>
+            <h3>{gumroadPlan.title}</h3>
+            <p>{gumroadPlan.shortDescription}</p>
+            <ul>
+              {gumroadPlan.deliverables.slice(0, 5).map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <div className="buttonRow">
+              <button type="button" onClick={exportGumroadListing}>
+                <FileText size={17} />
+                Export listing
+              </button>
+              <button type="button" onClick={exportCheckoutTerms}>
+                <ShieldCheck size={17} />
+                Export terms
+              </button>
+            </div>
+          </article>
+
+          <article className="gumroadPolicyCard">
+            <span>License and refund</span>
+            <h3>Clear terms for a digital template product.</h3>
+            <p>{gumroadPlan.license.commercial}</p>
+            <p>{gumroadPlan.refundPolicy.window} refund window: {gumroadPlan.refundPolicy.terms}</p>
+            <small>No payment information is collected by Packsmith. Checkout stays on Gumroad when connected.</small>
+          </article>
+
+          <article className="gumroadSetupCard">
+            <span>Founder checklist</span>
+            <h3>What to do in Gumroad next.</h3>
+            <ol>
+              {gumroadPlan.setupChecklist.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ol>
+          </article>
         </div>
       </section>
 
