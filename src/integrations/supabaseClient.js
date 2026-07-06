@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { buildCloudAnalyticsPayload, normalizeCloudAnalyticsRow } from "../analyticsData.js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -107,6 +108,26 @@ export async function saveLaunchEvent({ userId, packId, channel, assetType, cont
     content_json: content,
   });
   if (error) throw error;
+}
+
+export async function saveAnalyticsEvent({ event, userId = null, anonymousId = "" }) {
+  if (!supabase) return null;
+  const payload = buildCloudAnalyticsPayload(event, { userId, anonymousId });
+  const { data, error } = await supabase.from("analytics_events").insert(payload).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function listAnalyticsEvents({ userId, limit = 250 }) {
+  if (!supabase || !userId) return [];
+  const { data, error } = await supabase
+    .from("analytics_events")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data || []).map(normalizeCloudAnalyticsRow);
 }
 
 export async function publishNotionWorkspace({ parentPageId, notionPayload }) {

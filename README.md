@@ -108,6 +108,7 @@ Cloud features:
 - Google login
 - Waitlist lead capture
 - Saved template packs
+- Cloud analytics events for page views, exports, CTA clicks, and pricing intent
 - Notion publish Edge Function for pages, databases, and seed records
 - Browser data export and local data clearing controls
 - In-app beta setup checklist for Supabase, Google login, privacy, and Notion publish readiness
@@ -118,6 +119,7 @@ Cloud features:
 - Waitlist forms require explicit privacy consent before saving emails.
 - Waitlist rows store consent version and acceptance timestamp.
 - Saved packs and launch events are protected with Supabase row-level security.
+- Analytics events store metadata only; generated pack bodies, connector tokens, OAuth secrets, and payment details must not be stored in analytics.
 - Notion tokens, Google OAuth secrets, and Supabase service-role keys must stay server-side only.
 - `.env` and `.env.local` are ignored and must never be committed.
 - See `SECURITY.md` before adding new auth, database, or connector behavior.
@@ -146,6 +148,7 @@ Cloud features:
 - Social launch copy JSON export
 - Connector roadmap cards for Notion, Figma, and Canva
 - AI Agency revenue page with Gumroad listing, license, refund policy, setup checklist, and local pricing-intent analytics
+- Supabase-ready cloud analytics events with local fallback and dashboard cloud/local counters
 - Platform expansion roadmap for ChatGPT Apps/GPT Actions, Claude MCP, Adobe Express add-on, Photoshop UXP, Figma plugin, Canva importer, and browser extension paths
 - API console for exporting the ChatGPT Action OpenAPI schema, safe sample payloads, and starter prompt
 

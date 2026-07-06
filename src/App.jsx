@@ -65,9 +65,11 @@ import {
 import {
   getCurrentSession,
   isSupabaseConfigured,
+  listAnalyticsEvents,
   listTemplatePacks,
   onAuthStateChange,
   publishNotionWorkspace,
+  saveAnalyticsEvent,
   saveTemplatePack,
   saveWaitlistLead,
   signInWithGoogle,
@@ -264,6 +266,7 @@ const privacyVersion = "2026-07-02";
 const forgeResumeKey = "packsmith.resumePack";
 const launchAssetTrackingKey = "packsmith.launchAssetTracking";
 const analyticsEventsKey = "packsmith.analyticsEvents";
+const analyticsAnonymousIdKey = "packsmith.analyticsAnonymousId";
 const gumroadAiAgencyUrl = import.meta.env.VITE_GUMROAD_AI_AGENCY_URL || "";
 
 function downloadFile(name, content, type) {
@@ -370,14 +373,43 @@ function writeJsonObject(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function getAnalyticsAnonymousId() {
+  try {
+    const existing = localStorage.getItem(analyticsAnonymousIdKey);
+    if (existing) return existing;
+    const next = `anon-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    localStorage.setItem(analyticsAnonymousIdKey, next);
+    return next;
+  } catch {
+    return "anon-unavailable";
+  }
+}
+
 function trackLocalAnalytics(type, metadata = {}) {
+  const event = buildAnalyticsEvent(type, metadata);
   try {
     const current = JSON.parse(localStorage.getItem(analyticsEventsKey) || "[]");
     const safeCurrent = Array.isArray(current) ? current : [];
-    const next = appendAnalyticsEvent(safeCurrent, buildAnalyticsEvent(type, metadata));
+    const next = appendAnalyticsEvent(safeCurrent, event);
     localStorage.setItem(analyticsEventsKey, JSON.stringify(next));
   } catch {
-    localStorage.setItem(analyticsEventsKey, JSON.stringify([buildAnalyticsEvent(type, metadata)]));
+    localStorage.setItem(analyticsEventsKey, JSON.stringify([event]));
+  }
+
+  if (!isSupabaseConfigured) return;
+  try {
+    const anonymousId = getAnalyticsAnonymousId();
+    getCurrentSession()
+      .then((session) =>
+        saveAnalyticsEvent({
+          event,
+          userId: session?.user?.id || null,
+          anonymousId,
+        }),
+      )
+      .catch(() => {});
+  } catch {
+    // Analytics must never block product workflows.
   }
 }
 
@@ -1555,6 +1587,7 @@ function PrivacyPage() {
                 <li>Google profile basics through Supabase Auth when you choose to login.</li>
                 <li>Template pack content you save to cloud storage.</li>
                 <li>Launch-event metadata when you save marketing actions.</li>
+                <li>Product analytics metadata such as page views, export clicks, CTA clicks, and pricing-tier intent.</li>
                 <li>Notion parent page ID and workspace payload when you publish.</li>
               </ul>
             </article>
@@ -1565,6 +1598,7 @@ function PrivacyPage() {
                 <li>Supabase service-role keys.</li>
                 <li>Google OAuth secrets.</li>
                 <li>Payment information.</li>
+                <li>Generated template payload bodies inside analytics events.</li>
               </ul>
             </article>
             <article>
@@ -1607,6 +1641,8 @@ function DashboardPage() {
   const [localPacks, setLocalPacks] = useState(() => readLocalArray("packsmith.saved.react"));
   const [waitlistLeads, setWaitlistLeads] = useState(() => readLocalArray("packsmith.waitlist"));
   const [analyticsEvents, setAnalyticsEvents] = useState(() => readLocalArray(analyticsEventsKey));
+  const [cloudAnalyticsEvents, setCloudAnalyticsEvents] = useState([]);
+  const [cloudAnalyticsStatus, setCloudAnalyticsStatus] = useState(isSupabaseConfigured ? "Login to load cloud events" : "Local-only mode");
   const [selectedId, setSelectedId] = useState("");
   const [notice, setNotice] = useState("");
   const user = session?.user || null;
@@ -1620,10 +1656,16 @@ function DashboardPage() {
     [history, waitlistLeads],
   );
   const analyticsSummary = useMemo(() => summarizeAnalyticsEvents(analyticsEvents), [analyticsEvents]);
+  const cloudAnalyticsSummary = useMemo(() => summarizeAnalyticsEvents(cloudAnalyticsEvents), [cloudAnalyticsEvents]);
   const revenueFunnel = useMemo(() => buildRevenueFunnel(analyticsEvents), [analyticsEvents]);
+  const cloudRevenueFunnel = useMemo(() => buildRevenueFunnel(cloudAnalyticsEvents), [cloudAnalyticsEvents]);
   const pricingExperiment = useMemo(
     () => buildPricingExperiment(analyticsEvents, aiAgencyPricing),
     [analyticsEvents],
+  );
+  const cloudPricingExperiment = useMemo(
+    () => buildPricingExperiment(cloudAnalyticsEvents, aiAgencyPricing),
+    [cloudAnalyticsEvents],
   );
   const selectedRow = history.find((row) => row.id === selectedId) || history[0] || null;
   const selectedPack = selectedRow?.raw || null;
@@ -1665,6 +1707,9 @@ function DashboardPage() {
         if (nextSession?.user) {
           await upsertProfile(nextSession.user);
           setCloudPacks(await listTemplatePacks(nextSession.user.id));
+          const cloudEvents = await listAnalyticsEvents({ userId: nextSession.user.id });
+          setCloudAnalyticsEvents(cloudEvents);
+          setCloudAnalyticsStatus(`${cloudEvents.length} cloud events loaded`);
         }
       } catch {
         flash("Cloud history could not be loaded.");
@@ -1678,11 +1723,18 @@ function DashboardPage() {
         if (nextSession?.user) {
           await upsertProfile(nextSession.user);
           setCloudPacks(await listTemplatePacks(nextSession.user.id));
+          const cloudEvents = await listAnalyticsEvents({ userId: nextSession.user.id });
+          setCloudAnalyticsEvents(cloudEvents);
+          setCloudAnalyticsStatus(`${cloudEvents.length} cloud events loaded`);
         } else {
           setCloudPacks([]);
+          setCloudAnalyticsEvents([]);
+          setCloudAnalyticsStatus("Login to load cloud events");
         }
       } catch {
         setCloudPacks([]);
+        setCloudAnalyticsEvents([]);
+        setCloudAnalyticsStatus("Cloud analytics tables are not ready yet.");
         flash("Login worked, but saved pack tables are not ready yet.");
       }
     });
@@ -1712,6 +1764,9 @@ function DashboardPage() {
     }
     try {
       setCloudPacks(await listTemplatePacks(user.id));
+      const cloudEvents = await listAnalyticsEvents({ userId: user.id });
+      setCloudAnalyticsEvents(cloudEvents);
+      setCloudAnalyticsStatus(`${cloudEvents.length} cloud events loaded`);
       flash("Cloud history refreshed.");
     } catch {
       flash("Cloud history failed. Check Supabase tables and policies.");
@@ -1731,6 +1786,8 @@ function DashboardPage() {
       await signOut();
       setSession(null);
       setCloudPacks([]);
+      setCloudAnalyticsEvents([]);
+      setCloudAnalyticsStatus("Login to load cloud events");
       flash("Signed out.");
     } catch {
       flash("Sign out failed.");
@@ -1749,6 +1806,9 @@ function DashboardPage() {
             summary: analyticsSummary,
             funnel: revenueFunnel,
             pricingExperiment,
+            cloudSummary: cloudAnalyticsSummary,
+            cloudFunnel: cloudRevenueFunnel,
+            cloudPricingExperiment,
           },
           selectedPack: selectedPack?.name || null,
           history: history.map((row) => ({
@@ -1780,7 +1840,11 @@ function DashboardPage() {
           summary: summarizeAnalyticsEvents(events),
           revenueFunnel: buildRevenueFunnel(events),
           pricingExperiment: buildPricingExperiment(events, aiAgencyPricing),
+          cloudSummary: cloudAnalyticsSummary,
+          cloudRevenueFunnel,
+          cloudPricingExperiment,
           events,
+          cloudEvents: cloudAnalyticsEvents,
         },
         null,
         2,
@@ -2181,8 +2245,20 @@ function DashboardPage() {
               <BarChart3 size={18} />
               <div>
                 <p className="eyebrow">Traction events</p>
-                <h2>Local analytics</h2>
+                <h2>Local + cloud analytics</h2>
               </div>
+            </div>
+            <div className="analyticsModeGrid">
+              <article>
+                <span>Local</span>
+                <strong>{analyticsSummary.total}</strong>
+                <small>Browser events</small>
+              </article>
+              <article className={cloudReady ? "ready" : ""}>
+                <span>Cloud</span>
+                <strong>{cloudAnalyticsSummary.total}</strong>
+                <small>{cloudAnalyticsStatus}</small>
+              </article>
             </div>
             <div className="analyticsGrid">
               <article>
@@ -2210,12 +2286,19 @@ function DashboardPage() {
                 <span>Reopens</span>
               </article>
             </div>
+            <div className="cloudAnalyticsStrip">
+              <span>Cloud funnel</span>
+              <strong>{cloudRevenueFunnel.at(-1)?.conversionFromStart || 0}% to revenue brief</strong>
+              <small>
+                {cloudAnalyticsSummary.ctaClicks} CTA clicks / {cloudAnalyticsSummary.exports} exports / {cloudPricingExperiment.totalClicks} pricing clicks
+              </small>
+            </div>
             <button className="wide" type="button" onClick={exportLocalAnalytics}>
               <Download size={17} />
               Export analytics
             </button>
             <p className="privacyMicrocopy">
-              Local-only MVP tracking. No API tokens, OAuth secrets, or generated payload bodies are stored.
+              Cloud upload is metadata-only when Supabase is configured. No API tokens, OAuth secrets, payment data, or generated payload bodies are stored in analytics.
             </p>
           </section>
 

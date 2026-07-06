@@ -53,6 +53,27 @@ export function buildAnalyticsEvent(type, metadata = {}, now = new Date()) {
   };
 }
 
+export function buildCloudAnalyticsPayload(event, { userId = null, anonymousId = "", page = "" } = {}) {
+  const metadata = sanitizeAnalyticsMetadata(event.metadata || {});
+  return {
+    user_id: userId || null,
+    anonymous_id: anonymousId || "anonymous",
+    event_type: event.type,
+    page: page || metadata.page || null,
+    metadata_json: metadata,
+    created_at: event.createdAt || new Date().toISOString(),
+  };
+}
+
+export function normalizeCloudAnalyticsRow(row = {}) {
+  return {
+    id: row.id,
+    type: row.event_type,
+    metadata: sanitizeAnalyticsMetadata(row.metadata_json || {}),
+    createdAt: row.created_at,
+  };
+}
+
 export function appendAnalyticsEvent(events = [], event, limit = 250) {
   return [event, ...events].slice(0, limit);
 }

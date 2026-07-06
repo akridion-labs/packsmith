@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   appendAnalyticsEvent,
+  buildCloudAnalyticsPayload,
   buildPricingExperiment,
   buildRevenueFunnel,
   buildAnalyticsEvent,
+  normalizeCloudAnalyticsRow,
   sanitizeAnalyticsMetadata,
   summarizeAnalyticsEvents,
 } from "./analyticsData";
@@ -32,6 +34,47 @@ describe("analytics data helpers", () => {
 
     expect(events.map((event) => event.type)).toEqual(["exported_figma_json", "viewed_launch_page"]);
     expect(events[0].metadata.pack).toBe("AI Agency");
+  });
+
+  it("builds a sanitized cloud analytics payload", () => {
+    const event = buildAnalyticsEvent(
+      "viewed_launch_page",
+      { page: "/launch", notionToken: "hidden", nested: { apiKey: "hidden", tier: "Premium" } },
+      new Date("2026-07-06T00:00:00.000Z"),
+    );
+
+    const payload = buildCloudAnalyticsPayload(event, {
+      userId: "user-123",
+      anonymousId: "anon-456",
+    });
+
+    expect(payload).toEqual({
+      user_id: "user-123",
+      anonymous_id: "anon-456",
+      event_type: "viewed_launch_page",
+      page: "/launch",
+      metadata_json: {
+        page: "/launch",
+        nested: { tier: "Premium" },
+      },
+      created_at: "2026-07-06T00:00:00.000Z",
+    });
+  });
+
+  it("normalizes cloud analytics rows into local event shape", () => {
+    const event = normalizeCloudAnalyticsRow({
+      id: "event-1",
+      event_type: "gumroad_cta_clicked",
+      metadata_json: { tier: "Commercial", secret: "hidden" },
+      created_at: "2026-07-06T00:00:00.000Z",
+    });
+
+    expect(event).toEqual({
+      id: "event-1",
+      type: "gumroad_cta_clicked",
+      metadata: { tier: "Commercial" },
+      createdAt: "2026-07-06T00:00:00.000Z",
+    });
   });
 
   it("summarizes traction event categories", () => {

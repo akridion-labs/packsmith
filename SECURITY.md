@@ -16,6 +16,7 @@ Packsmith currently handles emails, Google-authenticated profiles, saved templat
 - Strip token-like fields from API/MCP input and keep connector secrets on the server side only.
 - Require explicit user intent before save, publish, checkout, or external export actions from assistant/plugin surfaces.
 - Keep API console examples synthetic and secret-free; never paste real production tokens into OpenAPI samples or Custom GPT instructions.
+- Store analytics as product-event metadata only; do not put generated pack bodies, connector payloads, Notion parent IDs, emails, payment details, or raw customer content in analytics metadata.
 
 ## Current Data Surfaces
 
@@ -23,6 +24,7 @@ Packsmith currently handles emails, Google-authenticated profiles, saved templat
 - `profiles`: Supabase user id, email, display name, avatar URL.
 - `template_packs`: user-owned generated pack JSON and Notion payload JSON.
 - `launch_events`: user-owned launch asset metadata.
+- `analytics_events`: anonymous or user-linked product-event metadata for page views, exports, CTA clicks, and pricing intent.
 - Browser local storage: local waitlist fallback and local saved packs when cloud is not configured.
 - Assistant/plugin surfaces: generated pack requests and export payloads only; no OAuth secrets, Notion tokens, service-role keys, or payment data.
 - Users can export or clear browser-stored Packsmith data from the app.

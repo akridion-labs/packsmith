@@ -42,10 +42,30 @@ create table if not exists public.launch_events (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.analytics_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  anonymous_id text not null,
+  event_type text not null,
+  page text,
+  metadata_json jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists analytics_events_user_created_idx
+  on public.analytics_events (user_id, created_at desc);
+
+create index if not exists analytics_events_anonymous_created_idx
+  on public.analytics_events (anonymous_id, created_at desc);
+
+create index if not exists analytics_events_type_created_idx
+  on public.analytics_events (event_type, created_at desc);
+
 alter table public.waitlist_leads enable row level security;
 alter table public.profiles enable row level security;
 alter table public.template_packs enable row level security;
 alter table public.launch_events enable row level security;
+alter table public.analytics_events enable row level security;
 
 create policy "Anyone can join waitlist"
   on public.waitlist_leads for insert
@@ -95,4 +115,16 @@ create policy "Users can create own launch events"
 
 create policy "Users can delete own launch events"
   on public.launch_events for delete
+  using (auth.uid() = user_id);
+
+create policy "Anyone can create analytics events"
+  on public.analytics_events for insert
+  with check (user_id is null or auth.uid() = user_id);
+
+create policy "Users can read own analytics events"
+  on public.analytics_events for select
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own analytics events"
+  on public.analytics_events for delete
   using (auth.uid() = user_id);

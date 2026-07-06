@@ -2797,6 +2797,66 @@ ol {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.analyticsModeGrid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.analyticsModeGrid article,
+.cloudAnalyticsStrip {
+  background:
+    linear-gradient(135deg, rgba(66, 209, 160, 0.08), rgba(118, 168, 255, 0.06)),
+    rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.analyticsModeGrid article.ready {
+  border-color: rgba(66, 209, 160, 0.36);
+}
+
+.analyticsModeGrid span,
+.analyticsModeGrid strong,
+.analyticsModeGrid small,
+.cloudAnalyticsStrip span,
+.cloudAnalyticsStrip strong,
+.cloudAnalyticsStrip small {
+  display: block;
+}
+
+.analyticsModeGrid span,
+.cloudAnalyticsStrip span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.analyticsModeGrid strong {
+  color: var(--green);
+  font-size: 28px;
+  line-height: 1;
+  margin: 5px 0;
+}
+
+.analyticsModeGrid small,
+.cloudAnalyticsStrip small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.cloudAnalyticsStrip {
+  display: grid;
+  gap: 5px;
+}
+
+.cloudAnalyticsStrip strong {
+  color: var(--text);
+  font-size: 16px;
+}
+
 .analyticsGrid article {
   background: rgba(255, 255, 255, 0.055);
   border: 1px solid var(--line);
@@ -3680,7 +3740,8 @@ ol {
   .apiSignalGrid,
   .apiRouteGrid,
   .chatGptSetupGrid,
-  .securityChecklistGrid {
+  .securityChecklistGrid,
+  .analyticsModeGrid {
     grid-template-columns: 1fr;
   }
 
