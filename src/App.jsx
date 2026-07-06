@@ -616,6 +616,7 @@ function LandingPage() {
               <strong>packsmith://forge</strong>
             </div>
             <div className="productShotGrid">
+              <div className="holoRing" aria-hidden="true" />
               <article className="ideaTerminal">
                 <span>Rough input</span>
                 <strong>AI agency launch kit for freelancers</strong>
@@ -635,6 +636,20 @@ function LandingPage() {
                     <span>{item}</span>
                   </div>
                 ))}
+              </article>
+            </div>
+            <div className="packRevealStrip" aria-label="Pack reveal preview">
+              <article>
+                <span>Sellability</span>
+                <strong>$79 test</strong>
+              </article>
+              <article>
+                <span>Assets</span>
+                <strong>14 ready</strong>
+              </article>
+              <article>
+                <span>Launch</span>
+                <strong>82%</strong>
               </article>
             </div>
             <div className="miniPipeline">
@@ -3462,6 +3477,7 @@ function ForgeApp() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.16, duration: 0.55 }}
           >
+            <div className="pipelineDeckGlow" aria-hidden="true" />
             {pipelineStages.map((stage, index) => (
               <motion.article
                 className="pipelineNode"
@@ -3721,6 +3737,7 @@ function ForgeApp() {
 
           <div className="scoreGrid">
             <article className="scoreHero">
+              <div className="scoreHalo" aria-hidden="true" />
               <Gauge size={28} />
               <div>
                 <span>Pack quality</span>

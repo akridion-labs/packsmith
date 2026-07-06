@@ -15,6 +15,9 @@
   --coral: #ff806f;
   --violet: #a98bff;
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+  --shadow-deep: 0 34px 120px rgba(0, 0, 0, 0.48);
+  --inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --glass: rgba(18, 24, 26, 0.72);
 }
 
 * {
@@ -30,6 +33,7 @@ body,
 
 body {
   background:
+    radial-gradient(circle at 50% -10%, rgba(247, 241, 229, 0.08), transparent 24rem),
     radial-gradient(circle at 18% 0%, rgba(239, 189, 99, 0.13), transparent 32rem),
     radial-gradient(circle at 82% 8%, rgba(118, 168, 255, 0.12), transparent 30rem),
     linear-gradient(135deg, #050607 0%, #101719 48%, #07090a 100%);
@@ -38,6 +42,20 @@ body {
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   line-height: 1.45;
+}
+
+body::before {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 100% 4px, 4px 100%;
+  content: "";
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: 0.12;
+  pointer-events: none;
+  position: fixed;
+  z-index: 0;
 }
 
 button,
@@ -84,13 +102,27 @@ h4 {
 .heroBackdrop {
   background:
     linear-gradient(90deg, rgba(239, 189, 99, 0.08) 1px, transparent 1px),
-    linear-gradient(rgba(239, 189, 99, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(239, 189, 99, 0.06) 1px, transparent 1px),
+    radial-gradient(circle at 72% 22%, rgba(66, 209, 160, 0.18), transparent 17rem);
   background-size: 64px 64px;
   inset: 0;
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 82%);
   opacity: 0.45;
   pointer-events: none;
   position: absolute;
+}
+
+.heroBackdrop::after {
+  background: linear-gradient(120deg, transparent 18%, rgba(239, 189, 99, 0.1), transparent 46%);
+  content: "";
+  height: 100%;
+  left: -40%;
+  opacity: 0.7;
+  position: absolute;
+  top: 0;
+  transform: skewX(-14deg);
+  width: 40%;
+  animation: scannerSweep 8s ease-in-out infinite;
 }
 
 .topNav,
@@ -103,9 +135,15 @@ h4 {
 
 .topNav {
   align-items: center;
+  background: rgba(8, 11, 13, 0.48);
+  border: 1px solid rgba(246, 225, 177, 0.09);
+  border-radius: 8px;
+  box-shadow: var(--inner-glow);
+  backdrop-filter: blur(18px);
   display: flex;
   gap: 18px;
   justify-content: space-between;
+  padding: 10px;
   z-index: 2;
 }
 
@@ -128,6 +166,9 @@ h4 {
   height: 48px;
   justify-content: center;
   width: 48px;
+  box-shadow:
+    0 10px 28px rgba(239, 189, 99, 0.12),
+    var(--inner-glow);
 }
 
 .brandLockup strong,
@@ -173,6 +214,7 @@ h4 {
   font-size: 12px;
   font-weight: 800;
   padding: 7px 10px;
+  backdrop-filter: blur(10px);
 }
 
 .navPills a {
@@ -221,10 +263,15 @@ h4 {
 }
 
 .heroCopy h1 {
+  background: linear-gradient(180deg, #fff8e8 0%, #efbd63 48%, #dfeee9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   font-size: clamp(44px, 7vw, 86px);
   letter-spacing: 0;
   line-height: 0.92;
   max-width: 850px;
+  text-shadow: 0 18px 60px rgba(239, 189, 99, 0.13);
 }
 
 .heroCopy > p {
@@ -260,15 +307,22 @@ h4 {
 }
 
 .heroActions a:first-child {
-  box-shadow: 0 14px 40px rgba(239, 189, 99, 0.18);
+  box-shadow:
+    0 14px 40px rgba(239, 189, 99, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .heroActions a:hover,
 .heroActions button:hover,
 .landingPresetCard:hover,
 .proofGrid article:hover,
-.outputShowcaseGrid article:hover {
+.outputShowcaseGrid article:hover,
+.panel:hover {
   border-color: rgba(239, 189, 99, 0.52);
+  box-shadow:
+    0 26px 90px rgba(0, 0, 0, 0.36),
+    0 0 40px rgba(239, 189, 99, 0.08),
+    var(--inner-glow);
   transform: translateY(-2px);
 }
 
@@ -276,9 +330,11 @@ h4 {
 .heroActions button,
 .landingPresetCard,
 .proofGrid article,
-.outputShowcaseGrid article {
+.outputShowcaseGrid article,
+.panel {
   transition:
     border-color 180ms ease,
+    box-shadow 180ms ease,
     transform 180ms ease,
     background 180ms ease;
 }
@@ -343,16 +399,20 @@ h4 {
 
 .forgePipeline {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03)),
-    rgba(8, 11, 13, 0.72);
+    radial-gradient(circle at 18% 14%, rgba(239, 189, 99, 0.14), transparent 15rem),
+    radial-gradient(circle at 84% 74%, rgba(66, 209, 160, 0.13), transparent 16rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035)),
+    rgba(8, 11, 13, 0.76);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-deep), var(--inner-glow);
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   padding: 18px;
   position: relative;
+  transform: perspective(1200px) rotateX(5deg) rotateY(-4deg);
+  transform-style: preserve-3d;
 }
 
 .forgePipeline::before {
@@ -363,15 +423,44 @@ h4 {
   position: absolute;
   right: 8%;
   top: 50%;
+  z-index: 1;
+}
+
+.pipelineDeckGlow {
+  background:
+    radial-gradient(circle, rgba(239, 189, 99, 0.18), transparent 46%),
+    radial-gradient(circle, rgba(118, 168, 255, 0.14), transparent 58%);
+  filter: blur(10px);
+  inset: 12%;
+  opacity: 0.85;
+  pointer-events: none;
+  position: absolute;
+  transform: translateZ(-18px);
 }
 
 .pipelineNode {
-  background: rgba(14, 20, 22, 0.86);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.09), transparent 42%),
+    rgba(14, 20, 22, 0.86);
   border: 1px solid var(--line);
   border-radius: 8px;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
   min-height: 180px;
   padding: 18px;
   position: relative;
+  transform: translateZ(28px);
+  z-index: 2;
+}
+
+.pipelineNode::after {
+  background: linear-gradient(90deg, transparent, rgba(66, 209, 160, 0.42), transparent);
+  content: "";
+  height: 1px;
+  inset: auto 14px 13px;
+  opacity: 0.65;
+  position: absolute;
 }
 
 .pipelineNode span {
@@ -405,11 +494,14 @@ h4 {
 }
 
 .panel {
-  background: var(--panel);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.055), transparent 42%),
+    var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow), var(--inner-glow);
   padding: 16px;
+  backdrop-filter: blur(18px);
 }
 
 .panelHeader,
@@ -546,12 +638,23 @@ select:focus {
 
 .stageHeader {
   align-items: flex-start;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.055), transparent 50%),
+    rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(246, 225, 177, 0.1);
+  border-radius: 8px;
+  box-shadow: var(--inner-glow);
   display: flex;
   gap: 18px;
   justify-content: space-between;
+  padding: 16px;
 }
 
 .stageHeader h2 {
+  background: linear-gradient(180deg, #fff8e8, #efbd63 72%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   font-size: clamp(28px, 4vw, 48px);
   letter-spacing: 0;
   line-height: 0.98;
@@ -586,16 +689,48 @@ select:focus {
 
 .scoreHero,
 .scoreCard {
-  background: var(--panel-strong);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.085), transparent 42%),
+    var(--panel-strong);
   border: 1px solid var(--line);
   border-radius: 8px;
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.26),
+    var(--inner-glow);
   padding: 14px;
+  position: relative;
+  overflow: hidden;
 }
 
 .scoreHero {
   align-items: center;
   display: flex;
   gap: 12px;
+  min-height: 132px;
+}
+
+.scoreHalo {
+  background:
+    conic-gradient(from 210deg, rgba(66, 209, 160, 0.06), rgba(239, 189, 99, 0.5), rgba(66, 209, 160, 0.16), rgba(118, 168, 255, 0.2), rgba(66, 209, 160, 0.06));
+  border-radius: 999px;
+  filter: blur(1px);
+  height: 120px;
+  left: -28px;
+  opacity: 0.5;
+  position: absolute;
+  top: 6px;
+  width: 120px;
+}
+
+.scoreHero svg,
+.scoreHero > div {
+  position: relative;
+  z-index: 1;
+}
+
+.scoreHero svg {
+  color: var(--green);
+  filter: drop-shadow(0 0 18px rgba(66, 209, 160, 0.26));
 }
 
 .scoreHero span,
@@ -611,11 +746,12 @@ select:focus {
 .scoreHero strong {
   color: var(--gold);
   display: block;
-  font-size: 32px;
+  font-size: 38px;
   line-height: 1;
 }
 
 .scoreCard strong {
+  color: var(--ink);
   display: block;
   font-size: 22px;
   margin: 8px 0;
@@ -630,6 +766,7 @@ select:focus {
 
 .scoreBar i {
   background: linear-gradient(90deg, var(--gold), var(--green));
+  box-shadow: 0 0 18px rgba(66, 209, 160, 0.32);
   display: block;
   height: 100%;
 }
@@ -1236,6 +1373,7 @@ ol {
   overflow: hidden;
   padding: 22px clamp(18px, 3vw, 38px) 48px;
   position: relative;
+  perspective: 1400px;
 }
 
 .landingGrid {
@@ -1259,9 +1397,12 @@ ol {
 }
 
 .heroStats div {
-  background: rgba(255, 255, 255, 0.055);
+  background:
+    linear-gradient(145deg, rgba(66, 209, 160, 0.08), rgba(255, 255, 255, 0.04)),
+    rgba(255, 255, 255, 0.055);
   border: 1px solid var(--line);
   border-radius: 8px;
+  box-shadow: var(--inner-glow);
   padding: 12px;
 }
 
@@ -1285,7 +1426,8 @@ ol {
 }
 
 .ghostLink {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)) !important;
   color: var(--ink) !important;
 }
 
@@ -1303,16 +1445,23 @@ ol {
 
 .landingProductShot {
   background:
-    linear-gradient(135deg, rgba(66, 209, 160, 0.1), rgba(239, 189, 99, 0.08)),
+    radial-gradient(circle at 16% 8%, rgba(239, 189, 99, 0.18), transparent 18rem),
+    radial-gradient(circle at 88% 76%, rgba(66, 209, 160, 0.16), transparent 18rem),
+    linear-gradient(135deg, rgba(66, 209, 160, 0.12), rgba(239, 189, 99, 0.09)),
     rgba(7, 11, 12, 0.84);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: var(--shadow);
+  box-shadow:
+    0 42px 120px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    var(--inner-glow);
   display: grid;
   gap: 14px;
   overflow: hidden;
   padding: 16px;
   position: relative;
+  transform: perspective(1200px) rotateX(6deg) rotateY(-7deg) translateY(4px);
+  transform-style: preserve-3d;
 }
 
 .landingProductShot::before {
@@ -1325,6 +1474,20 @@ ol {
   opacity: 0.35;
   pointer-events: none;
   position: absolute;
+}
+
+.landingProductShot::after {
+  background: linear-gradient(110deg, transparent 8%, rgba(255, 255, 255, 0.13), transparent 42%);
+  content: "";
+  height: 150%;
+  left: -70%;
+  opacity: 0.5;
+  pointer-events: none;
+  position: absolute;
+  top: -24%;
+  transform: rotate(12deg);
+  width: 42%;
+  animation: glassSweep 6.5s ease-in-out infinite;
 }
 
 .landingProductShot > * {
@@ -1650,22 +1813,48 @@ ol {
   display: grid;
   gap: 12px;
   grid-template-columns: 1fr 0.78fr;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.holoRing {
+  border: 1px solid rgba(66, 209, 160, 0.28);
+  border-radius: 999px;
+  box-shadow:
+    0 0 38px rgba(66, 209, 160, 0.12),
+    inset 0 0 42px rgba(239, 189, 99, 0.08);
+  height: 190px;
+  pointer-events: none;
+  position: absolute;
+  right: 5%;
+  top: 10%;
+  transform: rotateX(68deg) rotateZ(-18deg) translateZ(8px);
+  width: 280px;
+  z-index: 0;
 }
 
 .ideaTerminal,
 .qualityDial,
 .outputStack,
 .miniPipeline article {
-  background: rgba(255, 255, 255, 0.055);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)),
+    rgba(255, 255, 255, 0.055);
   border: 1px solid var(--line);
   border-radius: 8px;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.24),
+    var(--inner-glow);
   padding: 14px;
+  position: relative;
+  z-index: 1;
 }
 
 .ideaTerminal {
   display: grid;
   gap: 8px;
   min-height: 208px;
+  transform: translateZ(34px);
 }
 
 .ideaTerminal span,
@@ -1692,6 +1881,7 @@ ol {
   align-items: center;
   display: flex;
   gap: 12px;
+  transform: translateZ(48px);
 }
 
 .qualityDial svg,
@@ -1711,6 +1901,7 @@ ol {
   gap: 10px;
   grid-column: 2;
   grid-row: span 2;
+  transform: translateZ(58px);
 }
 
 .outputStack div {
@@ -1724,6 +1915,41 @@ ol {
   padding: 9px;
 }
 
+.packRevealStrip {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.packRevealStrip article {
+  background:
+    linear-gradient(145deg, rgba(239, 189, 99, 0.12), rgba(66, 209, 160, 0.06)),
+    rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(239, 189, 99, 0.25);
+  border-radius: 8px;
+  box-shadow: var(--inner-glow);
+  padding: 12px;
+}
+
+.packRevealStrip span,
+.packRevealStrip strong {
+  display: block;
+}
+
+.packRevealStrip span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.packRevealStrip strong {
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1;
+  margin-top: 6px;
+}
+
 .miniPipeline {
   display: grid;
   gap: 10px;
@@ -1732,6 +1958,31 @@ ol {
 
 .miniPipeline article {
   min-height: 76px;
+  transform: translateZ(20px);
+}
+
+@keyframes scannerSweep {
+  0%,
+  28% {
+    left: -45%;
+  }
+
+  58%,
+  100% {
+    left: 115%;
+  }
+}
+
+@keyframes glassSweep {
+  0%,
+  32% {
+    left: -75%;
+  }
+
+  62%,
+  100% {
+    left: 120%;
+  }
 }
 
 .miniPipeline strong {
@@ -3647,6 +3898,7 @@ ol {
 
   .forgePipeline {
     grid-template-columns: 1fr;
+    transform: none;
   }
 
   .forgePipeline::before {
@@ -3688,6 +3940,7 @@ ol {
   .proofGrid,
   .outputShowcaseGrid,
   .productShotGrid,
+  .packRevealStrip,
   .miniPipeline,
   .launchMetricGrid,
   .revenueMiniGrid,
@@ -3703,6 +3956,18 @@ ol {
   .outputStack {
     grid-column: auto;
     grid-row: auto;
+  }
+
+  .landingProductShot {
+    transform: none;
+  }
+
+  .ideaTerminal,
+  .qualityDial,
+  .outputStack,
+  .miniPipeline article,
+  .pipelineNode {
+    transform: none;
   }
 
   .launchPhoneShell {
@@ -3724,6 +3989,7 @@ ol {
   .topNav {
     align-items: flex-start;
     flex-direction: column;
+    padding: 12px;
   }
 
   .heroCopy h1 {
@@ -3752,5 +4018,26 @@ ol {
   .sectionTabs button {
     justify-content: flex-start;
     padding-left: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .landingProductShot,
+  .forgePipeline,
+  .ideaTerminal,
+  .qualityDial,
+  .outputStack,
+  .miniPipeline article,
+  .pipelineNode {
+    transform: none !important;
   }
 }
