@@ -1,4 +1,4 @@
-import { calculateQualityScore, platformOptions } from "./packsmithData";
+import { calculateQualityScore, platformOptions } from "./packsmithData.js";
 
 const channelNames = [
   ["gumroad", "Gumroad", "Primary", "Launch first"],

@@ -12,6 +12,9 @@ Packsmith currently handles emails, Google-authenticated profiles, saved templat
 - Let users try the generator without login; require login only for cloud save and publishing.
 - Store only the minimum Google profile fields needed for account display.
 - Avoid saving payment details in Packsmith; use a payment provider if checkout is added later.
+- Keep ChatGPT Actions, Claude MCP, and plugin surfaces limited to explicit Packsmith tools; never expose arbitrary shell, filesystem, or network actions.
+- Strip token-like fields from API/MCP input and keep connector secrets on the server side only.
+- Require explicit user intent before save, publish, checkout, or external export actions from assistant/plugin surfaces.
 
 ## Current Data Surfaces
 
@@ -20,6 +23,7 @@ Packsmith currently handles emails, Google-authenticated profiles, saved templat
 - `template_packs`: user-owned generated pack JSON and Notion payload JSON.
 - `launch_events`: user-owned launch asset metadata.
 - Browser local storage: local waitlist fallback and local saved packs when cloud is not configured.
+- Assistant/plugin surfaces: generated pack requests and export payloads only; no OAuth secrets, Notion tokens, service-role keys, or payment data.
 - Users can export or clear browser-stored Packsmith data from the app.
 
 ## Before Public Launch
@@ -31,3 +35,4 @@ Packsmith currently handles emails, Google-authenticated profiles, saved templat
 - Test Notion publish against a dedicated sandbox workspace before advertising live publish.
 - Confirm the Notion integration has access only to the workspace/page the user intends to publish into.
 - Review inferred Notion relation mapping before using published workspaces with customer data.
+- Red-team ChatGPT Actions, Claude MCP, and creative plugin flows for prompt injection before public distribution.

@@ -44,6 +44,37 @@ npm run build
 
 The current suite covers preset generation, custom pack generation, Notion payload safety, simulation states, and marketing kit exports.
 
+## Shared API and MCP Prototype
+
+Packsmith now has a shared local contract in `src/packsmithApiContract.js`. It defines the route shapes and export behavior that can power the web app, ChatGPT Actions, Claude MCP, Figma plugin flows, and creative marketplace add-ons.
+
+Current contract routes:
+
+- `POST /api/packsmith/generate`
+- `GET /api/packsmith/packs/{packId}`
+- `POST /api/packsmith/exports/markdown`
+- `POST /api/packsmith/exports/notion`
+- `POST /api/packsmith/exports/figma`
+- `POST /api/packsmith/exports/gumroad`
+- `POST /api/packsmith/exports/marketplace`
+
+The Claude-style MCP prototype lives in `src/mcp/packsmithMcpPrototype.js` and exposes:
+
+- `generate_template_pack`
+- `export_pack_markdown`
+- `export_notion_payload`
+- `export_figma_schema`
+- `export_gumroad_listing`
+- `get_packsmith_api_contract`
+
+Run the local prototype server:
+
+```bash
+npm run mcp:packsmith
+```
+
+This prototype is intentionally local and tool-limited. It does not execute shell commands, does not accept arbitrary file paths, and strips token-like fields from tool input. Production remote MCP should sit behind Packsmith auth and use the same server-side secret rules as Notion publishing.
+
 ## Supabase Setup
 
 Packsmith works without Supabase credentials, but cloud features stay in local fallback mode.
