@@ -102,6 +102,7 @@ import {
   pipelineStages,
   platformOptions,
 } from "./packsmithData";
+import { buildPackCoverSvg } from "./packCoverGenerator";
 import { buildGumroadCheckoutPlan, buildGumroadListingMarkdown } from "./revenueOpsData";
 
 const sectionIcons = {
@@ -2957,9 +2958,38 @@ function ForgeApp() {
     () => simulateNotionPublish(notionExport, { parentPageId: connection.parentPageId }),
     [connection.parentPageId, notionExport],
   );
+  const notionPublishReveal = useMemo(() => {
+    const livePages = publishResult?.createdPageIds || [];
+    const liveDatabases = publishResult?.createdDatabaseIds || [];
+    const pages = publishResult
+      ? livePages.map((item) => ({
+          name: typeof item === "string" ? "Published page" : item.name || "Published page",
+          id: typeof item === "string" ? item : item.id,
+        }))
+      : notionSimulation.createdPreview.pages.map((name) => ({ name, id: "simulation" }));
+    const databases = publishResult
+      ? liveDatabases.map((item) => ({
+          name: typeof item === "string" ? "Published database" : item.name || "Published database",
+          id: typeof item === "string" ? item : item.id,
+        }))
+      : notionSimulation.createdPreview.databases.map((database) => ({
+          name: database.name,
+          id: `${database.properties} properties / ${database.sampleRecords} records`,
+        }));
+
+    return {
+      mode: publishResult ? "Live response" : "Simulation",
+      status: publishResult?.status || notionSimulation.status,
+      parentPage: notionSimulation.createdPreview.parentPage,
+      pages,
+      databases,
+      errors: publishResult?.errors || [],
+    };
+  }, [notionSimulation, publishResult]);
   const launchCalendar = useMemo(() => buildLaunchCalendar(pack), [pack]);
   const marketingKit = useMemo(() => buildMarketingKit(pack), [pack]);
   const figmaPreviewSchema = useMemo(() => buildFigmaExportSchema(pack, marketingKit), [pack, marketingKit]);
+  const packCoverSvg = useMemo(() => buildPackCoverSvg(pack), [pack]);
   const founderPlan = useMemo(() => buildFounderPriorityPlan(pack), [pack]);
   const setupChecklist = useMemo(
     () => [
@@ -3298,6 +3328,12 @@ function ForgeApp() {
         notionPayload,
       });
       setPublishResult(result);
+      trackLocalAnalytics("notion_publish_result_received", {
+        pack: pack.name,
+        status: result.status,
+        pageCount: (result.createdPageIds || []).length,
+        databaseCount: (result.createdDatabaseIds || []).length,
+      });
       flash(result.status === "contract_ready" ? "Notion contract is ready; server token is next." : "Notion publish request sent.");
     } catch {
       flash("Notion publish failed. Check Edge Function deployment and secrets.");
@@ -3342,6 +3378,16 @@ function ForgeApp() {
     );
     trackLocalAnalytics("exported_figma_json", { pack: pack.name });
     flash("Figma export schema downloaded.");
+  }
+
+  function exportPackCoverSvg() {
+    downloadFile(
+      `packsmith-${slugify(pack.name)}-cover.svg`,
+      packCoverSvg,
+      "image/svg+xml",
+    );
+    trackLocalAnalytics("exported_pack_cover_svg", { pack: pack.name });
+    flash("Pack cover SVG exported.");
   }
 
   function exportLaunchCalendar() {
@@ -3766,16 +3812,14 @@ function ForgeApp() {
                 <Figma size={17} />
                 Export board JSON
               </button>
+              <button type="button" onClick={exportPackCoverSvg}>
+                <Download size={17} />
+                Cover SVG
+              </button>
             </div>
             <div className="previewBoard">
               <article className="packCoverFrame">
-                <span>{pack.marketplaceTarget}</span>
-                <h3>{pack.shortName || pack.name}</h3>
-                <p>{pack.promise}</p>
-                <div className="coverMeta">
-                  <strong>{pack.suggestedPrice}</strong>
-                  <small>{pack.quality.overall}/100 quality</small>
-                </div>
+                <div className="generatedCoverPreview" dangerouslySetInnerHTML={{ __html: packCoverSvg }} />
               </article>
               {figmaPreviewSchema.frames.slice(0, 4).map((frame, index) => (
                 <article className={`previewFrame frame-${index}`} key={frame.id}>
@@ -4185,6 +4229,35 @@ function ForgeApp() {
                   </span>
                 </article>
               ))}
+            </div>
+
+            <div className="notionRevealPanel">
+              <div className="notionRevealHero">
+                <span>{notionPublishReveal.mode}</span>
+                <strong>{notionPublishReveal.status.replaceAll("_", " ")}</strong>
+                <p>{notionPublishReveal.parentPage}</p>
+              </div>
+              <div className="notionRevealGrid">
+                <article>
+                  <span>Pages</span>
+                  <strong>{notionPublishReveal.pages.length}</strong>
+                  {notionPublishReveal.pages.slice(0, 4).map((page) => (
+                    <code key={`${page.name}-${page.id}`}>{page.name}</code>
+                  ))}
+                </article>
+                <article>
+                  <span>Databases</span>
+                  <strong>{notionPublishReveal.databases.length}</strong>
+                  {notionPublishReveal.databases.slice(0, 4).map((database) => (
+                    <code key={`${database.name}-${database.id}`}>{database.name}</code>
+                  ))}
+                </article>
+              </div>
+              <p className="connectorHint">
+                {publishResult
+                  ? "Live response received from the Supabase Edge Function."
+                  : "Simulation reveal. Add parent page, login, and server-side NOTION_TOKEN for live creation."}
+              </p>
             </div>
 
             <button type="button" className="primary wide" onClick={exportNotionJson}>
