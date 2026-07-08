@@ -72,7 +72,7 @@ import {
   saveAnalyticsEvent,
   saveTemplatePack,
   saveWaitlistLead,
-  signInWithGoogle,
+  signInWithProvider,
   signOut,
   upsertProfile,
 } from "./integrations/supabaseClient";
@@ -132,9 +132,16 @@ const initialCustomBrief = {
 };
 
 const landingStats = [
-  ["3", "sellable niche presets"],
+  ["4", "sellable niche presets"],
   ["5", "export paths"],
   ["60s", "demo script included"],
+];
+
+const landingLiveSignals = [
+  "Generating INR-ready price ladder",
+  "Rendering mobile pack preview",
+  "Preparing Notion schema",
+  "Building Instagram templates",
 ];
 
 const landingProof = [
@@ -178,6 +185,45 @@ const outputShowcase = [
     icon: Rocket,
     name: "Market Kit",
     detail: "Listing copy, launch posts, pricing tests, video script, and channel plan.",
+  },
+];
+
+const walkthroughSteps = [
+  {
+    id: "brief",
+    label: "Choose niche",
+    title: "Start with the buyer, pain, and platform mix.",
+    copy:
+      "Pick AI Agency, SaaS, Healthcare, or Instagram Creator. Packsmith loads the right buyer promise, assets, and INR price ladder.",
+    metric: "4 presets",
+    preview: ["Buyer clarity", "Pain point", "Assets", "₹ pricing"],
+  },
+  {
+    id: "generate",
+    label: "Forge pack",
+    title: "Generate the first sellable pack shape.",
+    copy:
+      "The local generator builds Notion, Canva, Figma, listing copy, launch calendar, and quality score without waiting for a live AI API.",
+    metric: "88/100",
+    preview: ["Notion schema", "Canva prompts", "Figma frames", "Launch copy"],
+  },
+  {
+    id: "inspect",
+    label: "Inspect output",
+    title: "See exactly what the buyer gets.",
+    copy:
+      "Open the visual board, cover generator, platform tabs, and Notion publish simulation before exporting anything.",
+    metric: "5 exports",
+    preview: ["Cover SVG", "Markdown", "Market JSON", "Notion JSON"],
+  },
+  {
+    id: "launch",
+    label: "Launch assets",
+    title: "Move from product idea to traction actions.",
+    copy:
+      "Use the Launch Asset Studio for Gumroad, LinkedIn, X, Instagram/Reels, Etsy, Reddit, and creator video prompts.",
+    metric: "10 channels",
+    preview: ["Gumroad", "LinkedIn", "Instagram/Reels", "Etsy"],
   },
 ];
 
@@ -245,22 +291,28 @@ const generationalLaunchAngles = [
 const aiAgencyPricing = [
   {
     name: "Launch",
-    price: "$29",
+    price: "₹2,499",
     promise: "Core Notion OS, launch board, and starter marketing copy.",
     bestFor: "Freelancers validating the kit quickly.",
   },
   {
     name: "Premium",
-    price: "$79",
+    price: "₹6,499",
     promise: "Notion OS, Figma product kit, Canva launch pack, and full Launch Asset Studio exports.",
     bestFor: "Operators who want the full product bundle.",
   },
   {
     name: "Commercial",
-    price: "$149",
+    price: "₹12,999",
     promise: "Premium bundle plus commercial-use license and founder setup-review bonus.",
     bestFor: "Agencies selling or adapting the system for clients.",
   },
+];
+
+const socialAuthProviders = [
+  { id: "google", label: "Google", helper: "Gmail", status: "ready" },
+  { id: "facebook", label: "Facebook", helper: "Meta", status: "ready" },
+  { id: "instagram", label: "Instagram", helper: "via Meta setup", status: "setup" },
 ];
 
 const privacyVersion = "2026-07-02";
@@ -303,8 +355,37 @@ function saveWaitlistLocal(email, source) {
 
 function fallbackCloudMessage(action) {
   return isSupabaseConfigured
-    ? `Login with Google to ${action}.`
+    ? `Login with Google or Facebook to ${action}.`
     : `Supabase is not configured yet. Add env vars to ${action}; local mode still works.`;
+}
+
+function SocialAuthButtons({ user, onLogin, onSignOut }) {
+  if (user) {
+    return (
+      <button className="navAuthButton" type="button" onClick={onSignOut}>
+        <LogOut size={14} />
+        Sign out
+      </button>
+    );
+  }
+
+  return (
+    <div className="socialAuthCluster" aria-label="Account login options">
+      {socialAuthProviders.map((provider) => (
+        <button
+          className={provider.status === "setup" ? "navAuthButton setup" : "navAuthButton"}
+          key={provider.id}
+          type="button"
+          onClick={() => onLogin(provider.id)}
+          title={provider.status === "setup" ? "Instagram business login needs Meta OAuth setup." : `Continue with ${provider.label}`}
+        >
+          <LogIn size={14} />
+          <span>{provider.label}</span>
+          <small>{provider.helper}</small>
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function slugify(value) {
@@ -515,6 +596,8 @@ function LandingPage() {
   const [email, setEmail] = useState("");
   const [notice, setNotice] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [activeWalkthroughId, setActiveWalkthroughId] = useState(walkthroughSteps[0].id);
+  const activeWalkthrough = walkthroughSteps.find((step) => step.id === activeWalkthroughId) || walkthroughSteps[0];
 
   useEffect(() => {
     trackLocalAnalytics("viewed_home_page", { page: "/" });
@@ -592,6 +675,7 @@ function LandingPage() {
                 <ArrowRight size={17} />
               </a>
               <a className="ghostLink" href="#presets">View niches</a>
+              <a className="ghostLink" href="#walkthrough">Walkthrough</a>
               <a className="ghostLink" href="/launch">Marketing kit</a>
             </div>
             <div className="heroStats" aria-label="Packsmith product stats">
@@ -600,6 +684,14 @@ function LandingPage() {
                   <strong>{value}</strong>
                   <span>{label}</span>
                 </div>
+              ))}
+            </div>
+            <div className="liveSignalRail" aria-label="Live product activity">
+              {landingLiveSignals.map((signal, index) => (
+                <span key={signal} style={{ "--delay": `${index * 0.55}s` }}>
+                  <i />
+                  {signal}
+                </span>
               ))}
             </div>
           </motion.div>
@@ -642,7 +734,7 @@ function LandingPage() {
             <div className="packRevealStrip" aria-label="Pack reveal preview">
               <article>
                 <span>Sellability</span>
-                <strong>$79 test</strong>
+                <strong>₹6,499 test</strong>
               </article>
               <article>
                 <span>Assets</span>
@@ -721,6 +813,72 @@ function LandingPage() {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="landingSection walkthroughSection" id="walkthrough">
+        <div className="sectionIntro">
+          <p className="eyebrow">Product walkthrough</p>
+          <h2>Click through the Packsmith flow before opening the app.</h2>
+        </div>
+        <div className="walkthroughShell">
+          <div className="walkthroughSteps" role="tablist" aria-label="Packsmith walkthrough steps">
+            {walkthroughSteps.map((step, index) => (
+              <button
+                key={step.id}
+                className={activeWalkthrough.id === step.id ? "active" : ""}
+                type="button"
+                onClick={() => setActiveWalkthroughId(step.id)}
+                role="tab"
+                aria-selected={activeWalkthrough.id === step.id}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{step.label}</strong>
+              </button>
+            ))}
+          </div>
+          <motion.article
+            className="walkthroughPreview"
+            key={activeWalkthrough.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22 }}
+          >
+            <div className="consoleHeader">
+              <span />
+              <span />
+              <span />
+              <strong>walkthrough://{activeWalkthrough.id}</strong>
+            </div>
+            <div className="walkthroughPreviewGrid">
+              <div>
+                <p className="eyebrow gold">{activeWalkthrough.label}</p>
+                <h3>{activeWalkthrough.title}</h3>
+                <p>{activeWalkthrough.copy}</p>
+                <a href="/app">
+                  Try this step in the forge
+                  <ArrowRight size={16} />
+                </a>
+              </div>
+              <aside>
+                <span>Live signal</span>
+                <strong>{activeWalkthrough.metric}</strong>
+                <div className="walkthroughBars" aria-hidden="true">
+                  {activeWalkthrough.preview.map((item, index) => (
+                    <i key={item} style={{ "--bar": `${48 + index * 13}%` }} />
+                  ))}
+                </div>
+              </aside>
+            </div>
+            <div className="walkthroughChips">
+              {activeWalkthrough.preview.map((item) => (
+                <span key={item}>
+                  <CheckCircle2 size={15} />
+                  {item}
+                </span>
+              ))}
+            </div>
+          </motion.article>
         </div>
       </section>
 
@@ -1612,7 +1770,7 @@ function PrivacyPage() {
               <ul>
                 <li>Notion API tokens.</li>
                 <li>Supabase service-role keys.</li>
-                <li>Google OAuth secrets.</li>
+                <li>OAuth provider secrets.</li>
                 <li>Payment information.</li>
                 <li>Generated template payload bodies inside analytics events.</li>
               </ul>
@@ -1775,7 +1933,7 @@ function DashboardPage() {
       return;
     }
     if (!user) {
-      flash("Login with Google to load cloud history.");
+      flash("Login with Google or Facebook to load cloud history.");
       return;
     }
     try {
@@ -1789,11 +1947,15 @@ function DashboardPage() {
     }
   }
 
-  async function handleGoogleLogin() {
+  async function handleSocialLogin(provider) {
+    if (provider === "instagram") {
+      flash("Create Instagram templates now; Instagram login needs Meta business OAuth setup next.");
+      return;
+    }
     try {
-      await signInWithGoogle();
+      await signInWithProvider(provider);
     } catch {
-      flash("Google login needs Supabase env vars and OAuth setup.");
+      flash(`${provider === "facebook" ? "Facebook" : "Google"} login needs Supabase env vars and OAuth setup.`);
     }
   }
 
@@ -1941,17 +2103,7 @@ function DashboardPage() {
             <a href="/app">Forge</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
-            {user ? (
-              <button className="navAuthButton" type="button" onClick={handleSignOut}>
-                <LogOut size={14} />
-                Sign out
-              </button>
-            ) : (
-              <button className="navAuthButton" type="button" onClick={handleGoogleLogin}>
-                <LogIn size={14} />
-                Continue with Google
-              </button>
-            )}
+            <SocialAuthButtons user={user} onLogin={handleSocialLogin} onSignOut={handleSignOut} />
           </div>
         </nav>
 
@@ -2188,7 +2340,7 @@ function DashboardPage() {
                   <span>Auth</span>
                   <strong>{cloudReady ? "Ready" : "Setup"}</strong>
                 </div>
-                <p>{cloudReady ? "Google login can be enabled from Supabase." : "Add Supabase env vars for login."}</p>
+                <p>{cloudReady ? "Google and Facebook login can be enabled from Supabase." : "Add Supabase env vars for login."}</p>
               </article>
               <article className="opsCard ready">
                 <div>
@@ -3000,7 +3152,7 @@ function ForgeApp() {
         detail: cloudReady ? "Cloud features can initialize." : "Add VITE_SUPABASE_URL and anon key.",
       },
       {
-        label: "Google login",
+        label: "Social login",
         status: user ? "Connected" : "Try-first mode",
         ready: Boolean(user),
         detail: user ? user.email : "Login is only required for cloud save and publish.",
@@ -3267,11 +3419,11 @@ function ForgeApp() {
 
   async function savePackToCloud() {
     if (!cloudReady) {
-      flash("Add Supabase env vars to enable Google login and cloud save.");
+      flash("Add Supabase env vars to enable social login and cloud save.");
       return;
     }
     if (!user) {
-      flash("Login with Google to cloud save this pack.");
+      flash("Login with Google or Facebook to cloud save this pack.");
       return;
     }
     try {
@@ -3290,11 +3442,15 @@ function ForgeApp() {
     }
   }
 
-  async function handleGoogleLogin() {
+  async function handleSocialLogin(provider) {
+    if (provider === "instagram") {
+      flash("Instagram templates are live; Instagram login needs Meta business OAuth setup next.");
+      return;
+    }
     try {
-      await signInWithGoogle();
+      await signInWithProvider(provider);
     } catch {
-      flash("Google login needs Supabase env vars and OAuth setup.");
+      flash(`${provider === "facebook" ? "Facebook" : "Google"} login needs Supabase env vars and OAuth setup.`);
     }
   }
 
@@ -3315,7 +3471,7 @@ function ForgeApp() {
       return;
     }
     if (!user) {
-      flash("Login with Google to publish to Notion.");
+      flash("Login with Google or Facebook to publish to Notion.");
       return;
     }
     if (!connection.parentPageId.trim()) {
@@ -3464,17 +3620,7 @@ function ForgeApp() {
             <a href="/api-console">API Console</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
-            {user ? (
-              <button className="navAuthButton" type="button" onClick={handleSignOut}>
-                <LogOut size={14} />
-                Sign out
-              </button>
-            ) : (
-              <button className="navAuthButton" type="button" onClick={handleGoogleLogin}>
-                <LogIn size={14} />
-                Continue with Google
-              </button>
-            )}
+            <SocialAuthButtons user={user} onLogin={handleSocialLogin} onSignOut={handleSignOut} />
           </div>
         </nav>
 
@@ -3699,7 +3845,7 @@ function ForgeApp() {
               </span>
             </div>
             <p className="privacyMicrocopy">
-              Try first without login. Google login is used only for cloud saves and publishing. Notion tokens stay server-side.
+              Try first without login. Google or Facebook login is used only for cloud saves and publishing. Notion tokens stay server-side.
             </p>
             <div className="dataControlGrid">
               <button type="button" onClick={exportLocalData}>

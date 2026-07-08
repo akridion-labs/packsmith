@@ -13,8 +13,8 @@ const pack = {
 };
 
 const pricing = [
-  { name: "Launch", price: "$29", promise: "Core workspace" },
-  { name: "Commercial", price: "$149", promise: "Client-use license" },
+  { name: "Launch", price: "₹2,499", promise: "Core workspace" },
+  { name: "Commercial", price: "₹12,999", promise: "Client-use license" },
 ];
 
 const kit = {

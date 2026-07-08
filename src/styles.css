@@ -235,6 +235,32 @@ h4 {
   color: #d7fff1 !important;
 }
 
+.socialAuthCluster {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.socialAuthCluster .navAuthButton {
+  min-height: 36px;
+  padding: 8px 10px;
+}
+
+.socialAuthCluster .navAuthButton small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.socialAuthCluster .navAuthButton.setup {
+  background: rgba(239, 189, 99, 0.09) !important;
+  border-color: rgba(239, 189, 99, 0.28) !important;
+  color: #ffe3aa !important;
+}
+
 .heroGrid {
   align-items: center;
   display: grid;
@@ -317,6 +343,7 @@ h4 {
 .landingPresetCard:hover,
 .proofGrid article:hover,
 .outputShowcaseGrid article:hover,
+.walkthroughPreview:hover,
 .panel:hover {
   border-color: rgba(239, 189, 99, 0.52);
   box-shadow:
@@ -331,6 +358,7 @@ h4 {
 .landingPresetCard,
 .proofGrid article,
 .outputShowcaseGrid article,
+.walkthroughPreview,
 .panel {
   transition:
     border-color 180ms ease,
@@ -1692,6 +1720,39 @@ ol {
   text-transform: uppercase;
 }
 
+.liveSignalRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 680px;
+}
+
+.liveSignalRail span {
+  align-items: center;
+  animation: signalPulse 4.8s ease-in-out infinite;
+  animation-delay: var(--delay);
+  background: rgba(7, 11, 12, 0.54);
+  border: 1px solid rgba(66, 209, 160, 0.22);
+  border-radius: 999px;
+  color: #dfffee;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 850;
+  gap: 8px;
+  min-height: 32px;
+  padding: 7px 11px;
+}
+
+.liveSignalRail i {
+  animation: beaconBlink 1.8s ease-in-out infinite;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 16px rgba(66, 209, 160, 0.65);
+  display: inline-block;
+  height: 7px;
+  width: 7px;
+}
+
 .ghostLink {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)) !important;
@@ -1727,6 +1788,7 @@ ol {
   overflow: hidden;
   padding: 16px;
   position: relative;
+  animation: consoleFloat 7.5s ease-in-out infinite;
   transform: perspective(1200px) rotateX(6deg) rotateY(-7deg) translateY(4px);
   transform-style: preserve-3d;
 }
@@ -2196,6 +2258,12 @@ ol {
   border-radius: 8px;
   box-shadow: var(--inner-glow);
   padding: 12px;
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.packRevealStrip article:hover {
+  border-color: rgba(66, 209, 160, 0.42);
+  transform: translateY(-2px);
 }
 
 .packRevealStrip span,
@@ -2249,6 +2317,41 @@ ol {
   62%,
   100% {
     left: 120%;
+  }
+}
+
+@keyframes consoleFloat {
+  0%,
+  100% {
+    transform: perspective(1200px) rotateX(6deg) rotateY(-7deg) translateY(4px);
+  }
+
+  50% {
+    transform: perspective(1200px) rotateX(5deg) rotateY(-5deg) translateY(-6px);
+  }
+}
+
+@keyframes signalPulse {
+  0%,
+  100% {
+    border-color: rgba(66, 209, 160, 0.18);
+    transform: translateY(0);
+  }
+
+  45% {
+    border-color: rgba(239, 189, 99, 0.42);
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes beaconBlink {
+  0%,
+  100% {
+    opacity: 0.48;
+  }
+
+  50% {
+    opacity: 1;
   }
 }
 
@@ -2404,6 +2507,178 @@ ol {
 
 .outputShowcaseGrid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.walkthroughSection {
+  gap: 22px;
+}
+
+.walkthroughShell {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(230px, 0.38fr) minmax(0, 1fr);
+}
+
+.walkthroughSteps {
+  background:
+    linear-gradient(145deg, rgba(239, 189, 99, 0.08), rgba(66, 209, 160, 0.05)),
+    rgba(7, 11, 12, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.walkthroughSteps button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  min-height: 54px;
+  padding: 10px;
+  text-align: left;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.walkthroughSteps button:hover,
+.walkthroughSteps button.active {
+  background: rgba(66, 209, 160, 0.1);
+  border-color: rgba(66, 209, 160, 0.45);
+  transform: translateX(2px);
+}
+
+.walkthroughSteps span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.walkthroughPreview {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(66, 209, 160, 0.14), transparent 22rem),
+    radial-gradient(circle at 84% 78%, rgba(239, 189, 99, 0.12), transparent 20rem),
+    rgba(7, 11, 12, 0.84);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 16px;
+  overflow: hidden;
+  padding: 16px;
+  position: relative;
+}
+
+.walkthroughPreview::before {
+  background:
+    linear-gradient(90deg, rgba(66, 209, 160, 0.09) 1px, transparent 1px),
+    linear-gradient(rgba(239, 189, 99, 0.07) 1px, transparent 1px);
+  background-size: 36px 36px;
+  content: "";
+  inset: 52px 0 0;
+  opacity: 0.38;
+  pointer-events: none;
+  position: absolute;
+}
+
+.walkthroughPreview > * {
+  position: relative;
+  z-index: 1;
+}
+
+.walkthroughPreviewGrid {
+  align-items: stretch;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.36fr);
+}
+
+.walkthroughPreviewGrid > div,
+.walkthroughPreviewGrid aside {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.walkthroughPreview h3 {
+  font-size: clamp(26px, 4vw, 48px);
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.walkthroughPreview p {
+  color: var(--muted);
+}
+
+.walkthroughPreview a {
+  align-items: center;
+  background: linear-gradient(145deg, rgba(239, 189, 99, 0.95), rgba(255, 218, 139, 0.88));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  color: #171007;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 950;
+  gap: 8px;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 14px;
+  width: fit-content;
+}
+
+.walkthroughPreviewGrid aside span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.walkthroughPreviewGrid aside strong {
+  color: var(--green);
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1;
+}
+
+.walkthroughBars {
+  display: grid;
+  gap: 9px;
+}
+
+.walkthroughBars i {
+  background: linear-gradient(90deg, rgba(66, 209, 160, 0.92), rgba(239, 189, 99, 0.72));
+  border-radius: 999px;
+  display: block;
+  height: 10px;
+  width: var(--bar);
+}
+
+.walkthroughChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.walkthroughChips span {
+  align-items: center;
+  background: rgba(66, 209, 160, 0.08);
+  border: 1px solid rgba(66, 209, 160, 0.22);
+  border-radius: 999px;
+  color: #dfffee;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 850;
+  gap: 7px;
+  min-height: 32px;
+  padding: 7px 10px;
 }
 
 .waitlistPanel {
@@ -4206,6 +4481,8 @@ ol {
   .detailColumns,
   .heroPresetGrid,
   .heroStats,
+  .walkthroughShell,
+  .walkthroughPreviewGrid,
   .comparisonGrid,
   .priorityGrid,
   .experimentGrid,
@@ -4274,6 +4551,24 @@ ol {
     align-items: flex-start;
     flex-direction: column;
     padding: 12px;
+  }
+
+  .socialAuthCluster,
+  .socialAuthCluster .navAuthButton,
+  .liveSignalRail span {
+    width: 100%;
+  }
+
+  .socialAuthCluster .navAuthButton {
+    justify-content: flex-start;
+  }
+
+  .walkthroughSteps button {
+    transform: none !important;
+  }
+
+  .walkthroughPreview a {
+    width: 100%;
   }
 
   .heroCopy h1 {

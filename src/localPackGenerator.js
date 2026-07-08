@@ -92,7 +92,7 @@ export function buildCustomPack(brief) {
     audience: brief.buyer || "custom template buyers",
     heroLine: `Turn a rough ${shortNiche} idea into a launch-ready template pack.`,
     comparison: {
-      expectedPrice: "$19-$99",
+      expectedPrice: "₹1,499-₹8,499",
       bestMarketplace: brief.marketplaceTarget || "Gumroad",
       fastestChannel: "LinkedIn/X validation",
       connectorReadiness: "Prototype",
@@ -106,7 +106,7 @@ export function buildCustomPack(brief) {
     marketplaceTarget: brief.marketplaceTarget || "Gumroad",
     visualDirection: brief.visualDirection || "Dark command center, blueprint grid, amber/green terminal accents.",
     quality,
-    suggestedPrice: "$19 launch / $49 premium / $99 commercial",
+    suggestedPrice: "₹1,499 launch / ₹3,999 premium / ₹8,499 commercial",
     buildStage: "Local mock generation",
     sections,
     listing,

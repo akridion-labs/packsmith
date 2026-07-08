@@ -88,7 +88,7 @@ Recommended ChatGPT Action flow:
 2. Create a Custom GPT and import the schema under Actions.
 3. Start with unauthenticated generation/export routes.
 4. Add Packsmith login only for saved history, cloud exports, and publish actions.
-5. Keep Notion, Supabase, Google, and payment secrets server-side only.
+5. Keep Notion, Supabase, OAuth provider, and payment secrets server-side only.
 
 ## Supabase Setup
 
@@ -98,20 +98,21 @@ Packsmith works without Supabase credentials, but cloud features stay in local f
 2. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 3. Add `VITE_GUMROAD_AI_AGENCY_URL` after the Gumroad product page is created.
 4. Run `supabase/schema.sql` in the Supabase SQL editor.
-5. Enable Google as an auth provider in Supabase.
+5. Enable Google and Facebook as auth providers in Supabase.
 6. Deploy `supabase/functions/notion-publish` when ready for Notion publishing.
 7. Add `NOTION_TOKEN` as a Supabase Edge Function secret.
 8. Share the target Notion parent page with the Notion integration.
+9. Treat Instagram login as a Meta/Instagram Business setup path; the app can generate Instagram template packs today, but direct Instagram OAuth is not enabled in this frontend.
 
 Cloud features:
 
-- Google login
+- Google and Facebook login
 - Waitlist lead capture
 - Saved template packs
 - Cloud analytics events for page views, exports, CTA clicks, and pricing intent
 - Notion publish Edge Function for pages, databases, and seed records
 - Browser data export and local data clearing controls
-- In-app beta setup checklist for Supabase, Google login, privacy, and Notion publish readiness
+- In-app beta setup checklist for Supabase, social login, privacy, and Notion publish readiness
 
 ## Privacy and Security Baseline
 
@@ -120,7 +121,7 @@ Cloud features:
 - Waitlist rows store consent version and acceptance timestamp.
 - Saved packs and launch events are protected with Supabase row-level security.
 - Analytics events store metadata only; generated pack bodies, connector tokens, OAuth secrets, and payment details must not be stored in analytics.
-- Notion tokens, Google OAuth secrets, and Supabase service-role keys must stay server-side only.
+- Notion tokens, OAuth secrets, and Supabase service-role keys must stay server-side only.
 - `.env` and `.env.local` are ignored and must never be committed.
 - See `SECURITY.md` before adding new auth, database, or connector behavior.
 
@@ -128,10 +129,10 @@ Cloud features:
 
 - React + Vite app
 - Polished Packsmith creator workspace
-- Multi-niche preset engine
+- Multi-niche preset engine including AI Agency, SaaS, Healthcare, and Instagram Creator packs
 - Public landing page
 - Dedicated launch/traction page
-- Supabase-ready Google login
+- Supabase-ready Google and Facebook login
 - Supabase schema for waitlist, profiles, saved packs, and launch events
 - In-app local data export/delete controls
 - Automated unit tests for preset, custom generator, Notion connector, and marketing export contracts

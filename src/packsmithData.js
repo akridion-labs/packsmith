@@ -81,6 +81,12 @@ const channelTemplates = [
     defaultReadiness: "Thread ready",
   },
   {
+    id: "instagram",
+    name: "Instagram/Reels",
+    priority: "Second",
+    defaultReadiness: "Short demo ready",
+  },
+  {
     id: "notion-marketplace",
     name: "Notion Marketplace",
     priority: "Later",
@@ -126,7 +132,7 @@ export const nichePresets = {
     audience: "AI agency freelancers",
     heroLine: "Forge AI service ideas into a sellable agency operating system.",
     comparison: {
-      expectedPrice: "$29-$149",
+      expectedPrice: "₹2,499-₹12,999",
       bestMarketplace: "Gumroad",
       fastestChannel: "LinkedIn/X",
       connectorReadiness: "High",
@@ -146,7 +152,7 @@ export const nichePresets = {
       visualDirection:
         "Dark premium workspace, sharp SaaS dashboard, confident sales room, clean process diagrams, practical client-facing assets.",
     },
-    suggestedPrice: "$29 launch / $79 premium / $149 commercial",
+    suggestedPrice: "₹2,499 launch / ₹6,499 premium / ₹12,999 commercial",
     buildStage: "Investor-demo pack factory",
     sections: [
       {
@@ -204,17 +210,17 @@ export const nichePresets = {
     launchPlan: [
       "Finish the Notion database schema and seed it with realistic AI agency demo records",
       "Create eight preview images showing the CRM, pitch deck, landing page, and bundle contents",
-      "Ship the first Gumroad page at $29 with a premium upgrade waitlist",
+      "Ship the first Gumroad page at ₹2,499 with a premium upgrade waitlist",
       "Post five LinkedIn/X examples showing the kit solving real agency workflow problems",
       "Offer the first ten buyers a setup review in exchange for feedback and screenshots",
     ],
     channelOverrides: {
       gumroad: {
         audience: "AI agency freelancers who need a sellable operating system today",
-        price: "$29 launch, $79 premium, $149 commercial",
+        price: "₹2,499 launch, ₹6,499 premium, ₹12,999 commercial",
         listingTitle: "AI Agency Launch Kit: CRM, Pitch, Content, and UI Starter",
         launchPost:
-          "I built the AI Agency Launch Kit for automation freelancers who need their CRM, onboarding, pitch deck, content, and landing page starter system in one place. Launch pricing is $29 for the first buyers.",
+          "I built the AI Agency Launch Kit for automation freelancers who need their CRM, onboarding, pitch deck, content, and landing page starter system in one place. Launch pricing is ₹2,499 for the first buyers.",
         riskNotes:
           "Gumroad discovery is weak. Drive traffic through LinkedIn/X examples and direct founder communities.",
       },
@@ -287,7 +293,7 @@ export const nichePresets = {
             { name: "Lead", type: "title" },
             { name: "Pain point", type: "text" },
             { name: "Automation idea", type: "text" },
-            { name: "Budget", type: "select", options: ["<$1k", "$1k-$5k", "$5k+"] },
+            { name: "Budget", type: "select", options: ["<₹85k", "₹85k-₹4L", "₹4L+"] },
             { name: "Urgency", type: "select", options: ["Low", "Medium", "High"] },
             { name: "Objection", type: "text" },
             { name: "Follow-up date", type: "date" },
@@ -297,7 +303,7 @@ export const nichePresets = {
               Lead: "Local clinic owner",
               "Pain point": "Manual intake and follow-ups",
               "Automation idea": "AI-assisted appointment prep and reminders",
-              Budget: "$1k-$5k",
+              Budget: "₹85k-₹4L",
               Urgency: "High",
             },
           ],
@@ -357,7 +363,7 @@ export const nichePresets = {
     audience: "solo SaaS founders",
     heroLine: "Turn a raw SaaS idea into a launch dashboard, feedback engine, and investor-ready story.",
     comparison: {
-      expectedPrice: "$39-$199",
+      expectedPrice: "₹3,299-₹16,499",
       bestMarketplace: "Gumroad",
       fastestChannel: "LinkedIn/Product Hunt prep",
       connectorReadiness: "High",
@@ -377,7 +383,7 @@ export const nichePresets = {
       visualDirection:
         "Dark launch room, crisp SaaS metrics, product roadmap cards, customer feedback signals, landing page mockups.",
     },
-    suggestedPrice: "$39 launch / $99 founder pack / $199 commercial",
+    suggestedPrice: "₹3,299 launch / ₹8,499 founder pack / ₹16,499 commercial",
     buildStage: "SaaS launch command kit",
     sections: [
       {
@@ -435,14 +441,14 @@ export const nichePresets = {
     launchPlan: [
       "Build the SaaS Launch OS with customers, feedback, roadmap, launch tasks, and metrics",
       "Create preview assets showing the launch dashboard, feedback inbox, roadmap, and landing page",
-      "Ship Gumroad at $39 and collect waitlist signups for the premium founder pack",
+      "Ship Gumroad at ₹3,299 and collect waitlist signups for the premium founder pack",
       "Post a LinkedIn/X build-in-public thread about turning a SaaS launch into a repeatable system",
       "Validate with 15 indie hackers before adding Product Hunt-ready templates",
     ],
     channelOverrides: {
       gumroad: {
         audience: "Solo SaaS founders preparing to launch without a full growth team",
-        price: "$39 launch, $99 founder pack, $199 commercial",
+        price: "₹3,299 launch, ₹8,499 founder pack, ₹16,499 commercial",
         listingTitle: "SaaS Launch Kit: Dashboard, Feedback, Roadmap, and Launch Assets",
         launchPost:
           "I built a SaaS Launch Kit for solo founders who need a launch dashboard, customer feedback system, roadmap, metrics room, landing page starter, and founder update assets before shipping.",
@@ -597,7 +603,7 @@ export const nichePresets = {
     audience: "clinics and healthcare consultants",
     heroLine: "Package compliant practice-growth workflows without clinical advice or risky claims.",
     comparison: {
-      expectedPrice: "$49-$199",
+      expectedPrice: "₹4,199-₹16,499",
       bestMarketplace: "Gumroad/direct outreach",
       fastestChannel: "LinkedIn/direct outreach",
       connectorReadiness: "Medium",
@@ -618,7 +624,7 @@ export const nichePresets = {
       visualDirection:
         "Calm premium clinic operations dashboard, warm trust signals, clean referral workflow, service information cards, accessible layouts.",
     },
-    suggestedPrice: "$49 launch / $99 practice pack / $199 consultant license",
+    suggestedPrice: "₹4,199 launch / ₹8,499 practice pack / ₹16,499 consultant license",
     buildStage: "Compliant growth workflow kit",
     safetyNote: "Workflow template, not medical/legal advice. Avoid diagnostic, treatment, or guaranteed-result claims.",
     sections: [
@@ -677,14 +683,14 @@ export const nichePresets = {
     launchPlan: [
       "Build the Practice Growth OS with lead, referral, appointment, review, and campaign databases",
       "Create preview assets with neutral service communication and visible compliance/disclaimer areas",
-      "Ship Gumroad/direct outreach at $49 with a consultant license option",
+      "Ship Gumroad/direct outreach at ₹4,199 with a consultant license option",
       "Post LinkedIn content about organizing healthcare growth operations without making clinical claims",
       "Validate with healthcare consultants and clinic operators before expanding marketplace reach",
     ],
     channelOverrides: {
       gumroad: {
         audience: "Healthcare consultants and clinic operators needing operational growth workflows",
-        price: "$49 launch, $99 practice pack, $199 consultant license",
+        price: "₹4,199 launch, ₹8,499 practice pack, ₹16,499 consultant license",
         listingTitle: "Healthcare Practice Growth Kit: Leads, Referrals, Reviews, and Campaign Assets",
         launchPost:
           "I built a Healthcare Practice Growth Kit for clinic operators and consultants who need patient lead tracking, referral outreach, appointment workflow, review tracking, and service communication assets. Workflow template only; not medical/legal advice.",
@@ -824,6 +830,263 @@ export const nichePresets = {
               Channel: "Canva",
               Approval: "Review",
               "Disclaimer needed": true,
+            },
+          ],
+        },
+      ],
+    },
+  },
+  instagramCreator: {
+    id: "instagramCreator",
+    shortName: "Instagram Creator",
+    name: "Instagram Growth Studio Kit",
+    audience: "creators, coaches, boutiques, and social media freelancers",
+    heroLine: "Turn an Instagram page idea into a content system, Canva pack, and sellable creator workflow.",
+    comparison: {
+      expectedPrice: "₹1,499-₹7,999",
+      bestMarketplace: "Gumroad/Etsy",
+      fastestChannel: "Instagram/Reels + LinkedIn",
+      connectorReadiness: "Medium",
+    },
+    brief: {
+      niche: "Instagram creators, local brands, and social media managers",
+      buyer:
+        "Creators and small brands who need repeatable reels, carousels, captions, brand prompts, and a content calendar without rebuilding every post from scratch",
+      painPoint:
+        "They post inconsistently because ideas, captions, design templates, hooks, offers, and tracking are scattered across notes, Canva drafts, and phone galleries.",
+      promise:
+        "Create a reusable Instagram content engine with Notion planning, Canva-ready templates, Figma preview boards, launch copy, and growth tracking.",
+      assets:
+        "Reels planner, carousel templates, caption bank, hook library, content calendar, bio audit, offer tracker, brand kit",
+      platforms: platformOptions,
+      style: "Retro-futuristic social studio",
+      marketplaceTarget: "Gumroad/Etsy",
+      visualDirection:
+        "Dark social command center, neon camera accents, grid preview wall, creator dashboard, clean mobile-first template previews.",
+    },
+    suggestedPrice: "₹1,499 launch / ₹3,999 creator pack / ₹7,999 commercial license",
+    buildStage: "Instagram content product kit",
+    sections: [
+      {
+        id: "notion",
+        label: "Instagram Content OS",
+        summary: "Planning system for reels, carousels, captions, offers, collaborations, and weekly growth review.",
+        items: [
+          "Content Command Home with weekly themes, post queue, launch offers, and growth signals",
+          "Reels Planner with hook, angle, shot list, CTA, audio note, edit status, and publish date",
+          "Carousel System with slide promise, outline, design style, CTA, and repurpose notes",
+          "Caption and Hook Bank with niche, emotion, proof type, CTA, and reusable caption blocks",
+          "Offer Tracker for lead magnets, mini-products, service CTAs, link-in-bio assets, and conversion notes",
+          "Growth Review board for reach, saves, replies, profile visits, experiments, and next actions",
+        ],
+      },
+      {
+        id: "canva",
+        label: "Instagram Canva Pack",
+        summary: "Mobile-first creator templates for reels covers, carousel slides, stories, and launch posts.",
+        items: [
+          "30 carousel slide layouts for education, myth-busting, proof, checklist, and offer posts",
+          "20 reel cover templates with hook-first typography and editable niche color variants",
+          "25 story frames for polls, launch reminders, testimonials, FAQs, behind-the-scenes, and countdowns",
+          "Bio audit worksheet, highlight cover kit, link-in-bio offer board, and brand prompt sheet",
+          "Preview image checklist for Gumroad, Etsy, Instagram shop-style posts, and direct DM selling",
+        ],
+      },
+      {
+        id: "figma",
+        label: "Social Preview UI Kit",
+        summary: "Design starter for Instagram product previews, mobile mockups, and creator landing pages.",
+        items: [
+          "Design tokens for midnight black, camera green, flash amber, creator pink, and signal blue",
+          "Mobile profile preview, reel cover wall, carousel gallery, story stack, and offer card frames",
+          "Landing page modules for creator promise, template gallery, price ladder, FAQ, and checkout CTA",
+          "Editable preview-board components for before/after content systems and bundle screenshots",
+          "Export notes for Gumroad cover, Etsy preview tiles, Instagram launch carousel, and pinned post assets",
+        ],
+      },
+    ],
+    listing: {
+      title: "Instagram Growth Studio Kit: Content Calendar, Canva Templates, and Creator Launch System",
+      description:
+        "A reusable content product system for creators, coaches, boutiques, and social media freelancers who need Instagram reels, carousels, captions, story frames, offer tracking, and launch assets in one workflow.",
+      tags: [
+        "instagram templates",
+        "canva templates",
+        "content calendar",
+        "reels planner",
+        "carousel templates",
+        "creator business",
+        "social media kit",
+      ],
+    },
+    launchPlan: [
+      "Build the Instagram Content OS with reels, carousels, captions, offers, and growth review databases",
+      "Create mobile-first previews showing the reel cover wall, carousel set, story frames, and content calendar",
+      "Ship Gumroad/Etsy at ₹1,499 with a creator pack upgrade and commercial license option",
+      "Post a Reels/LinkedIn before-after demo showing messy notes becoming a complete content system",
+      "Validate with 10 creators or social media freelancers before adding niche-specific design variants",
+    ],
+    channelOverrides: {
+      gumroad: {
+        audience: "Creators and social media freelancers who want an organized Instagram content system",
+        price: "₹1,499 launch, ₹3,999 creator pack, ₹7,999 commercial license",
+        listingTitle: "Instagram Growth Studio Kit: Reels, Carousels, Captions, and Launch Assets",
+        launchPost:
+          "I built an Instagram Growth Studio Kit for creators and social media freelancers who need reels planning, carousel templates, captions, story frames, offer tracking, and launch previews in one workflow.",
+        riskNotes: "Use real mobile previews and clear commercial-use terms. Avoid promising follower or revenue growth.",
+      },
+      linkedin: {
+        listingTitle: "The Instagram content system I would sell as a template pack",
+        launchPost:
+          "Most creators do not need another blank content calendar. They need a reusable system: reels hooks, carousel structure, captions, story frames, offer tracking, and weekly growth review.",
+        riskNotes: "Position for creator operators and social media freelancers, not vanity metrics.",
+      },
+      x: {
+        listingTitle: "I turned an Instagram workflow into a template pack",
+        launchPost:
+          "New Packsmith preset: Instagram Growth Studio Kit. Rough content idea -> Notion content OS -> Canva templates -> Figma preview board -> Gumroad/Etsy listing.",
+        riskNotes: "Lead with the mobile before/after and show the generated carousel/reel assets.",
+      },
+      instagram: {
+        audience: "Creators and small brands who want swipeable template previews before buying",
+        price: "₹1,499 launch / ₹3,999 creator pack",
+        listingTitle: "Instagram template pack preview: content system in 30 seconds",
+        launchPost:
+          "POV: your scattered post ideas become a content OS, reel planner, carousel template pack, story frames, caption bank, and offer tracker. Built in Packsmith.",
+        riskNotes: "Use original previews, no copied brand styles, and avoid promising follower growth.",
+      },
+      etsy: {
+        audience: "DIY creators and small brands searching for Canva Instagram template bundles",
+        price: "₹1,499 launch / ₹3,999 creator pack",
+        listingTitle: "Instagram Canva Template Bundle + Content Calendar",
+        launchPost:
+          "A mobile-first Instagram template bundle with reels covers, carousel layouts, story frames, caption prompts, and a content calendar workflow.",
+        riskNotes: "Etsy is visual-first. Preview images and keyword-rich titles matter more than broad product copy.",
+      },
+      reddit: {
+        listingTitle: "Feedback request: Instagram content workflow kit",
+        launchPost:
+          "I’m validating an Instagram creator workflow kit: reels planner, carousel templates, caption bank, content calendar, and offer tracking. What would make it useful for real weekly posting?",
+        riskNotes: "Ask for workflow feedback. Do not spam creator communities with direct sales links.",
+      },
+    },
+    notion: {
+      schemaVersion: "2026-07-packsmith-instagram-creator-v1",
+      parentPage: {
+        title: "Instagram Growth Studio OS",
+        icon: "camera",
+        sections: ["Content Home", "Reels", "Carousels", "Captions", "Offers", "Growth Review"],
+      },
+      pages: [
+        {
+          id: "content_home",
+          title: "Content Home",
+          purpose: "Weekly command center for Instagram content planning, offer focus, and publishing readiness.",
+          blocks: ["Weekly theme", "Post queue", "Offer focus", "Repurpose list", "Growth signals"],
+        },
+        { id: "reels", title: "Reels Planner", database: "reels" },
+        { id: "carousels", title: "Carousel System", database: "carousels" },
+        { id: "captions", title: "Caption and Hook Bank", database: "captions" },
+        { id: "offers", title: "Offer Tracker", database: "offers" },
+        { id: "growth_review", title: "Growth Review", database: "growth_review" },
+      ],
+      databases: [
+        {
+          id: "reels",
+          name: "Reels Planner",
+          properties: [
+            { name: "Reel", type: "title" },
+            { name: "Hook", type: "text" },
+            { name: "Angle", type: "select", options: ["Education", "Proof", "Behind the scenes", "Offer"] },
+            { name: "Status", type: "select", options: ["Idea", "Script", "Recorded", "Edited", "Posted"] },
+            { name: "Publish date", type: "date" },
+            { name: "CTA", type: "text" },
+          ],
+          sampleRecords: [
+            {
+              Reel: "3 mistakes in content planning",
+              Hook: "Your content calendar is not the problem",
+              Angle: "Education",
+              Status: "Script",
+              CTA: "Save the checklist",
+            },
+          ],
+        },
+        {
+          id: "carousels",
+          name: "Carousels",
+          properties: [
+            { name: "Carousel", type: "title" },
+            { name: "Slide promise", type: "text" },
+            { name: "Template style", type: "select", options: ["Checklist", "Myth", "Proof", "Story"] },
+            { name: "Status", type: "select", options: ["Outline", "Design", "Review", "Posted"] },
+            { name: "Repurpose note", type: "text" },
+          ],
+          sampleRecords: [
+            {
+              Carousel: "Weekly content reset",
+              "Slide promise": "Plan 5 posts from one offer",
+              "Template style": "Checklist",
+              Status: "Outline",
+            },
+          ],
+        },
+        {
+          id: "captions",
+          name: "Caption and Hook Bank",
+          properties: [
+            { name: "Hook", type: "title" },
+            { name: "Niche", type: "text" },
+            { name: "Emotion", type: "select", options: ["Curious", "Urgent", "Trust", "Playful"] },
+            { name: "CTA type", type: "select", options: ["Save", "Comment", "DM", "Link in bio"] },
+            { name: "Caption block", type: "text" },
+          ],
+          sampleRecords: [
+            {
+              Hook: "Stop posting from panic",
+              Niche: "creator operations",
+              Emotion: "Curious",
+              "CTA type": "Save",
+            },
+          ],
+        },
+        {
+          id: "offers",
+          name: "Offers",
+          properties: [
+            { name: "Offer", type: "title" },
+            { name: "Type", type: "select", options: ["Lead magnet", "Template", "Service", "Mini product"] },
+            { name: "CTA", type: "text" },
+            { name: "Link status", type: "select", options: ["Draft", "Live", "Paused"] },
+            { name: "Proof asset", type: "text" },
+          ],
+          sampleRecords: [
+            {
+              Offer: "Content reset checklist",
+              Type: "Lead magnet",
+              CTA: "DM RESET",
+              "Link status": "Draft",
+            },
+          ],
+        },
+        {
+          id: "growth_review",
+          name: "Growth Review",
+          properties: [
+            { name: "Review", type: "title" },
+            { name: "Reach", type: "number" },
+            { name: "Saves", type: "number" },
+            { name: "Replies", type: "number" },
+            { name: "Learning", type: "text" },
+            { name: "Next action", type: "text" },
+          ],
+          sampleRecords: [
+            {
+              Review: "Week 1",
+              Reach: 2400,
+              Saves: 82,
+              Replies: 11,
+              Learning: "Checklist posts drove saves",
             },
           ],
         },

@@ -28,15 +28,23 @@ export function onAuthStateChange(callback) {
   return () => data.subscription.unsubscribe();
 }
 
-export async function signInWithGoogle() {
+export async function signInWithProvider(provider = "google", redirectPath = "/app") {
   if (!supabase) throw new Error("Supabase is not configured yet.");
   const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
+    provider,
     options: {
-      redirectTo: `${window.location.origin}/app`,
+      redirectTo: `${window.location.origin}${redirectPath}`,
     },
   });
   if (error) throw error;
+}
+
+export async function signInWithGoogle() {
+  return signInWithProvider("google");
+}
+
+export async function signInWithFacebook() {
+  return signInWithProvider("facebook");
 }
 
 export async function signOut() {

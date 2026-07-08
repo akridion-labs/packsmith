@@ -7,13 +7,13 @@ describe("pack cover generator", () => {
       name: "AI Agency Launch Kit",
       presetId: "aiAgency",
       marketplaceTarget: "Gumroad",
-      suggestedPrice: "$79",
+      suggestedPrice: "₹6,499",
       quality: { overall: 91 },
     });
 
     expect(model.title).toBe("AI Agency Launch Kit");
     expect(model.badge).toBe("Gumroad");
-    expect(model.price).toBe("$79");
+    expect(model.price).toBe("₹6,499");
     expect(model.score).toBe(91);
   });
 
@@ -23,7 +23,7 @@ describe("pack cover generator", () => {
       presetId: "custom",
       promise: "Sell & launch safely",
       marketplaceTarget: "Gumroad",
-      suggestedPrice: "$29",
+      suggestedPrice: "₹2,499",
       quality: { overall: 80 },
     });
 

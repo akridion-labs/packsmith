@@ -3,7 +3,7 @@ export const providerOptions = [
     id: "local",
     name: "Local Rules",
     status: "Live now",
-    cost: "$0",
+    cost: "₹0",
     readiness: 100,
     useCase: "Reliable demos, preset packs, and offline founder workflows.",
     nextStep: "Keep as fallback after real AI is connected.",
@@ -30,7 +30,7 @@ export const providerOptions = [
     id: "notion",
     name: "Notion API",
     status: "Contract ready",
-    cost: "$0 platform API",
+    cost: "₹0 platform API",
     readiness: 70,
     useCase: "Publish generated workspace payloads into a real Notion parent page.",
     nextStep: "Build backend POST /api/notion/publish and never store tokens in the browser.",
@@ -125,7 +125,7 @@ export function buildFounderPriorityPlan(pack) {
     experiments: [
       {
         name: "Concierge Pack Build",
-        price: "$99-$299",
+        price: "₹8,499-₹24,999",
         buyer: pack.audience,
         offer: "Generate the pack in Packsmith, then manually polish and deliver the buyer's first version.",
       },
@@ -137,7 +137,7 @@ export function buildFounderPriorityPlan(pack) {
       },
       {
         name: "Creator OS Subscription",
-        price: "$19-$49/mo",
+        price: "₹1,499-₹3,999/mo",
         buyer: "Repeat template sellers and freelancers",
         offer: "Monthly access to new preset engines, launch boards, and connector exports.",
       },

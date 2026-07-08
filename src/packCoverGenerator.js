@@ -17,6 +17,12 @@ const colorThemes = {
     back: "#07100d",
     glow: "#76a8ff",
   },
+  instagramCreator: {
+    accent: "#ff7ab6",
+    signal: "#42d1a0",
+    back: "#100812",
+    glow: "#efbd63",
+  },
   custom: {
     accent: "#efbd63",
     signal: "#42d1a0",
@@ -47,7 +53,7 @@ export function buildPackCoverModel(pack) {
     title: pack.shortName || pack.name || "Packsmith Kit",
     subtitle: pack.promise || pack.listing?.description || "Launch-ready template pack",
     badge: pack.marketplaceTarget || "Gumroad",
-    price: pack.suggestedPrice || pack.comparison?.expectedPrice || "$79",
+    price: pack.suggestedPrice || pack.comparison?.expectedPrice || "₹6,499",
     score: pack.quality?.overall || 88,
     theme,
     format: "1600x1200",

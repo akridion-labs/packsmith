@@ -70,19 +70,19 @@ export const packsmithApiRoutes = [
 export const defaultAiAgencyPricing = [
   {
     name: "Launch",
-    price: "$29",
+    price: "₹2,499",
     promise: "Core Notion OS, launch board, and starter marketing copy.",
     bestFor: "Freelancers validating the kit quickly.",
   },
   {
     name: "Premium",
-    price: "$79",
+    price: "₹6,499",
     promise: "Notion OS, Figma product kit, Canva launch pack, and full Launch Asset Studio exports.",
     bestFor: "Operators who want the full product bundle.",
   },
   {
     name: "Commercial",
-    price: "$149",
+    price: "₹12,999",
     promise: "Premium bundle plus commercial-use license and founder setup-review bonus.",
     bestFor: "Agencies selling or adapting the system for clients.",
   },

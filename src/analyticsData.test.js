@@ -123,9 +123,9 @@ describe("analytics data helpers", () => {
 
   it("builds pricing experiment intent and recommends the strongest tier", () => {
     const tiers = [
-      { name: "Launch", price: "$29", promise: "Starter pack" },
-      { name: "Premium", price: "$79", promise: "Best bundle" },
-      { name: "Commercial", price: "$149", promise: "Client license" },
+      { name: "Launch", price: "₹2,499", promise: "Starter pack" },
+      { name: "Premium", price: "₹6,499", promise: "Best bundle" },
+      { name: "Commercial", price: "₹12,999", promise: "Client license" },
     ];
     const events = [
       { type: "gumroad_cta_clicked", metadata: { tier: "Premium" }, createdAt: "2026-07-06T00:00:00.000Z" },
