@@ -84,6 +84,74 @@ export const founderMilestones = [
   },
 ];
 
+export function buildProductWorkQueue(pack) {
+  const primaryChannel = pack.comparison?.bestMarketplace || pack.marketplaceTarget || "Gumroad";
+  const fastestChannel = pack.comparison?.fastestChannel || "LinkedIn/X";
+
+  return [
+    {
+      id: "design-proof",
+      stage: "Experience",
+      priority: "P0",
+      label: "Create a visual proof pack",
+      action: "Use Design Stage to create one cover, one mobile preview, and one carousel prompt.",
+      successMetric: "A non-technical buyer can understand the pack in under 20 seconds.",
+      routeHint: "Design stage",
+      defaultDone: true,
+    },
+    {
+      id: "market-proof",
+      stage: "Traction",
+      priority: "P0",
+      label: `Publish one ${fastestChannel} proof post`,
+      action: `Share a before/after demo for ${pack.audience} and ask for 5 beta replies.`,
+      successMetric: "5 replies, 2 calls, or 1 preorder signal.",
+      routeHint: "Marketing command center",
+      defaultDone: false,
+    },
+    {
+      id: "revenue-proof",
+      stage: "Revenue",
+      priority: "P0",
+      label: `Open the ${primaryChannel} validation page`,
+      action: `Use the listing copy and INR price ladder to create a preorder or waitlist page.`,
+      successMetric: "One shareable checkout/waitlist URL exists.",
+      routeHint: "Launch Board",
+      defaultDone: false,
+    },
+    {
+      id: "real-ai-route",
+      stage: "Product",
+      priority: "P1",
+      label: "Add provider-backed generation",
+      action: "Connect a server-side AI route while keeping local generation as fallback.",
+      successMetric: "A new custom pack can be generated without editing presets by hand.",
+      routeHint: "AI upgrade path",
+      defaultDone: false,
+    },
+    {
+      id: "notion-publish",
+      stage: "Connector",
+      priority: "P1",
+      label: "Complete live Notion publishing",
+      action: "Deploy the server-side Notion publish function and show created page/database IDs.",
+      successMetric: "One real workspace publishes from Packsmith into Notion.",
+      routeHint: "Workspace preview",
+      defaultDone: false,
+    },
+    {
+      id: "assistant-beta",
+      stage: "Distribution",
+      priority: "P1",
+      label: "Ship the assistant-kit beta",
+      action: "Publish the repo instructions so creators can try Packsmith inside ChatGPT, Claude, Figma, and Canva.",
+      successMetric: "3 users try the assistant-kit flow and send feedback.",
+      routeHint: "Assistant skill pack",
+      defaultDone: false,
+    },
+  ];
+}
+
 export function buildFounderPriorityPlan(pack) {
   const quality = pack.quality?.overall || 0;
   const primaryChannel = pack.comparison?.bestMarketplace || pack.marketplaceTarget || "Gumroad";
@@ -165,6 +233,14 @@ ${priorityPlan.focus
 ${priorityPlan.experiments
   .map((item) => `### ${item.name}\nPrice: ${item.price}\nBuyer: ${item.buyer}\n\n${item.offer}`)
   .join("\n\n")}
+
+## Product Work Queue
+${buildProductWorkQueue(pack)
+  .map(
+    (item) =>
+      `- [${item.defaultDone ? "x" : " "}] ${item.priority} ${item.label} (${item.stage})\n  Action: ${item.action}\n  Success: ${item.successMetric}`,
+  )
+  .join("\n")}
 
 ## Milestones
 ${founderMilestones

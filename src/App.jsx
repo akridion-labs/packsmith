@@ -47,6 +47,7 @@ import {
   summarizeAnalyticsEvents,
 } from "./analyticsData";
 import { buildApiConsoleModel } from "./apiConsoleData";
+import { buildAssistantSkillPack, assistantSkillPackToMarkdown } from "./assistantSkillData";
 import {
   buildDashboardMetrics,
   buildLaunchTracker,
@@ -54,6 +55,14 @@ import {
   createForgeResumePayload,
   normalizePackHistory,
 } from "./dashboardData";
+import {
+  buildDesignStageModel,
+  defaultDesignStage,
+  designStageFormats,
+  designStageMoods,
+  designStageToMarkdown,
+  designStageTones,
+} from "./designStageData";
 import { buildFigmaExportSchema } from "./figmaExport";
 import { createNotionPayload, simulateNotionPublish } from "./integrations/notionConnector";
 import {
@@ -84,7 +93,13 @@ import {
   mobileAccessModes,
   nativeAppDecision,
 } from "./mobileAccessData";
-import { buildFounderPriorityPlan, founderMilestones, founderPlanToMarkdown, providerOptions } from "./productRoadmap";
+import {
+  buildFounderPriorityPlan,
+  buildProductWorkQueue,
+  founderMilestones,
+  founderPlanToMarkdown,
+  providerOptions,
+} from "./productRoadmap";
 import {
   buildPlatformExpansionMarkdown,
   buildPlatformExpansionSummary,
@@ -140,7 +155,7 @@ const landingStats = [
 const landingLiveSignals = [
   "Generating INR-ready price ladder",
   "Rendering mobile pack preview",
-  "Preparing Notion schema",
+  "Preparing workspace pages",
   "Building Instagram templates",
 ];
 
@@ -155,7 +170,7 @@ const landingProof = [
     icon: Layers3,
     label: "To platform assets",
     title: "Notion, Canva, Figma",
-    text: "Generate the workspace schema, design/content specs, marketplace listing, and launch calendar in one flow.",
+    text: "Generate workspace pages, visual template ideas, marketplace listing, and launch calendar in one flow.",
   },
   {
     icon: Target,
@@ -165,11 +180,88 @@ const landingProof = [
   },
 ];
 
+const heavyLiftPromises = [
+  {
+    icon: Brain,
+    label: "Positioning",
+    title: "We turn a rough idea into a clear buyer promise.",
+    text: "Packsmith helps choose the niche, buyer, pain point, offer angle, included assets, and INR price ladder before the user starts designing.",
+  },
+  {
+    icon: Wand2,
+    label: "Creation",
+    title: "We create the first pack shape for them.",
+    text: "Workspace pages, social templates, preview screens, listing copy, launch calendar, cover image, and video prompts are generated as one product bundle.",
+  },
+  {
+    icon: TrendingUp,
+    label: "Validation",
+    title: "We give them launch proof, not just files.",
+    text: "Every pack includes channels, posts, risk notes, preview checklist, and pricing tests so creators can validate demand before overbuilding.",
+  },
+];
+
+const validationLoop = [
+  {
+    step: "01",
+    title: "Bring the idea",
+    detail: "One line is enough: niche, buyer, pain, or even a messy Instagram/template idea.",
+  },
+  {
+    step: "02",
+    title: "Packsmith builds the first version",
+    detail: "The app shapes the template pack, product visuals, launch assets, and INR pricing ladder.",
+  },
+  {
+    step: "03",
+    title: "User validates in the market",
+    detail: "Copy launch posts, share previews, test Gumroad/Etsy/LinkedIn/Instagram, and capture buyer signals.",
+  },
+  {
+    step: "04",
+    title: "Improve the pack from feedback",
+    detail: "Edit the outputs, save versions, reopen from dashboard, and prepare the next stronger pack.",
+  },
+];
+
+const pluginAccessCards = [
+  {
+    name: "ChatGPT",
+    status: "First plugin path",
+    detail: "Turn a chat brief into a Packsmith template pack, listing copy, and launch plan.",
+  },
+  {
+    name: "Claude",
+    status: "First assistant path",
+    detail: "Use Packsmith outputs as clean context for refinement, editing, and repackaging.",
+  },
+  {
+    name: "Adobe Express",
+    status: "Creative path",
+    detail: "Move launch copy and visual prompts into creator-friendly posts, decks, and promos.",
+  },
+  {
+    name: "Canva / Figma",
+    status: "Design path",
+    detail: "Use Packsmith as the source for preview screens, social packs, and marketplace visuals.",
+  },
+  {
+    name: "Notion / Gumroad",
+    status: "Publish path",
+    detail: "Turn the generated workspace and listing into something users can share, sell, and update.",
+  },
+  {
+    name: "Browser helper",
+    status: "Later research path",
+    detail: "Capture inspiration from marketplaces and communities only after the core product proves demand.",
+  },
+];
+
 const outputShowcase = [
   {
     icon: Database,
     name: "Notion OS",
-    detail: "Pages, databases, properties, sample records, and simulated publish payload.",
+    detail: "Pages, trackers, example rows, and a safe preview before publishing.",
   },
   {
     icon: PenTool,
@@ -203,18 +295,18 @@ const walkthroughSteps = [
     label: "Forge pack",
     title: "Generate the first sellable pack shape.",
     copy:
-      "The local generator builds Notion, Canva, Figma, listing copy, launch calendar, and quality score without waiting for a live AI API.",
+      "The builder creates workspace pages, social template ideas, preview screens, listing copy, launch calendar, and quality score.",
     metric: "88/100",
-    preview: ["Notion schema", "Canva prompts", "Figma frames", "Launch copy"],
+    preview: ["Workspace pages", "Canva ideas", "Preview screens", "Launch copy"],
   },
   {
     id: "inspect",
     label: "Inspect output",
     title: "See exactly what the buyer gets.",
     copy:
-      "Open the visual board, cover generator, platform tabs, and Notion publish simulation before exporting anything.",
+      "Open the visual board, cover image, template tabs, and workspace preview before exporting anything.",
     metric: "5 exports",
-    preview: ["Cover SVG", "Markdown", "Market JSON", "Notion JSON"],
+    preview: ["Cover image", "Sales notes", "Listing copy", "Workspace plan"],
   },
   {
     id: "launch",
@@ -229,15 +321,15 @@ const walkthroughSteps = [
 
 const launchAssets = {
   linkedin:
-    "I’m building Packsmith: a template-pack forge for solo founders. It turns one rough niche idea into a Notion OS, Canva launch pack, Figma starter, marketplace listing, launch calendar, and video script. Today’s wedge: AI Agency, SaaS Launch, and Healthcare Practice Growth kits.",
+    "I’m building Packsmith: a template-pack forge for solo founders. It turns one rough niche idea into workspace pages, Canva-ready templates, preview screens, marketplace listing, launch calendar, and video script. Today’s wedge: AI Agency, SaaS Launch, Healthcare Practice Growth, and Instagram Creator kits.",
   xThread: [
     "I’m building Packsmith: rough idea -> sellable template pack.",
     "Pick a niche: AI Agency, SaaS Launch, or Healthcare Practice Growth.",
-    "Generate Notion, Canva, Figma, Gumroad copy, launch calendar, and video prompts in one forge flow.",
+    "Generate workspace pages, Canva-ready ideas, preview screens, Gumroad copy, launch calendar, and video prompts in one forge flow.",
     "Try first, then login with Google to save packs and prepare Notion publishing.",
   ],
   gumroad:
-    "Packsmith helps solo founders turn a niche idea into a ready-to-sell template pack: Notion workspace schema, Canva launch assets, Figma UI starter, marketplace copy, and a launch board.",
+    "Packsmith helps solo founders turn a niche idea into a ready-to-sell template pack: workspace pages, Canva launch assets, preview screens, marketplace copy, and a launch board.",
   video:
     "Show Packsmith homepage, pick AI Agency Launch Kit, generate a custom pack, reveal quality score, open Notion simulation, copy Gumroad listing, and end on the launch page CTA.",
   prompt:
@@ -262,7 +354,7 @@ const launchMobileMoments = [
   },
   {
     label: "Claude / ChatGPT",
-    title: "Send clean Markdown and JSON instead of messy screenshots.",
+    title: "Send clean exports instead of messy screenshots.",
     detail: "Assistant handoff keeps Packsmith useful inside the tools founders already use.",
   },
 ];
@@ -315,11 +407,94 @@ const socialAuthProviders = [
   { id: "instagram", label: "Instagram", helper: "via Meta setup", status: "setup" },
 ];
 
+const forgeGuideSteps = [
+  {
+    id: "brief",
+    label: "Pick the right niche",
+    detail: "Start with a proven preset instead of a blank prompt. Instagram is best for visual traction; AI Agency is best for paid service buyers.",
+    action: "Choose a niche card and review buyer, pain, assets, and marketplace target.",
+  },
+  {
+    id: "generate",
+    label: "Shape the pack",
+    detail: "Use the quality score and editable output blocks to make the pack specific enough to sell.",
+    action: "Edit one asset line, then check workspace, social, and preview tabs.",
+  },
+  {
+    id: "price",
+    label: "Validate INR pricing",
+    detail: "Keep pricing in Indian amounts and test launch, premium, and commercial tiers per niche.",
+    action: "Pick the tier you would test first and use it in Gumroad/direct outreach copy.",
+  },
+  {
+    id: "launch",
+    label: "Prepare launch proof",
+    detail: "The buyer needs to see what they get, not just read claims. Use cover, screenshots, and channel posts.",
+    action: "Export cover SVG, copy a launch post, then save the pack locally or to cloud.",
+  },
+];
+
+const nichePricingLadders = {
+  aiAgency: [
+    { name: "Launch", price: "₹2,499", angle: "First buyers", includes: "Core Notion OS, launch board, and starter copy." },
+    { name: "Premium", price: "₹6,499", angle: "Best demo tier", includes: "Workspace pages, preview screens, social templates, and Launch Asset Studio." },
+    { name: "Commercial", price: "₹12,999", angle: "Agency license", includes: "Premium bundle plus client-use rights and setup review." },
+  ],
+  saasLaunch: [
+    { name: "Launch", price: "₹3,299", angle: "Indie founder entry", includes: "Launch OS, feedback inbox, roadmap, and listing copy." },
+    { name: "Founder Pack", price: "₹8,499", angle: "Best founder tier", includes: "Full workspace, social templates, preview screens, metrics, and update assets." },
+    { name: "Commercial", price: "₹16,499", angle: "Studio/license tier", includes: "Reusable client/advisory license with launch review bonus." },
+  ],
+  healthcareGrowth: [
+    { name: "Launch", price: "₹4,199", angle: "Consultant test", includes: "Lead, referral, review, appointment, and campaign workflows." },
+    { name: "Practice Pack", price: "₹8,499", angle: "Best clinic tier", includes: "Full operations kit with compliant marketing asset planning." },
+    { name: "Consultant License", price: "₹16,499", angle: "B2B service tier", includes: "Commercial adaptation rights with compliance checklist." },
+  ],
+  instagramCreator: [
+    { name: "Launch", price: "₹1,499", angle: "Creator impulse buy", includes: "Content OS, reels planner, caption bank, and preview checklist." },
+    { name: "Creator Pack", price: "₹3,999", angle: "Best visual tier", includes: "Canva carousel, story, reel cover, and brand prompt set." },
+    { name: "Commercial", price: "₹7,999", angle: "Freelancer tier", includes: "Client-use license for social media managers and small studios." },
+  ],
+  custom: [
+    { name: "Launch", price: "₹1,499", angle: "Quick validation", includes: "Core generated pack, listing copy, and launch checklist." },
+    { name: "Premium", price: "₹3,999", angle: "Best custom tier", includes: "Full workspace, social templates, preview screens, and marketing exports." },
+    { name: "Commercial", price: "₹8,499", angle: "Client-use tier", includes: "Commercial-use option and founder setup review." },
+  ],
+};
+
+const creatorOutputLabels = {
+  notion: {
+    friendly: "Workspace pages",
+    action: "Open the planning system",
+    buyerView: "A ready-to-use workspace for tracking ideas, tasks, buyers, and launch work.",
+  },
+  canva: {
+    friendly: "Social templates",
+    action: "Create posts and decks",
+    buyerView: "Editable post, story, carousel, pitch, and preview ideas for Canva-style creation.",
+  },
+  figma: {
+    friendly: "Preview screens",
+    action: "Show the product visually",
+    buyerView: "Landing page, mobile mockup, dashboard, and marketplace preview screens.",
+  },
+};
+
+const creatorExportLabels = {
+  markdown: "Download sales notes",
+  marketplace: "Download listing copy",
+  figma: "Download preview plan",
+  notion: "Download workspace plan",
+  cover: "Download cover image",
+};
+
 const privacyVersion = "2026-07-02";
 const forgeResumeKey = "packsmith.resumePack";
 const launchAssetTrackingKey = "packsmith.launchAssetTracking";
 const analyticsEventsKey = "packsmith.analyticsEvents";
 const analyticsAnonymousIdKey = "packsmith.analyticsAnonymousId";
+const productWorkQueueKey = "packsmith.productWorkQueue";
+const productWorkRunsKey = "packsmith.productWorkRuns";
 const gumroadAiAgencyUrl = import.meta.env.VITE_GUMROAD_AI_AGENCY_URL || "";
 
 function downloadFile(name, content, type) {
@@ -541,12 +716,12 @@ function LaunchAssetStudio({ pack, kit, compact = false, onCopy, onExport, onFig
         </button>
         <button type="button" onClick={() => onFigmaExport?.()}>
           <Figma size={17} />
-          Figma JSON
+          Preview plan
         </button>
       </div>
       {!compact && (
         <p className="muted">
-          Built for {pack.name}: Notion OS, Figma product kit, Canva launch pack, mobile access,
+          Built for {pack.name}: workspace pages, preview screens, social templates, mobile access,
           and Claude/ChatGPT handoff.
         </p>
       )}
@@ -641,13 +816,12 @@ function LandingPage() {
             </div>
           </div>
           <div className="navPills">
-            <span>Notion</span>
-            <span>Canva</span>
-            <span>Figma</span>
-            <span>Launch board</span>
+            <span>Idea to product</span>
+            <span>INR validation</span>
+            <span>Plugins</span>
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/launch">Launch kit</a>
-            <a href="/platforms">Platforms</a>
+            <a href="/plugins">Plugins</a>
             <a href="/api-console">API Console</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
@@ -666,8 +840,8 @@ function LandingPage() {
             <p className="eyebrow gold">Template-pack forge for solo founders</p>
             <h1>Packsmith</h1>
             <p>
-              Turn one rough idea into a sellable template pack with niche-specific Notion systems,
-              Canva launch assets, Figma starters, marketplace copy, and a founder launch board.
+              Bring a rough template idea. Packsmith does the heavy lift: shapes the pack, builds the
+              first assets, prepares launch proof, and helps you validate demand before you overbuild.
             </p>
             <div className="heroActions">
               <a href="/app">
@@ -777,6 +951,42 @@ function LandingPage() {
         </div>
       </section>
 
+      <section className="landingSection heavyLiftSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Heavy lift promise</p>
+          <h2>Users should feel: “Packsmith made my template idea real.”</h2>
+        </div>
+        <div className="heavyLiftGrid">
+          {heavyLiftPromises.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article key={item.title}>
+                <Icon size={23} />
+                <span>{item.label}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="landingSection validationLoopSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Validation loop</p>
+          <h2>Do not just create templates. Create proof people want them.</h2>
+        </div>
+        <div className="validationLoopGrid">
+          {validationLoop.map((item) => (
+            <article key={item.step}>
+              <span>{item.step}</span>
+              <h3>{item.title}</h3>
+              <p>{item.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="landingSection" id="presets">
         <div className="sectionIntro">
           <p className="eyebrow">Niche presets</p>
@@ -794,6 +1004,32 @@ function LandingPage() {
               <b>Open preset</b>
             </a>
           ))}
+        </div>
+      </section>
+
+      <section className="landingSection pluginAccessSection">
+        <div className="sectionIntro">
+          <p className="eyebrow">Plugin-ready path</p>
+          <h2>Packsmith should meet users where they already create.</h2>
+        </div>
+        <div className="pluginAccessGrid">
+          {pluginAccessCards.map((item) => (
+            <article key={item.name}>
+              <span>{item.status}</span>
+              <h3>{item.name}</h3>
+              <p>{item.detail}</p>
+            </article>
+          ))}
+        </div>
+        <div className="pluginAccessCta">
+          <p>
+            The web app remains the core experience, but the plugin path makes Packsmith easier to talk about:
+            start in ChatGPT or Claude, polish in creative tools, publish through Notion/Gumroad-style workflows.
+          </p>
+          <a href="/plugins">
+            View plugin roadmap
+            <ArrowRight size={17} />
+          </a>
         </div>
       </section>
 
@@ -896,12 +1132,12 @@ function LandingPage() {
           <article>
             <span>Forge</span>
             <h3>Packsmith pipeline</h3>
-            <p>Brief, quality score, platform outputs, Notion payload, launch board, marketing kit.</p>
+            <p>Brief, quality score, template outputs, workspace preview, launch board, marketing kit.</p>
           </article>
           <article>
             <span>After</span>
             <h3>Sellable template pack</h3>
-            <p>Markdown export, marketplace JSON, launch calendar, video script, social posts, pitch outline.</p>
+            <p>Sales notes, listing copy, launch calendar, video script, social posts, pitch outline.</p>
           </article>
         </div>
       </section>
@@ -1035,7 +1271,7 @@ function LaunchPage() {
           <div className="navPills">
             <a href="/">Home</a>
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
-            <a href="/platforms">Platforms</a>
+            <a href="/plugins">Plugins</a>
             <a href="/api-console">API Console</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
@@ -1272,7 +1508,7 @@ function LaunchPage() {
               <article>
                 <span>Quality</span>
                 <strong>90/100</strong>
-                <p>Buyer clarity, assets, marketplace, connector readiness.</p>
+                <p>Buyer clarity, assets, marketplace, setup readiness.</p>
               </article>
               <article>
                 <span>Launch</span>
@@ -1338,7 +1574,7 @@ function LaunchPage() {
         </div>
         <button className="primary exportLaunchButton" type="button" onClick={exportLaunchKit}>
           <FileJson size={17} />
-          Export launch kit JSON
+          Export launch kit
         </button>
       </section>
 
@@ -2068,7 +2304,7 @@ function DashboardPage() {
       "application/json",
     );
     trackLocalAnalytics("exported_dashboard_figma_json", { pack: selectedPack.name });
-    flash("Figma export schema downloaded.");
+    flash("Preview plan downloaded.");
   }
 
   function openSelectedPackInForge() {
@@ -2098,7 +2334,7 @@ function DashboardPage() {
           <div className="navPills">
             <a href="/">Home</a>
             <a href="/launch">Launch kit</a>
-            <a href="/platforms">Platforms</a>
+            <a href="/plugins">Plugins</a>
             <a href="/api-console">API Console</a>
             <a href="/app">Forge</a>
             <a href="/mobile">Mobile</a>
@@ -2544,7 +2780,7 @@ function MobileAccessPage() {
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/app">Forge</a>
             <a href="/dashboard">Dashboard</a>
-            <a href="/platforms">Platforms</a>
+            <a href="/plugins">Plugins</a>
             <a href="/launch">Launch kit</a>
             <a href="/privacy">Privacy</a>
           </div>
@@ -2680,7 +2916,7 @@ function PlatformExpansionPage() {
   const summary = useMemo(() => buildPlatformExpansionSummary(platformExpansionPaths), []);
 
   useEffect(() => {
-    trackLocalAnalytics("viewed_platform_expansion_page", { page: "/platforms" });
+    trackLocalAnalytics("viewed_platform_expansion_page", { page: window.location.pathname });
   }, []);
 
   function flash(message) {
@@ -2696,7 +2932,7 @@ function PlatformExpansionPage() {
       "text/markdown",
     );
     trackLocalAnalytics("exported_platform_expansion_plan", { platformCount: platformExpansionPaths.length });
-    flash("Platform expansion plan exported.");
+    flash("Plugin roadmap exported.");
   }
 
   return (
@@ -2710,14 +2946,14 @@ function PlatformExpansionPage() {
             </div>
             <div>
               <strong>Packsmith</strong>
-              <span>Platform expansion</span>
+              <span>Plugin roadmap</span>
             </div>
           </a>
           <div className="navPills">
             <a href="/">Home</a>
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
             <a href="/launch">Launch kit</a>
-            <a href="/api-console">API Console</a>
+            <a href="/api-console">Developer console</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/mobile">Mobile</a>
             <a href="/app">Forge</a>
@@ -2726,11 +2962,11 @@ function PlatformExpansionPage() {
 
         <div className="platformHeroGrid">
           <motion.div className="heroCopy" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="eyebrow gold">Plugin and app strategy</p>
-            <h1>Build Packsmith once, let it appear where founders already work.</h1>
+            <p className="eyebrow gold">Plugin and assistant strategy</p>
+            <h1>Let users create Packsmith packs from the tools they already trust.</h1>
             <p>
-              The strongest expansion path is a shared Packsmith API/MCP contract, then ChatGPT and Claude first,
-              Adobe Express and Figma second, and heavier creative plugins after traction.
+              The web app is the home base. Plugins and assistants are the reach: ChatGPT and Claude for ideas,
+              Adobe Express and Canva/Figma for creative output, Notion and Gumroad-style flows for publishing.
             </p>
             <div className="heroActions">
               <a href="/app">
@@ -2739,7 +2975,7 @@ function PlatformExpansionPage() {
               </a>
               <button type="button" onClick={exportPlatformPlan}>
                 <Download size={17} />
-                Export roadmap
+                Export plugin roadmap
               </button>
             </div>
           </motion.div>
@@ -2749,12 +2985,12 @@ function PlatformExpansionPage() {
               <span />
               <span />
               <span />
-              <strong>packsmith://platforms</strong>
+              <strong>packsmith://plugins</strong>
             </div>
             <div className="platformSummaryGrid">
               <article>
                 <strong>{summary.total}</strong>
-                <span>Expansion paths</span>
+                <span>Plugin paths</span>
               </article>
               <article>
                 <strong>{summary.averageReadiness}</strong>
@@ -2773,18 +3009,18 @@ function PlatformExpansionPage() {
       <section className="landingSection platformWaveSection">
         <div className="sectionIntro">
           <p className="eyebrow">Execution order</p>
-          <h2>Do not build every plugin first. Build the shared connector core first.</h2>
+          <h2>Start where users already describe, design, and sell.</h2>
         </div>
         <div className="platformWaveGrid">
           <article>
             <span>First</span>
             <strong>{summary.firstWave.join(" + ")}</strong>
-            <p>Best for fast distribution because both can use Packsmith as tools and structured exports.</p>
+            <p>Best for word of mouth because users can generate and refine packs inside everyday AI tools.</p>
           </article>
           <article>
             <span>Second</span>
             <strong>{summary.secondWave.join(" + ")}</strong>
-            <p>Best for visual proof after the generator and paid kit have clear demand.</p>
+            <p>Best for turning Packsmith outputs into social visuals, decks, and marketplace previews.</p>
           </article>
           <article>
             <span>Later</span>
@@ -2796,8 +3032,8 @@ function PlatformExpansionPage() {
 
       <section className="landingSection platformPathSection">
         <div className="sectionIntro">
-          <p className="eyebrow">Platform map</p>
-          <h2>Each path has a product angle, security boundary, and monetization job.</h2>
+          <p className="eyebrow">Plugin map</p>
+          <h2>Each plugin should remove one more piece of work for the user.</h2>
         </div>
         <div className="platformPathGrid">
           {platformExpansionPaths.map((path) => (
@@ -2911,7 +3147,7 @@ function ApiConsolePage() {
           </a>
           <div className="navPills">
             <a href="/">Home</a>
-            <a href="/platforms">Platforms</a>
+            <a href="/plugins">Plugins</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/app">Forge</a>
             <a href="/launch">Launch kit</a>
@@ -3078,7 +3314,17 @@ function ForgeApp() {
   const [activeChannel, setActiveChannel] = useState("gumroad");
   const [connection, setConnection] = useState({ parentPageId: "" });
   const [editedItems, setEditedItems] = useState({});
+  const [designStage, setDesignStage] = useState(defaultDesignStage);
   const [notice, setNotice] = useState("");
+  const [guideOpen, setGuideOpen] = useState(true);
+  const [activeGuideStep, setActiveGuideStep] = useState(forgeGuideSteps[0].id);
+  const [productWorkStatus, setProductWorkStatus] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(productWorkQueueKey) || "{}");
+    } catch {
+      return {};
+    }
+  });
   const [session, setSession] = useState(null);
   const [cloudPacks, setCloudPacks] = useState([]);
   const [publishResult, setPublishResult] = useState(null);
@@ -3142,7 +3388,20 @@ function ForgeApp() {
   const marketingKit = useMemo(() => buildMarketingKit(pack), [pack]);
   const figmaPreviewSchema = useMemo(() => buildFigmaExportSchema(pack, marketingKit), [pack, marketingKit]);
   const packCoverSvg = useMemo(() => buildPackCoverSvg(pack), [pack]);
+  const designStageModel = useMemo(() => buildDesignStageModel(pack, designStage), [designStage, pack]);
+  const assistantSkillKit = useMemo(() => buildAssistantSkillPack(pack), [pack]);
   const founderPlan = useMemo(() => buildFounderPriorityPlan(pack), [pack]);
+  const productWorkQueue = useMemo(() => buildProductWorkQueue(pack), [pack]);
+  const productWorkProgress = useMemo(() => {
+    const doneCount = productWorkQueue.filter((item) => productWorkStatus[item.id] ?? item.defaultDone).length;
+    return {
+      doneCount,
+      total: productWorkQueue.length,
+      percent: productWorkQueue.length ? Math.round((doneCount / productWorkQueue.length) * 100) : 0,
+    };
+  }, [productWorkQueue, productWorkStatus]);
+  const activePricingLadder = nichePricingLadders[pack.presetId || pack.id] || nichePricingLadders.custom;
+  const activeGuide = forgeGuideSteps.find((step) => step.id === activeGuideStep) || forgeGuideSteps[0];
   const setupChecklist = useMemo(
     () => [
       {
@@ -3185,6 +3444,11 @@ function ForgeApp() {
     [cloudReady, connection.parentPageId, user],
   );
   const selectedSection = pack.sections.find((section) => section.id === activeSection) || pack.sections[0];
+  const selectedSectionLabel = creatorOutputLabels[selectedSection.id] || {
+    friendly: selectedSection.label,
+    action: "Review this output",
+    buyerView: selectedSection.summary,
+  };
   const selectedItems = editedItems[editScopeId]?.[selectedSection.id] || selectedSection.items;
   const selectedChannel =
     pack.launchChannels.find((channel) => channel.id === activeChannel) || pack.launchChannels[0];
@@ -3283,8 +3547,175 @@ function ForgeApp() {
     setActiveChannel("gumroad");
   }
 
+  function scrollToForge() {
+    document.getElementById("forge-workspace")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function scrollToPanel(selector) {
+    window.requestAnimationFrame(() => {
+      document.querySelector(selector)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  function startGuidedMode() {
+    setGuideOpen(true);
+    setActiveGuideStep("brief");
+    scrollToForge();
+    flash("Guided walkthrough opened.");
+  }
+
+  function startInstagramPack() {
+    selectPreset("instagramCreator");
+    setActiveChannel("instagram");
+    setActiveGuideStep("price");
+    setGuideOpen(true);
+    scrollToForge();
+    flash("Instagram Growth Studio loaded with INR pricing.");
+  }
+
   function updateBrief(field, value) {
     setBrief((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateDesignStage(field, value) {
+    setDesignStage((current) => ({ ...current, [field]: value }));
+  }
+
+  function applyDesignDirection() {
+    updateBrief("visualDirection", designStageModel.visualDirection);
+    trackLocalAnalytics("applied_design_stage", {
+      pack: pack.name,
+      format: designStageModel.format.id,
+      mood: designStageModel.mood.id,
+      tone: designStageModel.tone.id,
+    });
+    flash("Design direction applied to the pack.");
+  }
+
+  function toggleProductWorkItem(item) {
+    const nextValue = !(productWorkStatus[item.id] ?? item.defaultDone);
+    setProductWorkStatus((current) => {
+      const next = { ...current, [item.id]: nextValue };
+      localStorage.setItem(productWorkQueueKey, JSON.stringify(next));
+      return next;
+    });
+    trackLocalAnalytics("updated_product_work_queue", {
+      pack: pack.name,
+      itemId: item.id,
+      done: nextValue,
+    });
+    flash(`${item.label} marked ${nextValue ? "done" : "open"}.`);
+  }
+
+  function completeProductWorkItem(item) {
+    setProductWorkStatus((current) => {
+      const next = { ...current, [item.id]: true };
+      localStorage.setItem(productWorkQueueKey, JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function recordProductWorkRun(item, action) {
+    const event = {
+      id: `${item.id}-${Date.now()}`,
+      itemId: item.id,
+      label: item.label,
+      action,
+      pack: pack.name,
+      presetId: pack.presetId || pack.id,
+      createdAt: new Date().toISOString(),
+    };
+    try {
+      const current = JSON.parse(localStorage.getItem(productWorkRunsKey) || "[]");
+      const safeCurrent = Array.isArray(current) ? current : [];
+      localStorage.setItem(productWorkRunsKey, JSON.stringify([event, ...safeCurrent].slice(0, 80)));
+    } catch {
+      localStorage.setItem(productWorkRunsKey, JSON.stringify([event]));
+    }
+    trackLocalAnalytics("ran_product_work_item", event);
+  }
+
+  async function runProductWorkItem(item) {
+    if (item.id === "design-proof") {
+      const nextDesignStage = {
+        ...designStage,
+        formatId: "gumroad-cover",
+        moodId: designStage.moodId || "retro-forge",
+        toneId: designStage.toneId || "friendly-creator",
+      };
+      const nextModel = buildDesignStageModel(pack, nextDesignStage);
+      setDesignStage(nextDesignStage);
+      updateBrief("visualDirection", nextModel.visualDirection);
+      scrollToPanel(".designStagePanel");
+      await copyText(nextModel.prompt, "Design proof prompt copied.");
+      completeProductWorkItem(item);
+      recordProductWorkRun(item, "prepared_design_stage_and_copied_prompt");
+      return;
+    }
+
+    if (item.id === "market-proof") {
+      const marketChannel =
+        pack.launchChannels.find((channel) => /linkedin|x/i.test(`${channel.id} ${channel.name}`)) ||
+        pack.launchChannels[0];
+      setActiveChannel(marketChannel.id);
+      scrollToPanel(".marketingPanel");
+      await copyText(marketChannel.launchPost, `${marketChannel.name} proof post copied.`);
+      completeProductWorkItem(item);
+      recordProductWorkRun(item, "selected_marketing_channel_and_copied_post");
+      return;
+    }
+
+    if (item.id === "revenue-proof") {
+      const gumroadChannel =
+        pack.launchChannels.find((channel) => /gumroad/i.test(`${channel.id} ${channel.name}`)) ||
+        pack.launchChannels[0];
+      setActiveChannel(gumroadChannel.id);
+      scrollToPanel(".launchBoard");
+      await copyText(
+        `${pack.listing.title}\n\n${pack.listing.description}\n\nSuggested INR price: ${pack.suggestedPrice}`,
+        "Revenue validation copy copied.",
+      );
+      completeProductWorkItem(item);
+      recordProductWorkRun(item, "selected_revenue_channel_and_copied_listing");
+      return;
+    }
+
+    if (item.id === "real-ai-route") {
+      setGuideOpen(true);
+      setActiveGuideStep("brief");
+      scrollToPanel(".generatorPanel");
+      completeProductWorkItem(item);
+      recordProductWorkRun(item, "opened_custom_generator_for_provider_ready_flow");
+      flash("Custom generator opened. Use this same surface for the real AI route next.");
+      return;
+    }
+
+    if (item.id === "notion-publish") {
+      setActiveSection("notion");
+      scrollToPanel(".notionPanel");
+      await copyText(
+        `Packsmith Notion publish prep\n\nParent page needed: yes\nWorkspace pages: ${notionExport.pages.length}\nTrackers: ${notionExport.databases.length}\nSecurity: token stays server-side; do not paste Notion secrets into the browser.`,
+        "Notion publish prep copied.",
+      );
+      completeProductWorkItem(item);
+      recordProductWorkRun(item, "opened_notion_panel_and_copied_publish_prep");
+      return;
+    }
+
+    if (item.id === "assistant-beta") {
+      scrollToPanel(".assistantSkillPanel");
+      await copyText(assistantSkillKit.prompts.chatgptPrompt, "Assistant beta instructions copied.");
+      completeProductWorkItem(item);
+      recordProductWorkRun(item, "opened_assistant_kit_and_copied_chatgpt_prompt");
+      return;
+    }
+
+    await copyText(
+      `${item.label}\n\nAction: ${item.action}\nSuccess metric: ${item.successMetric}`,
+      "Next action copied.",
+    );
+    completeProductWorkItem(item);
+    recordProductWorkRun(item, "copied_generic_next_action");
   }
 
   function updateCustomBrief(field, value) {
@@ -3311,6 +3742,16 @@ function ForgeApp() {
     setActiveSection("notion");
     setActiveChannel("gumroad");
     flash("Custom local pack generated.");
+  }
+
+  function markPricingTier(tier) {
+    trackLocalAnalytics("pricing_tier_reviewed", {
+      pack: pack.name,
+      presetId: pack.presetId || pack.id,
+      tier: tier.name,
+      price: tier.price,
+    });
+    flash(`${tier.name} at ${tier.price} marked for validation.`);
   }
 
   function updateGeneratedItem(sectionId, index, value) {
@@ -3513,7 +3954,7 @@ function ForgeApp() {
       "application/json",
     );
     trackLocalAnalytics("exported_notion_json", { pack: pack.name });
-    flash("Notion payload exported.");
+    flash("Workspace plan downloaded.");
   }
 
   function exportMarketplaceJson() {
@@ -3523,7 +3964,7 @@ function ForgeApp() {
       "application/json",
     );
     trackLocalAnalytics("exported_marketplace_json", { pack: pack.name });
-    flash("Marketplace JSON exported.");
+    flash("Listing copy downloaded.");
   }
 
   function exportFigmaJson() {
@@ -3533,7 +3974,27 @@ function ForgeApp() {
       "application/json",
     );
     trackLocalAnalytics("exported_figma_json", { pack: pack.name });
-    flash("Figma export schema downloaded.");
+    flash("Preview plan downloaded.");
+  }
+
+  function exportDesignBrief() {
+    downloadFile(
+      `packsmith-${slugify(pack.name)}-design-brief.md`,
+      designStageToMarkdown(pack, designStageModel),
+      "text/markdown",
+    );
+    trackLocalAnalytics("exported_design_brief", { pack: pack.name, format: designStageModel.format.id });
+    flash("Design brief exported.");
+  }
+
+  function exportAssistantSkillKit() {
+    downloadFile(
+      `packsmith-${slugify(pack.name)}-assistant-kit.md`,
+      assistantSkillPackToMarkdown(pack, assistantSkillKit),
+      "text/markdown",
+    );
+    trackLocalAnalytics("exported_assistant_skill_kit", { pack: pack.name });
+    flash("Assistant kit exported.");
   }
 
   function exportPackCoverSvg() {
@@ -3573,7 +4034,7 @@ function ForgeApp() {
       "application/json",
     );
     trackLocalAnalytics("exported_marketing_json", { pack: pack.name });
-    flash("Social launch copy exported.");
+    flash("Social launch copy downloaded.");
   }
 
   function exportLaunchAssetStudio(kit = marketingKit, tracking = {}) {
@@ -3616,7 +4077,7 @@ function ForgeApp() {
             <span>{cloudReady ? "Supabase ready" : "Local mode"}</span>
             <a href="/dashboard">Dashboard</a>
             <a href="/ai-agency-launch-kit">AI Agency Kit</a>
-            <a href="/platforms">Platforms</a>
+            <a href="/plugins">Plugins</a>
             <a href="/api-console">API Console</a>
             <a href="/mobile">Mobile</a>
             <a href="/privacy">Privacy</a>
@@ -3638,7 +4099,14 @@ function ForgeApp() {
               generation, Notion simulation, launch board, and marketing prompts.
             </p>
             <div className="heroActions">
-              <a href="#forge-workspace">Open forge workspace</a>
+              <button type="button" onClick={startGuidedMode}>
+                <Play size={17} />
+                Start guided build
+              </button>
+              <button type="button" onClick={startInstagramPack}>
+                <Smartphone size={17} />
+                Instagram starter
+              </button>
               <button
                 type="button"
                 onClick={() => copyText(`${pack.listing.title}\n\n${pack.listing.description}`, "Listing copied.")}
@@ -3745,7 +4213,7 @@ function ForgeApp() {
             </label>
 
             <div className="fieldGroup">
-              <span>Platforms</span>
+              <span>Output types</span>
               <div className="toggleGrid">
                 {platformOptions.map((platform) => (
                   <button
@@ -3781,12 +4249,12 @@ function ForgeApp() {
             <div className="panelHeader">
               <Wand2 size={18} />
               <div>
-                <p className="eyebrow">Local generator</p>
-                <h2>Generate Custom Pack</h2>
+                <p className="eyebrow">Custom builder</p>
+                <h2>Generate your own pack</h2>
               </div>
             </div>
             <p className="muted">
-              API-free mock generation. Provider-ready for NVIDIA/OpenAI later, but safe to demo now.
+              Create a first version from your own niche, buyer, pain point, and asset list.
             </p>
             <label>
               Custom niche
@@ -3888,6 +4356,42 @@ function ForgeApp() {
         </aside>
 
         <section className="centerStage">
+          {guideOpen && (
+            <section className="panel forgeGuidePanel">
+              <div className="boardHeader">
+                <div>
+                  <p className="eyebrow">Guided walkthrough</p>
+                  <h2>{activeGuide.label}</h2>
+                </div>
+                <button type="button" onClick={() => setGuideOpen(false)}>
+                  Hide guide
+                </button>
+              </div>
+              <div className="forgeGuideGrid">
+                <div className="forgeGuideSteps" role="tablist" aria-label="Forge guided walkthrough">
+                  {forgeGuideSteps.map((step, index) => (
+                    <button
+                      key={step.id}
+                      className={activeGuide.id === step.id ? "active" : ""}
+                      type="button"
+                      role="tab"
+                      aria-selected={activeGuide.id === step.id}
+                      onClick={() => setActiveGuideStep(step.id)}
+                    >
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <strong>{step.label}</strong>
+                    </button>
+                  ))}
+                </div>
+                <article className="forgeGuideDetail">
+                  <span>{pack.shortName || pack.name}</span>
+                  <p>{activeGuide.detail}</p>
+                  <strong>{activeGuide.action}</strong>
+                </article>
+              </div>
+            </section>
+          )}
+
           <header className="stageHeader">
             <div>
               <p className="eyebrow">Pack blueprint</p>
@@ -3911,19 +4415,19 @@ function ForgeApp() {
               </button>
               <button type="button" onClick={exportMarkdown}>
                 <Download size={17} />
-                Markdown
+                {creatorExportLabels.markdown}
               </button>
               <button type="button" onClick={exportMarketplaceJson}>
                 <FileJson size={17} />
-                Market JSON
+                {creatorExportLabels.marketplace}
               </button>
               <button type="button" onClick={exportFigmaJson}>
                 <Figma size={17} />
-                Figma JSON
+                {creatorExportLabels.figma}
               </button>
               <button type="button" className="primary" onClick={exportNotionJson}>
                 <Database size={17} />
-                Notion JSON
+                {creatorExportLabels.notion}
               </button>
             </div>
           </header>
@@ -3948,20 +4452,154 @@ function ForgeApp() {
             ))}
           </div>
 
+          <section className="panel designStagePanel">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">Design stage</p>
+                <h2>Make the template feel real before export.</h2>
+              </div>
+              <div className="actions">
+                <button type="button" onClick={applyDesignDirection}>
+                  <Sparkles size={17} />
+                  Apply to pack
+                </button>
+                <button
+                  type="button"
+                  onClick={() => copyText(designStageModel.prompt, "Design prompt copied.")}
+                >
+                  <Clipboard size={17} />
+                  Copy prompt
+                </button>
+                <button type="button" onClick={exportDesignBrief}>
+                  <Download size={17} />
+                  Design brief
+                </button>
+              </div>
+            </div>
+            <div className="designStageGrid">
+              <div className="designControls">
+                <div className="designControlGroup">
+                  <span>Output people can see</span>
+                  <div className="designOptionGrid">
+                    {designStageFormats.map((format) => (
+                      <button
+                        key={format.id}
+                        className={designStage.formatId === format.id ? "active" : ""}
+                        type="button"
+                        onClick={() => updateDesignStage("formatId", format.id)}
+                      >
+                        <strong>{format.label}</strong>
+                        <small>{format.size}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="designControlGroup">
+                  <span>Visual mood</span>
+                  <div className="designOptionGrid">
+                    {designStageMoods.map((mood) => (
+                      <button
+                        key={mood.id}
+                        className={designStage.moodId === mood.id ? "active" : ""}
+                        type="button"
+                        onClick={() => updateDesignStage("moodId", mood.id)}
+                      >
+                        <strong>{mood.label}</strong>
+                        <small>{mood.direction.split(",").slice(0, 2).join(",")}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="designControlGroup compact">
+                  <span>Copy tone</span>
+                  <div className="toneButtonRow">
+                    {designStageTones.map((tone) => (
+                      <button
+                        key={tone.id}
+                        className={designStage.toneId === tone.id ? "active" : ""}
+                        type="button"
+                        onClick={() => updateDesignStage("toneId", tone.id)}
+                      >
+                        {tone.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <article className="designLivePreview">
+                <div className="designPreviewHeader">
+                  <div>
+                    <span>{designStageModel.format.label}</span>
+                    <strong>{pack.shortName || pack.name}</strong>
+                  </div>
+                  <small>{designStageModel.format.outcome}</small>
+                </div>
+                <div
+                  className="designPreviewCanvas"
+                  style={{
+                    "--design-a": designStageModel.mood.colors[0],
+                    "--design-b": designStageModel.mood.colors[1],
+                    "--design-c": designStageModel.mood.colors[2],
+                    "--design-d": designStageModel.mood.colors[3],
+                  }}
+                >
+                  {designStageModel.cards.map((card, index) => (
+                    <motion.article
+                      className="designPreviewCard"
+                      key={`${card.label}-${index}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.04 }}
+                    >
+                      <span>{String(index + 1).padStart(2, "0")} / {card.label}</span>
+                      <strong>{card.headline}</strong>
+                      <p>{card.detail}</p>
+                    </motion.article>
+                  ))}
+                </div>
+                <div className="designSwatchRow" aria-label="Selected design colors">
+                  {designStageModel.mood.colors.map((color) => (
+                    <span key={color} style={{ "--swatch": color }}>
+                      {color}
+                    </span>
+                  ))}
+                </div>
+                <textarea readOnly value={designStageModel.prompt} aria-label="Design prompt preview" />
+              </article>
+            </div>
+          </section>
+
           <section className="panel visualPreviewPanel">
             <div className="boardHeader">
               <div>
-                <p className="eyebrow">Visual pack reveal</p>
-                <h2>Figma-style preview board</h2>
+                <p className="eyebrow">Buyer-facing preview</p>
+                <h2>Show the template before asking people to buy.</h2>
               </div>
               <button type="button" onClick={exportFigmaJson}>
                 <Figma size={17} />
-                Export board JSON
+                {creatorExportLabels.figma}
               </button>
               <button type="button" onClick={exportPackCoverSvg}>
                 <Download size={17} />
-                Cover SVG
+                {creatorExportLabels.cover}
               </button>
+            </div>
+            <div className="creatorPreviewStrip" aria-label="Creator-friendly output summary">
+              {pack.sections.map((section) => {
+                const friendly = creatorOutputLabels[section.id] || {
+                  friendly: section.label,
+                  action: "Review output",
+                  buyerView: section.summary,
+                };
+                return (
+                  <article key={section.id}>
+                    <span>{friendly.friendly}</span>
+                    <strong>{friendly.action}</strong>
+                    <p>{friendly.buyerView}</p>
+                  </article>
+                );
+              })}
             </div>
             <div className="previewBoard">
               <article className="packCoverFrame">
@@ -4021,10 +4659,33 @@ function ForgeApp() {
                     <b>{preset.comparison.fastestChannel}</b>
                   </div>
                   <div>
-                    <span>Connector</span>
+                    <span>Setup</span>
                     <b>{preset.comparison.connectorReadiness}</b>
                   </div>
                 </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel pricingWorkbench">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">INR validation</p>
+                <h2>Pricing ladder for {pack.shortName || pack.name}</h2>
+              </div>
+              <span>{pack.comparison.expectedPrice}</span>
+            </div>
+            <div className="pricingWorkbenchGrid">
+              {activePricingLadder.map((tier) => (
+                <article key={tier.name}>
+                  <span>{tier.angle}</span>
+                  <strong>{tier.price}</strong>
+                  <h3>{tier.name}</h3>
+                  <p>{tier.includes}</p>
+                  <button type="button" onClick={() => markPricingTier(tier)}>
+                    Validate this tier
+                  </button>
+                </article>
               ))}
             </div>
           </section>
@@ -4047,6 +4708,63 @@ function ForgeApp() {
               </div>
               <p>{founderPlan.headline}</p>
               <small>{founderPlan.launchReadiness}</small>
+            </div>
+            <div className="productWorkQueue">
+              <div className="workQueueHeader">
+                <div>
+                  <p className="eyebrow">Product action queue</p>
+                  <h3>{productWorkProgress.doneCount}/{productWorkProgress.total} traction steps ready</h3>
+                </div>
+                <div className="workQueueMeter" aria-label={`Product work progress ${productWorkProgress.percent}%`}>
+                  <i style={{ width: `${productWorkProgress.percent}%` }} />
+                </div>
+              </div>
+              <div className="workQueueList">
+                {productWorkQueue.map((item) => {
+                  const done = productWorkStatus[item.id] ?? item.defaultDone;
+                  return (
+                    <article className={done ? "workQueueItem done" : "workQueueItem"} key={item.id}>
+                      <button
+                        type="button"
+                        className="workQueueToggle"
+                        onClick={() => toggleProductWorkItem(item)}
+                        aria-pressed={done}
+                      >
+                        {done ? <CheckCircle2 size={17} /> : <Clock3 size={17} />}
+                      </button>
+                      <div>
+                        <span>{item.priority} / {item.stage}</span>
+                        <strong>{item.label}</strong>
+                        <p>{item.action}</p>
+                        <small>{item.successMetric}</small>
+                      </div>
+                      <div className="workQueueActions">
+                        <button
+                          type="button"
+                          className="workQueueRunButton"
+                          onClick={() => runProductWorkItem(item)}
+                        >
+                          <Play size={15} />
+                          Run
+                        </button>
+                        <button
+                          type="button"
+                          className="workQueueCopyButton"
+                          onClick={() =>
+                            copyText(
+                              `${item.label}\n\nAction: ${item.action}\nSuccess metric: ${item.successMetric}`,
+                              "Next action copied.",
+                            )
+                          }
+                        >
+                          <Clipboard size={15} />
+                          Copy
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
             </div>
             <div className="priorityGrid">
               {founderPlan.focus.map((item) => (
@@ -4075,6 +4793,7 @@ function ForgeApp() {
           <nav className="sectionTabs" aria-label="Generated platform outputs">
             {pack.sections.map((section) => {
               const Icon = sectionIcons[section.id];
+              const friendly = creatorOutputLabels[section.id]?.friendly || section.label;
               return (
                 <button
                   key={section.id}
@@ -4083,7 +4802,7 @@ function ForgeApp() {
                   onClick={() => setActiveSection(section.id)}
                 >
                   <Icon size={18} />
-                  {section.label}
+                  {friendly}
                 </button>
               );
             })}
@@ -4103,9 +4822,9 @@ function ForgeApp() {
                   <SelectedIcon size={26} />
                 </div>
                 <div>
-                  <p className="eyebrow">Editable output</p>
-                  <h3>{selectedSection.label}</h3>
-                  <p>{selectedSection.summary}</p>
+                  <p className="eyebrow">Editable template content</p>
+                  <h3>{selectedSectionLabel.friendly}</h3>
+                  <p>{selectedSectionLabel.buyerView}</p>
                 </div>
               </div>
 
@@ -4203,7 +4922,7 @@ function ForgeApp() {
                 </button>
                 <button type="button" onClick={exportMarketingJson}>
                   <FileJson size={17} />
-                  Social JSON
+                  Social copy
                 </button>
               </div>
             </div>
@@ -4246,6 +4965,65 @@ function ForgeApp() {
             onExport={exportLaunchAssetStudio}
             onFigmaExport={exportFigmaJson}
           />
+
+          <section className="panel assistantSkillPanel">
+            <div className="boardHeader">
+              <div>
+                <p className="eyebrow">Assistant skill pack</p>
+                <h2>Let creators use Packsmith inside the tools they already open.</h2>
+              </div>
+              <div className="actions">
+                <button
+                  type="button"
+                  onClick={() => copyText(assistantSkillKit.prompts.chatgptPrompt, "ChatGPT instructions copied.")}
+                >
+                  <Clipboard size={17} />
+                  ChatGPT
+                </button>
+                <button
+                  type="button"
+                  onClick={() => copyText(assistantSkillKit.prompts.claudeProjectPrompt, "Claude project prompt copied.")}
+                >
+                  <Clipboard size={17} />
+                  Claude
+                </button>
+                <button type="button" onClick={exportAssistantSkillKit}>
+                  <Download size={17} />
+                  Full kit
+                </button>
+              </div>
+            </div>
+            <div className="assistantSkillGrid">
+              {assistantSkillKit.surfaces.map((surface) => (
+                <article key={surface.id}>
+                  <span>{surface.status}</span>
+                  <strong>{surface.name}</strong>
+                  <p>{surface.promise}</p>
+                </article>
+              ))}
+            </div>
+            <div className="assistantPromptPreview">
+              <article>
+                <h3>Designer handoff</h3>
+                <p>{assistantSkillKit.prompts.figmaCanvaPrompt}</p>
+                <button
+                  type="button"
+                  onClick={() => copyText(assistantSkillKit.prompts.figmaCanvaPrompt, "Figma and Canva handoff copied.")}
+                >
+                  <PenTool size={16} />
+                  Copy Figma/Canva prompt
+                </button>
+              </article>
+              <article>
+                <h3>Repo path</h3>
+                <p>
+                  The repo now includes an assistant-kit folder with paste-ready instructions for
+                  ChatGPT, Claude, Figma, and Canva workflows.
+                </p>
+                <a href="/plugins">View plugin path</a>
+              </article>
+            </div>
+          </section>
         </section>
 
         <aside className="rightRail">
@@ -4274,8 +5052,8 @@ function ForgeApp() {
             <div className="panelHeader">
               <Brain size={18} />
               <div>
-                <p className="eyebrow">Real AI path</p>
-                <h2>Provider readiness</h2>
+                <p className="eyebrow">AI upgrade path</p>
+                <h2>What can improve next</h2>
               </div>
             </div>
 
@@ -4319,15 +5097,15 @@ function ForgeApp() {
             <div className="panelHeader">
               <Layers3 size={18} />
               <div>
-                <p className="eyebrow">Notion connector</p>
-                <h2>Simulate publish</h2>
+                <p className="eyebrow">Workspace preview</p>
+                <h2>See the pages before publishing</h2>
               </div>
             </div>
 
             <label>
-              Parent page ID
+              Notion destination page
               <input
-                placeholder="paste parent page id"
+                placeholder="paste destination page id"
                 value={connection.parentPageId}
                 onChange={(event) =>
                   setConnection((current) => ({ ...current, parentPageId: event.target.value }))
@@ -4336,13 +5114,13 @@ function ForgeApp() {
             </label>
 
             <label>
-              Server secret status
+              Publishing setup
               <input
                 readOnly
                 value={
                   cloudReady
-                    ? "Set NOTION_TOKEN in Supabase Edge Function secrets"
-                    : "Configure Supabase before adding server secrets"
+                    ? "Ready for secure server-side Notion setup"
+                    : "Add Supabase settings before live publishing"
                 }
               />
             </label>
@@ -4358,11 +5136,11 @@ function ForgeApp() {
             <div className="payloadStats">
               <div>
                 <strong>{notionExport.pages.length}</strong>
-                <span>Pages</span>
+                <span>Workspace pages</span>
               </div>
               <div>
                 <strong>{notionExport.databases.length}</strong>
-                <span>Databases</span>
+                <span>Trackers</span>
               </div>
             </div>
 
@@ -4371,7 +5149,7 @@ function ForgeApp() {
                 <article key={database.name}>
                   <strong>{database.name}</strong>
                   <span>
-                    {database.properties} properties / {database.sampleRecords} sample records
+                    {database.properties} fields / {database.sampleRecords} example rows
                   </span>
                 </article>
               ))}
@@ -4392,7 +5170,7 @@ function ForgeApp() {
                   ))}
                 </article>
                 <article>
-                  <span>Databases</span>
+                  <span>Trackers</span>
                   <strong>{notionPublishReveal.databases.length}</strong>
                   {notionPublishReveal.databases.slice(0, 4).map((database) => (
                     <code key={`${database.name}-${database.id}`}>{database.name}</code>
@@ -4401,22 +5179,22 @@ function ForgeApp() {
               </div>
               <p className="connectorHint">
                 {publishResult
-                  ? "Live response received from the Supabase Edge Function."
-                  : "Simulation reveal. Add parent page, login, and server-side NOTION_TOKEN for live creation."}
+                  ? "Live workspace response received."
+                  : "Preview mode. Add a destination page and login when you are ready to publish."}
               </p>
             </div>
 
             <button type="button" className="primary wide" onClick={exportNotionJson}>
-              Export publish payload
+              Download workspace plan
               <ArrowRight size={17} />
             </button>
             <button type="button" className="wide" onClick={publishToNotion}>
-              Publish with Notion
+              Publish workspace
               <LockKeyhole size={17} />
             </button>
             <p className="connectorHint">
               {user
-                ? "Publishing calls the Supabase Edge Function; Notion token stays server-side."
+                ? "Publishing uses secure server-side setup; tokens stay out of the browser."
                 : fallbackCloudMessage("publish to Notion")}
             </p>
             {publishResult && (
@@ -4424,7 +5202,7 @@ function ForgeApp() {
                 <strong>{publishResult.status}</strong>
                 <span>
                   {(publishResult.createdPageIds || []).length} pages /{" "}
-                  {(publishResult.createdDatabaseIds || []).length} databases returned
+                  {(publishResult.createdDatabaseIds || []).length} trackers returned
                 </span>
                 {[...(publishResult.createdPageIds || []), ...(publishResult.createdDatabaseIds || [])]
                   .slice(0, 6)
@@ -4491,6 +5269,7 @@ function App() {
   if (window.location.pathname === "/ai-agency-launch-kit") return <AiAgencyLaunchKitPage />;
   if (window.location.pathname === "/dashboard") return <DashboardPage />;
   if (window.location.pathname === "/mobile") return <MobileAccessPage />;
+  if (window.location.pathname === "/plugins") return <PlatformExpansionPage />;
   if (window.location.pathname === "/platforms") return <PlatformExpansionPage />;
   if (window.location.pathname === "/api-console") return <ApiConsolePage />;
   if (window.location.pathname === "/privacy") return <PrivacyPage />;

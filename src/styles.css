@@ -344,6 +344,8 @@ h4 {
 .proofGrid article:hover,
 .outputShowcaseGrid article:hover,
 .walkthroughPreview:hover,
+.forgeGuidePanel:hover,
+.pricingWorkbench:hover,
 .panel:hover {
   border-color: rgba(239, 189, 99, 0.52);
   box-shadow:
@@ -359,6 +361,8 @@ h4 {
 .proofGrid article,
 .outputShowcaseGrid article,
 .walkthroughPreview,
+.forgeGuidePanel,
+.pricingWorkbench,
 .panel {
   transition:
     border-color 180ms ease,
@@ -823,6 +827,41 @@ select:focus {
   z-index: 1;
 }
 
+.creatorPreviewStrip {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.creatorPreviewStrip article {
+  background:
+    linear-gradient(145deg, rgba(66, 209, 160, 0.08), rgba(239, 189, 99, 0.055)),
+    rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(66, 209, 160, 0.2);
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+}
+
+.creatorPreviewStrip span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.creatorPreviewStrip strong {
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.creatorPreviewStrip p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .previewBoard {
   display: grid;
   gap: 12px;
@@ -1093,6 +1132,136 @@ select:focus {
   border-radius: 999px;
   color: #d7fff1;
   padding: 7px 10px;
+}
+
+.productWorkQueue {
+  background:
+    linear-gradient(135deg, rgba(66, 209, 160, 0.08), rgba(255, 255, 255, 0.035)),
+    rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.workQueueHeader {
+  align-items: center;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 0.36fr);
+}
+
+.workQueueHeader h3 {
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.workQueueMeter {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  height: 12px;
+  overflow: hidden;
+}
+
+.workQueueMeter i {
+  background: linear-gradient(90deg, var(--green), var(--gold));
+  display: block;
+  height: 100%;
+}
+
+.workQueueList {
+  display: grid;
+  gap: 10px;
+}
+
+.workQueueItem {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  padding: 12px;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.workQueueItem.done {
+  background: rgba(66, 209, 160, 0.08);
+  border-color: rgba(66, 209, 160, 0.26);
+}
+
+.workQueueItem:hover {
+  transform: translateY(-1px);
+}
+
+.workQueueToggle {
+  align-items: center;
+  aspect-ratio: 1;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.workQueueItem.done .workQueueToggle {
+  color: var(--green);
+}
+
+.workQueueItem span {
+  color: var(--gold);
+  display: block;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.workQueueItem strong {
+  display: block;
+  font-size: 17px;
+  margin-top: 3px;
+}
+
+.workQueueItem p,
+.workQueueItem small {
+  color: var(--muted);
+}
+
+.workQueueItem small {
+  display: block;
+  margin-top: 5px;
+}
+
+.workQueueActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.workQueueActions button {
+  align-items: center;
+  background: rgba(239, 189, 99, 0.12);
+  border: 1px solid rgba(239, 189, 99, 0.3);
+  border-radius: 8px;
+  color: var(--gold);
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 900;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 10px;
+}
+
+.workQueueActions button:first-child {
+  background: rgba(66, 209, 160, 0.12);
+  border-color: rgba(66, 209, 160, 0.3);
+  color: var(--green);
 }
 
 .priorityGrid {
@@ -2440,7 +2609,10 @@ ol {
 .beforeAfterGrid,
 .marketingGrid,
 .proofGrid,
-.outputShowcaseGrid {
+.outputShowcaseGrid,
+.heavyLiftGrid,
+.validationLoopGrid,
+.pluginAccessGrid {
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2450,7 +2622,10 @@ ol {
 .beforeAfterGrid article,
 .marketingGrid article,
 .proofGrid article,
-.outputShowcaseGrid article {
+.outputShowcaseGrid article,
+.heavyLiftGrid article,
+.validationLoopGrid article,
+.pluginAccessGrid article {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -2462,7 +2637,10 @@ ol {
 
 .landingPresetCard span,
 .beforeAfterGrid span,
-.proofGrid span {
+.proofGrid span,
+.heavyLiftGrid span,
+.validationLoopGrid span,
+.pluginAccessGrid span {
   color: var(--gold);
   font-size: 12px;
   font-weight: 950;
@@ -2472,7 +2650,10 @@ ol {
 .landingPresetCard strong,
 .beforeAfterGrid h3,
 .proofGrid h3,
-.outputShowcaseGrid h3 {
+.outputShowcaseGrid h3,
+.heavyLiftGrid h3,
+.validationLoopGrid h3,
+.pluginAccessGrid h3 {
   font-size: 22px;
   line-height: 1.1;
 }
@@ -2491,22 +2672,85 @@ ol {
 }
 
 .proofGrid article svg,
-.outputShowcaseGrid article svg {
+.outputShowcaseGrid article svg,
+.heavyLiftGrid article svg {
   color: var(--green);
 }
 
 .proofGrid article:first-child svg,
-.outputShowcaseGrid article:nth-child(2) svg {
+.outputShowcaseGrid article:nth-child(2) svg,
+.heavyLiftGrid article:nth-child(2) svg {
   color: var(--gold);
 }
 
 .proofGrid p,
-.outputShowcaseGrid p {
+.outputShowcaseGrid p,
+.heavyLiftGrid p,
+.validationLoopGrid p,
+.pluginAccessGrid p,
+.pluginAccessCta p {
   color: var(--muted);
 }
 
 .outputShowcaseGrid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.heavyLiftSection,
+.validationLoopSection,
+.pluginAccessSection {
+  position: relative;
+}
+
+.heavyLiftGrid article,
+.pluginAccessGrid article {
+  min-height: 190px;
+}
+
+.validationLoopGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.validationLoopGrid article {
+  background:
+    linear-gradient(145deg, rgba(66, 209, 160, 0.075), rgba(239, 189, 99, 0.055)),
+    var(--panel);
+}
+
+.validationLoopGrid span {
+  color: var(--green);
+  font-size: 22px;
+}
+
+.pluginAccessGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pluginAccessCta {
+  align-items: center;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(66, 209, 160, 0.13), transparent 18rem),
+    rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 16px;
+}
+
+.pluginAccessCta a {
+  align-items: center;
+  background: linear-gradient(135deg, var(--gold), #d68a35);
+  border: 1px solid rgba(255, 232, 182, 0.55);
+  border-radius: 8px;
+  color: #18110a;
+  display: inline-flex;
+  font-weight: 950;
+  gap: 8px;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 14px;
 }
 
 .walkthroughSection {
@@ -3190,9 +3434,355 @@ ol {
 }
 
 .generatorPanel,
-.marketingPanel {
+.marketingPanel,
+.designStagePanel,
+.assistantSkillPanel {
   display: grid;
   gap: 14px;
+}
+
+.forgeGuidePanel,
+.pricingWorkbench,
+.designStagePanel,
+.assistantSkillPanel {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(66, 209, 160, 0.12), transparent 18rem),
+    radial-gradient(circle at 92% 0%, rgba(239, 189, 99, 0.1), transparent 18rem),
+    var(--panel);
+}
+
+.forgeGuideGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(220px, 0.38fr) minmax(0, 1fr);
+}
+
+.forgeGuideSteps {
+  display: grid;
+  gap: 8px;
+}
+
+.forgeGuideSteps button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  min-height: 52px;
+  padding: 10px;
+  text-align: left;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.forgeGuideSteps button.active,
+.forgeGuideSteps button:hover {
+  background: rgba(66, 209, 160, 0.1);
+  border-color: rgba(66, 209, 160, 0.42);
+  transform: translateX(2px);
+}
+
+.forgeGuideSteps span,
+.forgeGuideDetail span,
+.pricingWorkbenchGrid span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.forgeGuideDetail {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.forgeGuideDetail p {
+  color: var(--muted);
+}
+
+.forgeGuideDetail strong {
+  color: var(--green);
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.pricingWorkbenchGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pricingWorkbenchGrid article {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+}
+
+.pricingWorkbenchGrid strong {
+  color: var(--green);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.pricingWorkbenchGrid h3 {
+  font-size: 18px;
+}
+
+.pricingWorkbenchGrid p {
+  color: var(--muted);
+}
+
+.pricingWorkbenchGrid button {
+  background: rgba(239, 189, 99, 0.13);
+  border: 1px solid rgba(239, 189, 99, 0.36);
+  border-radius: 8px;
+  color: var(--gold);
+  cursor: pointer;
+  font-weight: 950;
+  min-height: 38px;
+}
+
+.designStageGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(260px, 0.42fr) minmax(0, 1fr);
+}
+
+.designControls {
+  display: grid;
+  gap: 12px;
+}
+
+.designControlGroup {
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.designControlGroup > span,
+.designPreviewHeader span,
+.designPreviewCard span,
+.assistantSkillGrid span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.designOptionGrid,
+.toneButtonRow {
+  display: grid;
+  gap: 8px;
+}
+
+.designOptionGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.toneButtonRow {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.designOptionGrid button,
+.toneButtonRow button {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  gap: 5px;
+  min-height: 58px;
+  padding: 10px;
+  text-align: left;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.toneButtonRow button {
+  align-items: center;
+  min-height: 42px;
+}
+
+.designOptionGrid button.active,
+.designOptionGrid button:hover,
+.toneButtonRow button.active,
+.toneButtonRow button:hover {
+  background: rgba(66, 209, 160, 0.1);
+  border-color: rgba(66, 209, 160, 0.45);
+  transform: translateY(-1px);
+}
+
+.designOptionGrid small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.designLivePreview {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025)),
+    rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 14px;
+}
+
+.designPreviewHeader {
+  align-items: start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.designPreviewHeader strong {
+  display: block;
+  font-size: clamp(22px, 3vw, 34px);
+  line-height: 1;
+  margin-top: 4px;
+}
+
+.designPreviewHeader small {
+  color: var(--muted);
+  max-width: 360px;
+  text-align: right;
+}
+
+.designPreviewCanvas {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--design-a), transparent 70%), transparent 16rem),
+    radial-gradient(circle at 86% 8%, color-mix(in srgb, var(--design-b), transparent 70%), transparent 14rem),
+    var(--design-c);
+  background-size: 28px 28px, 28px 28px, auto, auto, auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  min-height: 310px;
+  overflow-x: auto;
+  padding: 14px;
+}
+
+.designPreviewCard {
+  background: color-mix(in srgb, var(--design-d), transparent 8%);
+  border: 1px solid color-mix(in srgb, var(--design-a), transparent 35%);
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+  color: #111719;
+  display: grid;
+  gap: 9px;
+  min-height: 250px;
+  padding: 14px;
+}
+
+.designPreviewCard strong {
+  font-size: 18px;
+  line-height: 1.12;
+}
+
+.designPreviewCard p {
+  color: rgba(17, 23, 25, 0.72);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.designSwatchRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.designSwatchRow span {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 12px;
+  gap: 8px;
+  padding: 7px 10px;
+}
+
+.designSwatchRow span::before {
+  background: var(--swatch);
+  border-radius: 999px;
+  content: "";
+  height: 14px;
+  width: 14px;
+}
+
+.designLivePreview textarea {
+  min-height: 132px;
+}
+
+.assistantSkillGrid,
+.assistantPromptPreview {
+  display: grid;
+  gap: 12px;
+}
+
+.assistantSkillGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.assistantSkillGrid article,
+.assistantPromptPreview article {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+}
+
+.assistantSkillGrid strong,
+.assistantPromptPreview h3 {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.assistantSkillGrid p,
+.assistantPromptPreview p {
+  color: var(--muted);
+}
+
+.assistantPromptPreview {
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+}
+
+.assistantPromptPreview button,
+.assistantPromptPreview a {
+  align-items: center;
+  background: rgba(66, 209, 160, 0.1);
+  border: 1px solid rgba(66, 209, 160, 0.26);
+  border-radius: 8px;
+  color: var(--green);
+  display: inline-flex;
+  font-weight: 950;
+  gap: 8px;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+  width: fit-content;
 }
 
 .marketingGrid {
@@ -4376,7 +4966,9 @@ ol {
   .apiRouteGrid,
   .chatGptSetupGrid,
   .securityChecklistGrid,
-  .previewBoard {
+  .previewBoard,
+  .assistantSkillGrid,
+  .creatorPreviewStrip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -4492,6 +5084,10 @@ ol {
   .marketingGrid,
   .proofGrid,
   .outputShowcaseGrid,
+  .heavyLiftGrid,
+  .validationLoopGrid,
+  .pluginAccessGrid,
+  .pluginAccessCta,
   .productShotGrid,
   .packRevealStrip,
   .miniPipeline,
@@ -4502,6 +5098,12 @@ ol {
   .launchCopyGrid,
   .selectedPackStats,
   .nativeDecisionPanel,
+  .forgeGuideGrid,
+  .pricingWorkbenchGrid,
+  .designStageGrid,
+  .assistantSkillGrid,
+  .assistantPromptPreview,
+  .workQueueHeader,
   .privacyGrid {
     grid-template-columns: 1fr;
   }
@@ -4586,6 +5188,7 @@ ol {
   .apiRouteGrid,
   .chatGptSetupGrid,
   .securityChecklistGrid,
+  .creatorPreviewStrip,
   .analyticsModeGrid {
     grid-template-columns: 1fr;
   }
@@ -4597,6 +5200,39 @@ ol {
   .sectionTabs button {
     justify-content: flex-start;
     padding-left: 14px;
+  }
+
+  .designOptionGrid,
+  .toneButtonRow,
+  .designPreviewCanvas {
+    grid-template-columns: 1fr;
+  }
+
+  .designPreviewCanvas {
+    overflow-x: visible;
+  }
+
+  .designPreviewHeader {
+    display: grid;
+  }
+
+  .designPreviewHeader small {
+    text-align: left;
+  }
+
+  .workQueueItem {
+    align-items: stretch;
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .workQueueActions {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .workQueueActions button {
+    flex: 1;
+    justify-content: center;
   }
 }
 
